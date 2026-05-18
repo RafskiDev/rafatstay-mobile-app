@@ -312,4 +312,6 @@ final EnLanguag = {
   "طلب سفري":"Order to Go",
   "مطعم بإطلالة كاملة":"Full View Restaurant",
   "جاري تحميل المسار...":"Loading the track...",
+  "جميع الحجوزات":"AII Bookings",
+  "الفعاليات":"Events"
 };

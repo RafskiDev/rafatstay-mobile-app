@@ -1,24 +1,54 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../Service/ApiService.dart';
 import '../../Utils/Them.dart';
 import '../../Utils/ToastMessage.dart';
-class PageNotifier extends Notifier<int> {
-  List<Map<String, dynamic>> restaurant = [
-      {'label': 'Attitude',          'score': 5, 'max': 5},
-      {'label': 'Attention to Detail','score': 3, 'max': 5},
-      {'label': 'Professionalism',   'score': 4, 'max': 5},
-   ];
-  List<Map<String, dynamic>> service = [
-    {'label': 'Food Quality',          'score': 5, 'max': 5},
-    {'label': 'Service Speed','score': 3, 'max': 5},
-    {'label': 'Staff Behavior',   'score': 4, 'max': 5},
-  ];
 
+class HistoryDescriptionNotifier extends Notifier<void> {
+  // متغيرات الحالة
+  bool isLoading = false;
+  Map<String, dynamic>? bookingDetails;
+  String? error;
 
   @override
-  int build() => 0;
+  void build() {
+    // لا شيء مبدئياً
+  }
 
+  Future<void> fetchBookingDetails(int bookingId, BuildContext context) async {
+    // بدء التحميل
+    isLoading = true;
+    bookingDetails = null;
+    error = null;
+    ref.notifyListeners();
+
+    ApiService api = ApiService();
+    final res = await api.get(
+      "v1/guest/bookings/$bookingId/history-screen",
+      {},
+      context,
+    );
+
+    if (res?["success"] == true) {
+      bookingDetails = res?['data'];
+      isLoading = false;
+      error = null;
+      ref.notifyListeners();
+    } else {
+      error = res?["message"] ?? "حدث خطأ";
+      bookingDetails = null;
+      isLoading = false;
+      ToastMessages(
+        context,
+        error!,
+        Themes().GetColor("error"),
+        Themes().GetColor("white"),
+      );
+    }
+    ref.notifyListeners();
+  }
 }
-final HistoryDescription_rverpod = NotifierProvider<PageNotifier, int>(PageNotifier.new);
+
+final historyDescriptionProvider = NotifierProvider<HistoryDescriptionNotifier, void>(
+  HistoryDescriptionNotifier.new,
+);

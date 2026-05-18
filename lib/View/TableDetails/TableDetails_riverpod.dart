@@ -3,41 +3,45 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../Service/ApiService.dart';
 import '../../Utils/Them.dart';
 import '../../Utils/ToastMessage.dart';
-class PageNotifier extends Notifier<int> {
-  List<Map<String, dynamic>> items = [];
+
+class TablesNotifier extends Notifier<int> {
+  // البيانات
+  Map<String, dynamic>? tableDetails;
+  bool isLoadingDetails = false;
   bool isTableChosen = false;
 
   @override
   int build() => 0;
-  void changePage(int index) {
-    state = index;
-  }
+
   void changePage_() {
     isTableChosen = !isTableChosen;
     ref.notifyListeners();
   }
-  Map<String, dynamic>? tableDetails;
-  bool isLoadingTable = false;
 
   Future<void> fetchTableDetails(
       BuildContext context,
-      int branchId, {
-        String? date,
-        String? startTime,
-        String? endTime,
-        int? partySize,
+      int branchId,
+      int tableId, {
+        required String date,
+        required String startTime,
+        required String endTime,
+        required int partySize,
       }) async {
+    isLoadingDetails = true;
+    ref.notifyListeners();
+
     final response = await ApiService().get(
-      "v1/guest/branches/$branchId/tables",
+      "v1/guest/branches/$branchId/tables/$tableId",
       {
-      //  if (date != null) "date": date,
-      //  if (partySize != null) "party_size": partySize,
+        "date": date.toString(),
+        "start_time": startTime.toString(),
+        "end_time": endTime.toString(),
+        "party_size": partySize.toString(),
       },
       context,
     );
-
     if (response?["success"] == true) {
-      tableDetails = response["data"];
+      tableDetails = response?["data"] as Map<String, dynamic>?;
     } else {
       ToastMessages(
         context,
@@ -45,11 +49,14 @@ class PageNotifier extends Notifier<int> {
         Themes().GetColor("error"),
         Themes().GetColor("white"),
       );
+      tableDetails = null;
     }
-    print(tableDetails);
-    state++;
+
+    isLoadingDetails = false;
+    ref.notifyListeners();
   }
 }
 
-final TableDetails_riverpod =NotifierProvider<PageNotifier, int>(PageNotifier.new);
-
+final TableDetails_riverpod = NotifierProvider<TablesNotifier, int>(() {
+  return TablesNotifier();
+});

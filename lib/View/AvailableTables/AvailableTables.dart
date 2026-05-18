@@ -101,6 +101,7 @@ class _AvailableTablesState extends ConsumerState<AvailableTables> {
                                  },
                                  isAvailable:table['is_available'],
                                  idTable:table["id"]??1,
+                                 bookingData: widget.bookingData,
                                );
                              },
                            ),
@@ -256,7 +257,7 @@ class TableCard extends StatelessWidget {
   final bool isNetwork;
   final bool isAvailable;
   final VoidCallback onTap;
-
+  final Map<String, dynamic> bookingData;
   const TableCard({
     super.key,
     required this.idTable,
@@ -268,6 +269,7 @@ class TableCard extends StatelessWidget {
     required this.onTap,
     required this.isAvailable,
     this.isNetwork = false,
+    required this.bookingData, // تم الإضافة هنا
   });
 
   @override
@@ -362,10 +364,17 @@ class TableCard extends StatelessWidget {
           Center(
             child: InkWell(
               onTap: () {
+              //  print(bookingData);
                 Navigator.push(
                   context,
                   PageRouteBuilder(
-                    pageBuilder: (context, a1, a2) => TableDetails(idTable:idTable),
+                    pageBuilder: (context, a1, a2) => TableDetails(
+                      branchId: bookingData['branch_id'] as int? ?? 0,
+                      tableId: idTable,
+                      startTime: bookingData['starts_at']?.toString() ?? '',
+                      endTime: bookingData['ends_at']?.toString() ?? '',
+                      partySize: bookingData['party_size'] as int? ?? 1,
+                    ),
                     transitionDuration: Duration.zero,
                     reverseTransitionDuration: Duration.zero,
                   ),

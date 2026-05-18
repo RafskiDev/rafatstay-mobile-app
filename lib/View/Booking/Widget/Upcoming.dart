@@ -41,6 +41,7 @@ class _UpcomingState extends ConsumerState<Upcoming> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await ref.read(Booking_riverpod.notifier).bookings(context: context,status: "pending");
+      await ref.read(Booking_riverpod.notifier).events(context: context,id:2);
     });
   }
 
@@ -52,7 +53,9 @@ class _UpcomingState extends ConsumerState<Upcoming> {
     TextLanguage textLanguage = TextLanguage();
     final bookingsData = ref.watch(Booking_riverpod.notifier).bookingsData;
     final hasData = bookingsData.isNotEmpty;
-    //print(bookingsData);
+    // قراءة قائمة الفعاليات التي أنشأناها وحفظنا البيانات بها
+    final bookingNotifier = ref.watch(Booking_riverpod.notifier);
+    final eventsList = bookingNotifier.eventsData;
     return ValueListenableBuilder<bool>(
         valueListenable: LoadingService.isLoading,
         builder: (context, isLoading, child) {
@@ -273,18 +276,19 @@ class _UpcomingState extends ConsumerState<Upcoming> {
                 },
                 backgroundColor: Themes().GetColor("primaryS"),
               ),
-              Column(
-                children: [
-                  Row(
-                    children: [
-                      Text("Events"),
-                    ],
-                  ),
-                  SizedBox(height: sizes.GetHeight() * 2),
-                  EventCard(),
-                ],
-              ),
-
+              if(eventsList.isNotEmpty)...[
+                Column(
+                  children: [
+                    Row(
+                      children: [
+                        Text(textLanguage.GetWord("الفعاليات"),style: TextStyle(fontWeight: FontWeight.bold,color: Themes().GetColor("textPrimary"))),
+                      ],
+                    ),
+                    SizedBox(height: sizes.GetHeight() * 2),
+                    EventCard(eventsData:eventsList),
+                  ],
+                ),
+               ],
             ],
           );
         }

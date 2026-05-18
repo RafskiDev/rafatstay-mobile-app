@@ -299,6 +299,7 @@ class _EventBookingState extends ConsumerState<EventBooking> {
                               },
                               isAvailable: table['is_available'],
                               idTable:table["id"]??1,
+                              bookingData:widget.eventBooking,
                             );
                           },
                         ),
