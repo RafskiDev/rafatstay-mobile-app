@@ -293,45 +293,6 @@ class PageNotifier extends Notifier<int> {
     }
   }
 
-  // ─── جلب طلبات المساعدة ──────────────────────────────────────────
-  Future<void> getAssistanceRequests({
-    required BuildContext context,
-    required int bookingId,
-  }) async {
-    final response = await ApiService().get(
-      "v1/guest/bookings/$bookingId/assistance",
-      {},
-      context,
-    );
-
-    if (response?["success"] == true) {
-      assistanceRequests =
-      List<Map<String, dynamic>>.from(response?['data'] ?? []);
-      ref.notifyListeners();
-    }
-
-    print("assistance: ${assistanceRequests.length}");
-  }
-// 1. تعريف القائمة لتخزين الفعاليات بداخل الكلاس
-  List<dynamic> eventsData = [];
-  Future<void> events({
-    required BuildContext context,
-    required int id,
-  }) async {
-    final response = await ApiService().get(
-      "v1/guest/events/$id",
-      {},
-      context,
-    );
-
-    if (response != null && response["success"] == true) {
-      if (response["data"] != null) {
-        eventsData = [response["data"]];
-      }
-      ref.notifyListeners();
-    }
-  }
-
 
 }
 final Booking_riverpod = NotifierProvider<PageNotifier, int>(PageNotifier.new);

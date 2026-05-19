@@ -6,6 +6,7 @@ import '../../Utils/TextLanguage.dart';
 import '../../Utils/Them.dart';
 import '../../Widget/ContentCard.dart';
 import '../../Widget/WidgetAppBar.dart';
+import '../RestaurantDetalis/RestaurantDetalis.dart';
 import 'Favorite_riverpod.dart';
 
 class Favorite extends ConsumerStatefulWidget {
@@ -58,7 +59,7 @@ class _FavoriteState extends ConsumerState<Favorite> {
               favoriteBranches.isEmpty
                   ? SizedBox.shrink()
                   : SizedBox(
-                height: sizes.GetHeight() * 38,
+                height: sizes.GetHeight() * 35,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   itemCount: favoriteBranches.length,
@@ -66,7 +67,7 @@ class _FavoriteState extends ConsumerState<Favorite> {
                     final favorite = favoriteBranches[i];
                     final item = favorite['item'] ?? {};
                     final type = favorite['type'] ?? 'branch';
-
+                    print(favorite);
                     return Padding(
                       padding: EdgeInsets.only(right: sizes.GetWidth() * 1),
                       child: ContentCard(
@@ -88,10 +89,29 @@ class _FavoriteState extends ConsumerState<Favorite> {
                         showIcon: true,
                         imagePath: "assets/images/image6.png",
                         title: item["name"] ?? "",
-                        description: item["description"] ?? "",
+                        description: item["description"] ?? "لايوجد بينات",
                         circleImagePath: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
                         buttonText: textLanguage.GetWord("يكتشف"),
-                        onButtonTap: () {},
+                        onButtonTap: () {
+                          final int branchId = item["business_id"] ?? 0;
+                          if (branchId == 0) return;
+                          Navigator.push(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder: (context,
+                                  animation1,
+                                  animation2) =>
+                                  RestaurantDetalis(
+                                    title:item["name"]??"",
+                                    branchId: branchId,
+                                  ),
+                              transitionDuration:
+                              Duration.zero,
+                              reverseTransitionDuration:
+                              Duration.zero,
+                            ),
+                          );
+                        },
                         width: sizes.GetWidth() * 50,
                         height: sizes.GetHeight() * 40,
                         liked: notifier.favoriteStatus[item['id']] ?? true,
@@ -125,7 +145,6 @@ class _FavoriteState extends ConsumerState<Favorite> {
                     final favorite = favoriteDishes[i];
                     final item = favorite['item'] ?? {};
                     final type = favorite['type'] ?? 'menu_item';
-
                     return Padding(
                       padding: EdgeInsets.only(right: sizes.GetWidth() * 1),
                       child: ContentCard(
@@ -149,7 +168,26 @@ class _FavoriteState extends ConsumerState<Favorite> {
                         description: item["description"] ?? "",
                         circleImagePath: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
                         buttonText: textLanguage.GetWord("اطلب الآن"),
-                        onButtonTap: () {},
+                        onButtonTap: () {
+                         final int branchId = item["branch_id"] ?? 0;
+                         if (branchId == 0) return;
+                          Navigator.push(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder: (context,
+                                  animation1,
+                                  animation2) =>
+                                  RestaurantDetalis(
+                                    title:item["business_name"]??"",
+                                    branchId: branchId,
+                                  ),
+                              transitionDuration:
+                              Duration.zero,
+                              reverseTransitionDuration:
+                              Duration.zero,
+                            ),
+                          );
+                        },
                         width: sizes.GetWidth() * 50,
                         height: sizes.GetHeight() * 40,
                         liked: notifier.favoriteStatus[item['id']] ?? true,

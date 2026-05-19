@@ -313,5 +313,6 @@ final EnLanguag = {
   "مطعم بإطلالة كاملة":"Full View Restaurant",
   "جاري تحميل المسار...":"Loading the track...",
   "جميع الحجوزات":"AII Bookings",
-  "الفعاليات":"Events"
+  "الفعاليات":"Events",
+  "الفرع غير متوفر":"Branch not available",
 };

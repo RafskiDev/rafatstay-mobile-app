@@ -153,7 +153,7 @@ class Toppicks extends ConsumerWidget {
                         title: item[
                         "business_name"] ??
                             "",
-                        description:"لا يوجد وصف من الباك اند المفروض ينضاف من الاراجع الوصف",
+                        description:item["description"]??"لا يوجد بينات",
                         showIcon: true,//item["name"] ?? ""
                         circleImagePath:
                         "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",

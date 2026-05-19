@@ -199,6 +199,7 @@ class PageNotifier extends Notifier<int> {
       meals = allItems;    // عرض الكل افتراضياً
       isSelectedMenu = -1; // reset للـ default
 
+
       ref.notifyListeners();
     } else {
       ToastMessages(

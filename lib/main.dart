@@ -42,7 +42,7 @@ class MyApp extends ConsumerWidget {
       ],
       locale: language == 'ar' ? const Locale('ar') : const Locale('en'),
       home: const MyHomePage(title: ""),
-      title: 'Rafatstay',
+      title: 'RafatStay',
       theme: ThemeData(
         fontFamily: 'Cairo',
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),

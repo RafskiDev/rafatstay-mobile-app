@@ -108,6 +108,25 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
       body: ValueListenableBuilder<bool>(
         valueListenable: LoadingService.isLoading,
         builder: (context, isLoading, child) {
+          if (branches.isEmpty && !LoadingService.isLoading.value) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.store_outlined, size: 64, color: theme.GetColor("textSecondary")),
+                  SizedBox(height: sizes.GetHeight() * 2),
+                  Text(
+                    textLanguage.GetWord("الفرع غير متوفر"),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: theme.GetColor("textSecondary"),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }
           if (branches.isEmpty) return showLoading();
           return SingleChildScrollView(
             child: Column(

@@ -41,7 +41,6 @@ class _UpcomingState extends ConsumerState<Upcoming> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       await ref.read(Booking_riverpod.notifier).bookings(context: context,status: "pending");
-      await ref.read(Booking_riverpod.notifier).events(context: context,id:2);
     });
   }
 
@@ -53,9 +52,7 @@ class _UpcomingState extends ConsumerState<Upcoming> {
     TextLanguage textLanguage = TextLanguage();
     final bookingsData = ref.watch(Booking_riverpod.notifier).bookingsData;
     final hasData = bookingsData.isNotEmpty;
-    // قراءة قائمة الفعاليات التي أنشأناها وحفظنا البيانات بها
-    final bookingNotifier = ref.watch(Booking_riverpod.notifier);
-    final eventsList = bookingNotifier.eventsData;
+    final eventsList = hasData ? (bookingsData[0]['events']?['items'] as List?) ?? [] : [];
     return ValueListenableBuilder<bool>(
         valueListenable: LoadingService.isLoading,
         builder: (context, isLoading, child) {
@@ -98,9 +95,11 @@ class _UpcomingState extends ConsumerState<Upcoming> {
                       SvgPicture.asset("assets/icon/SandGlass.svg",
                         color: Themes().GetColor("textPrimary"),),
                       SizedBox(width: sizes.GetWidth() * 1),
-                      Text(DateTimeHelper().getRemainingTime(ref
-                          .read(Booking_riverpod.notifier)
-                          .bookingsData[0])),
+                      Text(
+                        ref.read(Booking_riverpod.notifier)
+                            .bookingsData[0]['time_remaining']?['formatted_compact']?.toString()
+                            ?? "0D : 0H : 0M : S",
+                      ),
                     ],
                   ),
                 ],

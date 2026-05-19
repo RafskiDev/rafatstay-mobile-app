@@ -42,6 +42,7 @@ class Favorites extends ConsumerWidget {
                 "assets/images/image6.png").toString();
             //  print(favorites["item"]);
             final business_name=favorites["item"]?["business_name"]??"";
+           // print(favorites);
             return Padding(
               padding: EdgeInsets.only(
                   right: sizes.GetWidth() * 1),
