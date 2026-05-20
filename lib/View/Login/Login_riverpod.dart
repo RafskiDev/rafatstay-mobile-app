@@ -7,6 +7,7 @@ import '../../Utils/TextLanguage.dart';
 import '../../Utils/ToastMessage.dart';
 import '../BottomBar/BottomBar.dart';
 import 'package:google_sign_in/google_sign_in.dart' as gsign;
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 class PageNotifier extends Notifier<int> {
   final storage = GetStorage();
   bool isLoading = false;
@@ -80,7 +81,6 @@ class PageNotifier extends Notifier<int> {
         {"provider": "google", "token": idToken},
         context,
       );
-      print(response);
       if (response["success"] == true) {
         storage.write("token", response["data"]["token"]);
         storage.write("user", response["data"]["user"]);
@@ -98,6 +98,51 @@ class PageNotifier extends Notifier<int> {
       if (e.code == gsign.GoogleSignInExceptionCode.canceled) {
         print('ℹ️ User cancelled - normal');
       }
+    }
+  }
+
+  Future<void> signInWithApple(BuildContext context) async {
+    try {
+      TextLanguage textLanguage = TextLanguage();
+
+      final credential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      final identityToken = credential.identityToken;
+
+      if (identityToken == null) return;
+
+      final response = await ApiService().post(
+        "v1/auth/social-login",
+        {
+          "provider": "apple",
+          "token": identityToken,
+        },
+        context,
+      );
+
+      if (response["success"] == true) {
+        storage.write("token", response["data"]["token"]);
+        storage.write("user", response["data"]["user"]);
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => BottomBar()),
+              (route) => false,
+        );
+      } else {
+        ToastMessages(
+          context,
+          textLanguage.GetWord("خطأ في المصداقية"),
+          Colors.red,
+          Colors.white,
+        );
+      }
+    } catch (e) {
+      print("❌ Apple SignIn Error: $e");
     }
   }
 

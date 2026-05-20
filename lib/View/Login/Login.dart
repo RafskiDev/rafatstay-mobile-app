@@ -122,6 +122,7 @@ class Login extends ConsumerWidget {
                 Row(
                   mainAxisAlignment:MainAxisAlignment.center,
                   children: [
+                    /*
                     ImageButton(
                       context: context,
                       widthFactor:sizes.GetHeight()*4,
@@ -142,6 +143,8 @@ class Login extends ConsumerWidget {
                          */
                       },
                     ),
+
+                     */
                     if (Theme.of(context).platform == TargetPlatform.android)
                     ImageButton(
                       context: context,
@@ -158,8 +161,7 @@ class Login extends ConsumerWidget {
                       widthFactor:sizes.GetHeight()*4,
                       imagePath: "assets/images/apple.png",
                       onPressed: ()async {
-                       // await ref.read(pageProvider.notifier).signOut();
-                        print("apple button pressed");
+                        await ref.read(pageProvider.notifier).signInWithApple(context);
                       },
                     ),
                   ],
