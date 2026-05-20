@@ -1,12 +1,15 @@
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import '../Service/ApiService.dart';
 import '../Utils/Sizes.dart';
 import '../Utils/TextLanguage.dart';
 import '../Utils/Them.dart';
 import '../View/MealDetails/MealDetails.dart';
+import 'ShowLoading.dart';
 import 'WidgetButton.dart';
 import 'package:get_storage/get_storage.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 class ContentCard extends StatelessWidget {
   final bool liked;
   final VoidCallback onLikeTap;
@@ -80,6 +83,38 @@ class ContentCard extends StatelessWidget {
               height: height * 0.45,
               child: Stack(
                 children: [
+                  //صوره العرض تبطع المطعم
+                  ClipRRect(
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(25),
+                      topRight: Radius.circular(25),
+                    ),
+                    child: CachedNetworkImage(
+                      imageUrl:"$showImage$imagePath",
+                      fit: BoxFit.cover,
+                      width: double.infinity,
+                      height: double.infinity,
+                      placeholder: (context, url) =>  Center(
+                        child:showLoading(),
+                      ),
+                      //ضفت هذا حتى لا يطبع الخطا
+                      errorListener: (dynamic exception) {
+                      },
+                      errorWidget: (context, url, error) {
+                        return Container(
+                          width: double.infinity,
+                          height: double.infinity,
+                          color: const Color(0xFFEEEEEE),
+                          child: const Icon(
+                            Icons.image_not_supported,
+                            size: 40,
+                            color: Colors.grey,
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  /*
                   ClipRRect(
                     borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(25),
@@ -92,6 +127,8 @@ class ContentCard extends StatelessWidget {
                       height: double.infinity,
                     ),
                   ),
+
+                   */
                   if (showIcon)
                     Positioned(
                       top: 8,
@@ -126,6 +163,7 @@ class ContentCard extends StatelessWidget {
                 children: [
                   Row(
                     children: [
+                      //هذي صوره لوكو تبع المطعم
                       CircularButton(
                         size:22,
                         onTap: () {},

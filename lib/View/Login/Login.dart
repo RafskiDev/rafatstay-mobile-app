@@ -27,7 +27,7 @@ class Login extends ConsumerWidget {
         child: SingleChildScrollView(
           physics: const NeverScrollableScrollPhysics(),
           child: Container(
-            padding: EdgeInsets.symmetric(horizontal: sizes.GetWidth()*5,vertical:sizes.GetHeight()*5),
+            padding: EdgeInsets.symmetric(horizontal: sizes.GetWidth()*5),
             child: Column(
               children: [
                 Row(
@@ -142,6 +142,7 @@ class Login extends ConsumerWidget {
                          */
                       },
                     ),
+                    if (Theme.of(context).platform == TargetPlatform.android)
                     ImageButton(
                       context: context,
                       widthFactor:sizes.GetHeight()*4,
@@ -151,6 +152,7 @@ class Login extends ConsumerWidget {
                         await ref.read(pageProvider.notifier).signIn(context);
                       },
                     ),
+                    if (Theme.of(context).platform == TargetPlatform.iOS)
                     ImageButton(
                       context: context,
                       widthFactor:sizes.GetHeight()*4,

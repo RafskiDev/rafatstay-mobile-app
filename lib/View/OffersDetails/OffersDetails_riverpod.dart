@@ -2,11 +2,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:rafatstay/Utils/TextLanguage.dart';
 import '../../Service/ApiService.dart';
 import '../../Utils/Them.dart' show Themes;
 import '../../Utils/ToastMessage.dart';
 class PageNotifier extends Notifier<int> {
+  final box = GetStorage();
   TextEditingController searchController = TextEditingController();
   FocusNode searchNode = FocusNode();
   int selectedIndex = 0;
@@ -70,7 +72,7 @@ class PageNotifier extends Notifier<int> {
           ),
         );
       }
-      print(offerData);
+     // print(offerData);
       ref.notifyListeners();
     } else {
       ToastMessages(

@@ -67,7 +67,6 @@ class _FavoriteState extends ConsumerState<Favorite> {
                     final favorite = favoriteBranches[i];
                     final item = favorite['item'] ?? {};
                     final type = favorite['type'] ?? 'branch';
-                    print(favorite);
                     return Padding(
                       padding: EdgeInsets.only(right: sizes.GetWidth() * 1),
                       child: ContentCard(
@@ -87,7 +86,7 @@ class _FavoriteState extends ConsumerState<Favorite> {
                           ],
                         ),
                         showIcon: true,
-                        imagePath: "assets/images/image6.png",
+                        imagePath: item["image"] ?? "",
                         title: item["name"] ?? "",
                         description: item["description"] ?? "لايوجد بينات",
                         circleImagePath: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
@@ -162,7 +161,7 @@ class _FavoriteState extends ConsumerState<Favorite> {
                           ],
                         ),
                         showIcon: true,
-                        imagePath: "assets/images/image6.png",
+                        imagePath: item["image"] ?? "",
                         title: item["name"] ?? "",
                         subTitle: item["business_name"] ?? "",
                         description: item["description"] ?? "",

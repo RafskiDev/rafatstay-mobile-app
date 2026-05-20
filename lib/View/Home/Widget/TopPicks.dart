@@ -149,7 +149,7 @@ class Toppicks extends ConsumerWidget {
                           favoriteStatus[itemId] ??
                               false;
                       return ContentCard(
-                        imagePath:"assets/images/image6.png",
+                        imagePath:item["image"]??"",
                         title: item[
                         "business_name"] ??
                             "",

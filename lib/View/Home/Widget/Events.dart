@@ -68,11 +68,12 @@ class Events extends ConsumerWidget {
             Expanded(
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
-                itemCount:events.take(3).length,
+                itemCount:events.length,
                 itemBuilder: (context, index) {
                   final item = events[index];
                   final String date = DateTimeHelper.extractDate(item["ends_at"]);
                   final String time = "${DateTimeHelper.extractTime(item["starts_at"])}";
+
                   return Padding(
                     padding: EdgeInsets.symmetric(
                         horizontal:
@@ -85,8 +86,8 @@ class Events extends ConsumerWidget {
                       ref: ref,
                       event: item,
                       //item["image"]
-                      imagePath:
-                          "assets/images/1c07e950ad312fdaaef1bdd4e1882d79f25c9233.png",
+                      imagePath:"assets/images/1c07e950ad312fdaaef1bdd4e1882d79f25c9233.png",
+
                       title:item["title"],
                       date:date,
                       time:"${time.split(" ")[1]} "+time.split(" ")[2],

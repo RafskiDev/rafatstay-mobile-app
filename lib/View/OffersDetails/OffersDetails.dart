@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rafatstay/Service/ApiService.dart';
 import 'package:rafatstay/View/MakeItYourWay/MakeItYourWay.dart';
 import 'package:rafatstay/View/SetYourBookingDetails/SetYourBookingDetails.dart';
 import '../../Utils/Sizes.dart';
@@ -82,6 +83,8 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
         countdownText = "انتهى العرض";
       }
     }
+    final images=offerData?["image_urls"]??[];
+    final language = ref.read(OffersDetails_riverpod.notifier).box.read("Language");
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
       body: offerData == null
@@ -97,28 +100,44 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
                     bottomRight: Radius.circular(20),
                   ),
                   child: CarouselSlider(
-                    items: items.isEmpty
+                    items: images.isEmpty
                         ? [
                       Container(
                         color: theme.GetColor("primaryS"),
                         child: const Center(
-                          child: Icon(Icons.image_not_supported,
-                              size: 50),
+                          child: Icon(Icons.image_not_supported, size: 50),
                         ),
                       )
                     ]
-                        : items.map((item) {
-                      final img = item["image"] ?? "";
-                      return img.startsWith("http")
+                        : images.map<Widget>((img) {
+                      final url = img.toString();
+                      return url.startsWith("http")
                           ? Image.network(
-                        img,
+                          url,
                         fit: BoxFit.cover,
                         width: double.infinity,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            width: double.infinity,
+                            height: double.infinity,
+                            color:theme.GetColor("background"),
+                            child: const Icon(
+                              Icons.image_not_supported,
+                              size: 40,
+                              color: Colors.grey,
+                            ),
+                          );
+                        }
                       )
-                          : Image.asset(
-                        img,
-                        fit: BoxFit.cover,
+                          : Container(
                         width: double.infinity,
+                        height: double.infinity,
+                        color: const Color(0xFFEEEEEE),
+                        child: const Icon(
+                          Icons.image_not_supported,
+                          size: 40,
+                          color: Colors.grey,
+                        ),
                       );
                     }).toList(),
                     options: CarouselOptions(
@@ -150,9 +169,9 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
               ],
             ),
             SizedBox(height: sizes.GetHeight() * 2),
-            notifier.carouselItems.isNotEmpty
+            images.isNotEmpty
                 ? CarouselIndicator(
-              itemCount: notifier.carouselItems.length,
+              itemCount: images.length,
               currentIndex: currentIndex,
               activeColor: theme.GetColor("secondary500"),
               inactiveColor: theme.GetColor("primaryS"),
@@ -270,7 +289,7 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
                   Align(
                     alignment: Alignment.centerRight,
                     child: Text(
-                      offerData["description"] ?? "",
+                     language==0? offerData["description_en"] ?? "": offerData["description"] ?? "",
                       style:
                       TextStyle(color: theme.GetColor("primaryS")),
                     ),

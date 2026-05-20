@@ -558,7 +558,7 @@ class _HomeState extends ConsumerState<Home> {
                                       SvgPicture.asset("assets/icon/SAR.svg", color: theme.GetColor("secondaryPrimary")),
                                     ]),
                                     showIcon: true,
-                                    imagePath: "assets/images/image6.png",
+                                    imagePath: dishs["image"]??"",
                                     title: dishTitle,
                                     subTitle: dishSubTitle,
                                     description: dishDesc,

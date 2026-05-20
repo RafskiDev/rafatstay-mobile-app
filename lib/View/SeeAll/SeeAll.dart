@@ -281,7 +281,7 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                   final item = currentList[index];
                   return ContentCard(
                     showIcon: true,
-                    imagePath: "assets/images/image6.png",
+                    imagePath:item["image"]??"",
                     title: item["business_name"] ?? "",
                     description: item["name"] ?? "",
                     circleImagePath:
@@ -397,9 +397,9 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                   final item = favorite["item"] ?? {};
                   return ContentCard(
                     showIcon: true,
-                    imagePath: "assets/images/image6.png",
+                    imagePath:item["image"]??"",
                     title: item["business_name"] ?? "",
-                    description: "${item["description"] ?? ""}",
+                    description: "${item["description"] ?? "لا يوجد بينات"}",
                     circleImagePath:
                     "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
                     buttonText: textLanguage.GetWord("يكتشف"),
@@ -533,7 +533,7 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                   final String dishPrice =dish["price"]?.toString() ?? "0";
                   return ContentCard(
                     showIcon: true,
-                    imagePath: "assets/images/image6.png",
+                    imagePath:dish["image"]??"",
                     title: dish["business_name"]?.toString() ?? "",
                     description: dish["description"]?.toString() ?? "",
                     circleImagePath:

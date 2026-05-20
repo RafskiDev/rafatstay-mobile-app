@@ -37,12 +37,9 @@ class Favorites extends ConsumerWidget {
                 : (favorites["item"]?["business_name"] ??
                 favorites["item"]?["name"] ?? "").toString();
              */
-            final String favImage = (favorites["image"] ??
-                favorites["branch"]?["image"] ??
-                "assets/images/image6.png").toString();
+            final String favImage = favorites["item"]["image"].toString();
             //  print(favorites["item"]);
             final business_name=favorites["item"]?["business_name"]??"";
-           // print(favorites);
             return Padding(
               padding: EdgeInsets.only(
                   right: sizes.GetWidth() * 1),
@@ -157,11 +154,7 @@ class Favorites extends ConsumerWidget {
                       favorites["item"]?["id"]?.toString() ?? "0"
                   ) ?? 0;
                   if (itemId == 0) return;
-
-                  // ✅ اقرأ الـ type من البيانات
                   final String type = (favorites["type"] ?? "branch").toString();
-
-                  // ✅ toggleLike مرة وحدة — هو يتكفل بالحذف من favorite
                   ref.read(Home_riverpod.notifier).toggleLike(
                     itemId,
                     i,

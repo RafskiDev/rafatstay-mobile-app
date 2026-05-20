@@ -21,7 +21,6 @@ class PageNotifier extends Notifier<int> {
       data,
       context,
     );
-    print(response);
     if(response["success"]==true){
       Navigator.push(
         context,
@@ -32,11 +31,7 @@ class PageNotifier extends Notifier<int> {
           reverseTransitionDuration: Duration.zero,
         ),
       );
-    }else{
-      print(response['success']);
     }
-
-
     return response;
   }
 }

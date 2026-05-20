@@ -21,78 +21,80 @@ class language extends ConsumerWidget {
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
       appBar:buildCustomAppBar(context,textLanguage.GetWord("اختر اللغة")),
-      body: Container(
-        width:double.infinity,
-        child: Padding(
-          padding: EdgeInsets.symmetric(
-            horizontal: sizes.GetWidth() * 2,
-          ),
-          child: ListView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: items.length,
-            padding: const EdgeInsets.all(8),
-            itemBuilder: (context, index) {
-              final isSelected = selectedIndex == index;
+      body: SafeArea(
+        child: Container(
+          width:double.infinity,
+          child: Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: sizes.GetWidth() * 2,
+            ),
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: items.length,
+              padding: const EdgeInsets.all(8),
+              itemBuilder: (context, index) {
+                final isSelected = selectedIndex == index;
 
-              return InkWell(
-                onTap: () {
-                  ref.read(language_riverpod.notifier).selectIndex(index);
-                },
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  textDirection: items[index]["code"] == "ar"
-                      ? TextDirection.rtl
-                      : TextDirection.ltr,
-                  children: [
-                    Container(
-                      width:sizes.GetWidth()*35,
-                      margin: EdgeInsets.symmetric(vertical: sizes.GetHeight() * 0.2),
-                      padding: EdgeInsets.symmetric(
-                        horizontal: sizes.GetWidth() * 1.2,
-                        vertical: sizes.GetHeight() * 0.6,
-                      ),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: isSelected
-                              ? theme.GetColor("textPrimary")
-                              : theme.GetColor("textSecondary"),
-                          width: 0.8,
+                return InkWell(
+                  onTap: () {
+                    ref.read(language_riverpod.notifier).selectIndex(index);
+                  },
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisSize: MainAxisSize.min,
+                    textDirection: items[index]["code"] == "ar"
+                        ? TextDirection.rtl
+                        : TextDirection.ltr,
+                    children: [
+                      Container(
+                        width:sizes.GetWidth()*35,
+                        margin: EdgeInsets.symmetric(vertical: sizes.GetHeight() * 0.2),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: sizes.GetWidth() * 1.2,
+                          vertical: sizes.GetHeight() * 0.6,
+                        ),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: isSelected
+                                ? theme.GetColor("textPrimary")
+                                : theme.GetColor("textSecondary"),
+                            width: 0.8,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          textDirection: items[index]["code"] == "ar"
+                              ? TextDirection.rtl
+                              : TextDirection.ltr,
+                          children: [
+                            CustomRadioWidget<int>(
+                              value: index,
+                              groupValue: selectedIndex,
+                              onChanged: (value)async {
+                                ref.read(language_riverpod.notifier).selectIndex(value);
+                                if(ref.read(language_riverpod.notifier).storage.read("token")!=null){
+                                 await ref.read(language_riverpod.notifier).updatePreferences(context,items[index]["code"].toString());
+                                }
+                              },
+                              width: sizes.GetHeight() * 2.4,
+                              height: sizes.GetHeight() * 2.4,
+                            ),
+                            SizedBox(width: sizes.GetWidth() * 1),
+                            Text(
+                              items[index]["label"].toString(),
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                          ],
                         ),
                       ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        textDirection: items[index]["code"] == "ar"
-                            ? TextDirection.rtl
-                            : TextDirection.ltr,
-                        children: [
-                          CustomRadioWidget<int>(
-                            value: index,
-                            groupValue: selectedIndex,
-                            onChanged: (value)async {
-                              ref.read(language_riverpod.notifier).selectIndex(value);
-                              if(ref.read(language_riverpod.notifier).storage.read("token")!=null){
-                               await ref.read(language_riverpod.notifier).updatePreferences(context,items[index]["code"].toString());
-                              }
-                            },
-                            width: sizes.GetHeight() * 2.4,
-                            height: sizes.GetHeight() * 2.4,
-                          ),
-                          SizedBox(width: sizes.GetWidth() * 1),
-                          Text(
-                            items[index]["label"].toString(),
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
+                    ],
+                  ),
+                );
 
-            },
+              },
+            ),
           ),
         ),
       ),
