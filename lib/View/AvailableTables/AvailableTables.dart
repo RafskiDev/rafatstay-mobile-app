@@ -79,7 +79,7 @@ class _AvailableTablesState extends ConsumerState<AvailableTables> {
                                crossAxisCount: 3,
                                crossAxisSpacing: sizes.GetWidth() * 1,
                                mainAxisSpacing: sizes.GetWidth() * 1,
-                               mainAxisExtent: sizes.GetHeight() * 21,
+                               mainAxisExtent: sizes.GetHeight() * 20,
                              ),
                              itemCount: notifier.tables.length,
                              itemBuilder: (context, index) {
@@ -87,10 +87,7 @@ class _AvailableTablesState extends ConsumerState<AvailableTables> {
                                final isSelected = notifier.selectedTableIndex == index;
                                return TableCard(
                                  title: "Table #${table['id']?.toString() ?? (index + 1).toString()}",
-                                 image: (table['media_paths'] is List &&
-                                     (table['media_paths'] as List).isNotEmpty)
-                                     ? "https://www.rafatstay.com${(table['media_paths'] as List)[0]}"
-                                     : "assets/images/2509e72c5c9928d0f7ab2e1d37bd28c83c2c2603.png",
+                                 image:table["photo_url"]??"",
                                  subtitle: table['location_type']?.toString()??"",
                                  price: table['reservation_fee']?.toString()  ?? "0",
                                  isChecked: isSelected,
@@ -100,7 +97,7 @@ class _AvailableTablesState extends ConsumerState<AvailableTables> {
                                    ref.read(AvailableTables_riverpod.notifier).selectTable(index,table['is_available']);
                                  },
                                  isAvailable:table['is_available'],
-                                 idTable:table["id"]??1,
+                                 idTable:table["id"]??0,
                                  bookingData: widget.bookingData,
                                );
                              },
@@ -277,7 +274,6 @@ class TableCard extends StatelessWidget {
     final sizes = Sizes(context);
     final theme = Themes();
     return Container(
-      width: sizes.GetWidth() * 33,
       decoration: BoxDecoration(
         border: Border.all(
           color: isChecked ? theme.GetColor("primaryA") : theme.GetColor("secondary"),
@@ -298,16 +294,24 @@ class TableCard extends StatelessWidget {
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(16),
-              child: isNetwork
+              child: (image.isNotEmpty)
                   ? Image.network(
                 image,
                 fit: BoxFit.cover,
-                errorBuilder: (_, __, ___) => Image.asset(
-                  "assets/images/2509e72c5c9928d0f7ab2e1d37bd28c83c2c2603.png",
-                  fit: BoxFit.cover,
+                height: sizes.GetHeight() * 8.5,
+                errorBuilder: (_, __, ___) => Container(
+                  width: double.infinity,
+                  height: sizes.GetHeight() * 8.5,
+                  color: const Color(0xFFEEEEEE),
+                  child: const Icon(Icons.image_not_supported, size: 30, color: Colors.grey),
                 ),
               )
-                  : Image.asset(image, fit: BoxFit.cover),
+                  : Container(
+                width: double.infinity,
+                height: sizes.GetHeight() * 8.5,
+                color: const Color(0xFFEEEEEE),
+                child: const Icon(Icons.image_not_supported, size: 30, color: Colors.grey),
+              ),
             ),
           ),
           SizedBox(height: sizes.GetHeight() * 1),
@@ -316,14 +320,19 @@ class TableCard extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(
-                  title,
-                  style: TextStyle(color: theme.GetColor("primary"), fontWeight: FontWeight.w600),
+                Flexible(
+                  child: Text(
+                    title,
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                    style: TextStyle(fontSize:12,color: theme.GetColor("primary"), fontWeight: FontWeight.w600),
+                  ),
                 ),
                 //
                 isAvailable?InkWell(
                   onTap: onTap,
                   child: SvgPicture.asset(
+                    height: sizes.GetHeight() * 1.9,
                     color: isChecked ? theme.GetColor("primaryA") : theme.GetColor("textSecondary"),
                     isChecked ? "assets/icon/BOXCHECK_ON.svg" : "assets/icon/BOXCHECK_OFF.svg",
                   ),
@@ -334,25 +343,38 @@ class TableCard extends StatelessWidget {
           Padding(
             padding: EdgeInsets.all(sizes.GetHeight() * 0.3),
             child: Row(
-              mainAxisAlignment:price!=null?MainAxisAlignment.spaceAround:MainAxisAlignment.start,
+              mainAxisAlignment: price != null ? MainAxisAlignment.spaceAround : MainAxisAlignment.start,
               children: [
-                Row(
-                  children: [
-                    SvgPicture.asset("assets/icon/LocationTable.svg"),
-                    Text(subtitle, style: const TextStyle(fontSize: 12)),
-                  ],
+                Flexible(
+                  child: Row(
+                    children: [
+                      SvgPicture.asset("assets/icon/LocationTable.svg",height: sizes.GetHeight() * 1.2),
+                      SizedBox(width: sizes.GetWidth() * 0.5),
+                      Flexible(
+                        child: Text(
+                          subtitle,
+                          style: const TextStyle(fontSize: 10),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
-                if(price!=null)...[
+                if (price != null) ...[
                   Row(
                     children: [
-                      SvgPicture.asset("assets/icon/dollar.svg"),
+                      SvgPicture.asset(
+                          "assets/icon/dollar.svg",
+                        height: sizes.GetHeight() * 1.2,
+                      ),
                       SizedBox(width: sizes.GetWidth() * 0.5),
-                      Text(price!, style: const TextStyle(fontSize: 12)),
+                      Text(price!, style: const TextStyle(fontSize: 10)),
                       SizedBox(width: sizes.GetWidth() * 0.5),
                       SvgPicture.asset(
                         "assets/icon/SAR.svg",
                         color: theme.GetColor("textPrimary"),
-                        height: sizes.GetHeight() * 1.7,
+                        height: sizes.GetHeight() * 1.2,
                       ),
                     ],
                   ),
@@ -381,8 +403,9 @@ class TableCard extends StatelessWidget {
                 );
               },
               child: Text(
-                "Table Details",
+                TextLanguage().GetWord("تفاصيل الطاولة"),
                 style: TextStyle(
+                  fontSize: sizes.GetHeight() * 1.5,
                   decoration: TextDecoration.underline,
                   color: theme.GetColor("primary"),
                   decorationColor: theme.GetColor("primary"),

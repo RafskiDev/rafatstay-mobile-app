@@ -13,6 +13,7 @@ import '../../Widget/ShowLoading.dart';
 import '../../Widget/WidgetAppBar.dart';
 import '../../Widget/WidgetButton.dart';
 import '../MakeItYourWay/MakeItYourWay.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'MealDetails_riverpod.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 class MealDetails extends ConsumerStatefulWidget {
@@ -46,9 +47,9 @@ class _MealDetailsState extends ConsumerState<MealDetails> {
     final currentIndex = ref.watch(MealDetails_riverpod.notifier).currentIndex;
     final slecteds=ref.read(MealDetails_riverpod.notifier).slected;
      final mealData = ref.watch(MealDetails_riverpod.notifier).mealData;
-     final protein = (mealData?["protein"] as num?)?.toDouble() ?? 0;
-     final carbs = (mealData?["carbs"] as num?)?.toDouble() ?? 0;
-     final fats = (mealData?["fats"] as num?)?.toDouble() ?? 0;
+     final protein = double.tryParse(mealData?["protein"]?.toString() ?? "") ?? 0.0;
+     final carbs   = double.tryParse(mealData?["carbs"]?.toString()   ?? "") ?? 0.0;
+     final fats    = double.tryParse(mealData?["fats"]?.toString()    ?? "") ?? 0.0;
      final total = protein + carbs + fats;
      final allergens = mealData?["allergens"] as List? ?? [];
      final branches = ref.watch(MealDetails_riverpod.notifier).branches;
@@ -74,14 +75,26 @@ class _MealDetailsState extends ConsumerState<MealDetails> {
                         child: CarouselSlider(
                           items: photos.map((photo) {
                             final imageUrl = photo['url'];
-                            return Image.network(
-                              "$showImage$imageUrl", // ← عدل الدومين هنا
+                            return CachedNetworkImage(
+                              imageUrl:"$showImage${imageUrl??""}",
                               fit: BoxFit.cover,
                               width: double.infinity,
-                              errorBuilder: (context, error, stackTrace) {
+                              placeholder: (context, url) =>  Center(
+                                child:showLoading(),
+                              ),
+                              //ضفت هذا حتى لا يطبع الخطا
+                              errorListener: (dynamic exception) {
+                              },
+                              errorWidget: (context, url, error) {
                                 return Container(
-                                  color: Colors.grey,
-                                  child: Center(child: Icon(Icons.broken_image)),
+                                  width: double.infinity,
+                                  height: sizes.GetHeight() * 14,
+                                  color: const Color(0xFFEEEEEE),
+                                  child: const Icon(
+                                    Icons.image_not_supported,
+                                    size: 40,
+                                    color: Colors.grey,
+                                  ),
                                 );
                               },
                             );
@@ -379,6 +392,7 @@ class Description extends StatelessWidget {
     );
   }
 }
+
 class Ingredients extends StatelessWidget {
   final WidgetRef ref;
 
@@ -387,37 +401,38 @@ class Ingredients extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mealData = ref.watch(MealDetails_riverpod.notifier).mealData;
-
     final ingredients = List<String>.from(mealData?["ingredients"] ?? []);
-
     final sizes = Sizes(context);
 
-    if (ingredients.isEmpty) {
-      return SizedBox.shrink();
-    }
+    if (ingredients.isEmpty) return SizedBox.shrink();
 
-    return Row(
-      children: ingredients.map((ing) {
-        return Padding(
-          padding: EdgeInsets.only(right: sizes.GetWidth()*2),
-          child: FoodItemCard(
-            label: ing,
-            weight: '',
-            imageTitle: "assets/icon/SpaghettiPasta.svg",
-            imageSubTitle: "assets/icon/kitchenScale.svg",
-          ),
-        );
-      }).toList(),
+    return SizedBox(
+      height: sizes.GetHeight() * 15,
+      child: ListView.builder(
+        scrollDirection: Axis.horizontal,
+        itemCount: ingredients.length,
+        itemBuilder: (context, index) {
+          return Padding(
+            padding: EdgeInsets.only(right: sizes.GetWidth() * 1.5),
+            child: FoodItemCard(
+              label: ingredients[index],
+              weight: '',
+              imageTitle: "assets/icon/SpaghettiPasta.svg",
+              imageSubTitle: "assets/icon/kitchenScale.svg",
+            ),
+          );
+        },
+      ),
     );
   }
 }
+
 class Instructions extends ConsumerWidget {
   const Instructions({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final instructions = ref.watch(MealDetails_riverpod.notifier).mealData?["instructions"] ?? "";
-
     if (instructions.isEmpty) {
       return SizedBox.shrink();
     }

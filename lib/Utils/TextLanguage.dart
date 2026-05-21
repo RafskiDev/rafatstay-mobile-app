@@ -12,9 +12,9 @@ class TextLanguage {
   dynamic GetWord(key) {
     Language = storage.read("Language");
     if (Language == 1) {
-      return ArLanguage[key];
+      return ArLanguage[key]?? key;
     } else {
-      return EnLanguag[key];
+      return EnLanguag[key]?? key;
     }
   }
 }

@@ -299,7 +299,6 @@ class MealCard extends StatelessWidget {
                   topRight: Radius.circular(sizes.GetWidth() * 4),
                 ),
                 child: InkWell(
-                  //item["image"]
                   onTap:(){
                     Navigator.push(
                       context,
@@ -311,11 +310,29 @@ class MealCard extends StatelessWidget {
                       ),
                     );
                   },
-                  child: Image.asset(
-                    "assets/images/A_Tazaj.png",
+                  child: CachedNetworkImage(
+                    imageUrl:"$showImage${item["image"]??""}",
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: sizes.GetHeight() * 14,
+                    placeholder: (context, url) =>  Center(
+                      child:showLoading(),
+                    ),
+                    //ضفت هذا حتى لا يطبع الخطا
+                    errorListener: (dynamic exception) {
+                    },
+                    errorWidget: (context, url, error) {
+                      return Container(
+                        width: double.infinity,
+                        height: sizes.GetHeight() * 14,
+                        color: const Color(0xFFEEEEEE),
+                        child: const Icon(
+                          Icons.image_not_supported,
+                          size: 40,
+                          color: Colors.grey,
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -344,7 +361,7 @@ class MealCard extends StatelessWidget {
                 children: [
                   Center(
                     child: Text(
-                      item["title"],
+                      item["title"]??"",
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
@@ -365,23 +382,43 @@ class MealCard extends StatelessWidget {
                     text: "${textLanguage.GetWord("مباع")} ${item["sold_count"]}",
                     sizes: sizes,
                   ):Container(),
-                  item["time"]!=null?Row(
-                    children: [
-                      SvgPicture.asset(
-                        "assets/icon/MealTime.svg",
-                      ),
-                      SizedBox(width: sizes.GetWidth() * 1),
-                      Expanded(child: Text(item["time"],style: TextStyle(fontSize: sizes.GetHeight() * 1.5))),
-                      SizedBox(width: sizes.GetWidth() * 1),
-                      if (item["is_spicy"] == true)
-                        SvgPicture.asset("assets/icon/HighTemperature.svg")
-                      else if (item["is_spicy"] == false)
-                        SvgPicture.asset("assets/icon/ColdTemperature.svg")
-                      else
-                        SizedBox.shrink(),
-
-                    ],
-                  ):Container(),
+                  Expanded(
+                    child: Row(
+                      children: [
+                        SvgPicture.asset(
+                          "assets/icon/MealTime.svg",
+                          width: sizes.GetHeight() * 1.6,
+                          height: sizes.GetHeight() * 1.6,
+                        ),
+                        SizedBox(width: sizes.GetWidth() * 1),
+                        Flexible(
+                          child: Text(
+                            item["time"] != null
+                                ? "${item["time"]} mins"
+                                : "0-0 mins",
+                            style: TextStyle(fontSize: sizes.GetHeight() * 1.5),
+                            overflow: TextOverflow.ellipsis,
+                            maxLines: 1,
+                          ),
+                        ),
+                        SizedBox(width: sizes.GetWidth() * 1),
+                        if (item["is_spicy"] == true)
+                          SvgPicture.asset(
+                            "assets/icon/HighTemperature.svg",
+                            width: sizes.GetHeight() * 1.8,
+                            height: sizes.GetHeight() * 1.8,
+                          )
+                        else if (item["is_spicy"] == false)
+                          SvgPicture.asset(
+                            "assets/icon/ColdTemperature.svg",
+                            width: sizes.GetHeight() * 1.8,
+                            height: sizes.GetHeight() * 1.8,
+                          )
+                        else
+                          SizedBox.shrink(),
+                      ],
+                    ),
+                  ),
                   SizedBox(height: sizes.GetHeight() * 1),
                   Container(
                     decoration: BoxDecoration(
@@ -462,7 +499,8 @@ class InfoRow extends StatelessWidget {
       children: [
         SvgPicture.asset(
           icon,
-          height: sizes.GetHeight() * 1.5,
+          width: sizes.GetHeight() * 1.6,
+          height: sizes.GetHeight() * 1.6,
           color:color??theme.GetColor("textPrimary"),
         ),
         SizedBox(width: sizes.GetWidth() * 1),

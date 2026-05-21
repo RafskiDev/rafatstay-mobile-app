@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import '../../Service/ApiService.dart';
 import '../../Utils/Sizes.dart';
 import '../../Utils/TextLanguage.dart';
 import '../../Utils/Them.dart';
@@ -34,15 +35,22 @@ class _TableDetailsState extends ConsumerState<TableDetails> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      String extractedDate = widget.startTime.split(' ').first;
+      // استخراج التاريخ بأمان
+      final parts = widget.startTime.split(' ');
+      final String extractedDate = parts.isNotEmpty ? parts.first : '';
 
-      // 2. استخراج الوقت الصافي: "12:00:00"
-      String fullTimeStart = widget.startTime.split(' ').last;
-      String fullTimeEnd = widget.endTime.split(' ').last;
+      final String fullTimeStart = parts.length > 1 ? parts.last : widget.startTime;
+      final endParts = widget.endTime.split(' ');
+      final String fullTimeEnd = endParts.length > 1 ? endParts.last : widget.endTime;
 
-      // 3. قص الثواني للحصول على صيغة H:i المطلوبة: "12:00"
-      String formattedStart = fullTimeStart.substring(0, 5);
-      String formattedEnd = fullTimeEnd.substring(0, 5);
+      // قص الثواني بأمان
+      final String formattedStart = fullTimeStart.length >= 5
+          ? fullTimeStart.substring(0, 5)
+          : fullTimeStart;
+      final String formattedEnd = fullTimeEnd.length >= 5
+          ? fullTimeEnd.substring(0, 5)
+          : fullTimeEnd;
+
       ref.read(TableDetails_riverpod.notifier).fetchTableDetails(
         context,
         widget.branchId,
@@ -66,223 +74,232 @@ class _TableDetailsState extends ConsumerState<TableDetails> {
     final sizes = Sizes(context);
     final theme = Themes();
 
-    // استخراج البيانات من tableDetails (إذا كانت موجودة)
     final table = tableDetails?['table'] as Map<String, dynamic>?;
     final features = tableDetails?['features'] as Map<String, dynamic>?;
     final cta = tableDetails?['cta'] as Map<String, dynamic>?;
 
     final price = table?['reservation_fee'] ?? 0;
-    final capacity = table?['capacity'] ?? 0;
     final statusCode = table?['status']?['code'] ?? 'unavailable';
     final statusLabel = table?['status']?['label'] ?? 'غير متاحة';
     final statusColor = statusCode == 'available' ? Colors.green : Colors.red;
     final locationLabel = table?['location_label'] ?? '';
     final capacityLabel = table?['capacity_label'] ?? '';
-    final photoUrl = table?['photo_url'];
-    final gallery = tableDetails?['table']?['gallery'] as List? ?? [];
 
-    // قائمة الصور لعرضها في Carousel
-    final List<String> imageUrls = [];
-    if (photoUrl != null && photoUrl.isNotEmpty) imageUrls.add(photoUrl);
-    if (gallery.isNotEmpty) imageUrls.addAll(gallery.cast<String>());
-
-    // قائمة الميزات من الـ API
+   // final rawPhotoUrl = table?['photo_url']?.toString() ?? '';
+    final gallery = (table?['gallery'] as List? ?? []);
     final List<Map<String, dynamic>> featureItems =
         (features?['items'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-
+    print(table);
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
       body: isLoading
-          ?  Center(child: showLoading())
-          : Column(
-        children: [
-          Stack(
-            children: [
-              ClipRRect(
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(20),
-                  bottomRight: Radius.circular(20),
-                ),
-                child: CarouselSlider(
-                  items: imageUrls.isEmpty
-                      ? [
-                    Container(
-                      color: theme.GetColor("primaryS"),
-                      child: const Center(
-                        child: Icon(Icons.image_not_supported,
-                            size: 50),
-                      ),
-                    )
-                  ]
-                      : imageUrls.map((url) {
-                    return Image.network(
-                      url,
-                      fit: BoxFit.cover,
-                      width: double.infinity,
-                    );
-                  }).toList(),
-                  options: CarouselOptions(
-                    height: sizes.GetHeight() * 35,
-                    viewportFraction: 1,
-                    autoPlay: true,
-                  ),
-                ),
-              ),
-              Positioned(
-                top: sizes.GetHeight() * 4,
-                left: 0,
-                right: 0,
-                child: Padding(
-                  padding: EdgeInsets.symmetric(
-                      horizontal: sizes.GetWidth() * 4),
-                  child: GlassAppBar(
-                    onBack: () => Navigator.pop(context),
-                    onNotification: () {},
-                    titel: "تفاصيل الطاولة",
-                  ),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: sizes.GetHeight() * 2),
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 4),
+          ? Center(child: showLoading())
+          : SafeArea(
             child: Column(
+                    children: [
+            Stack(
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Row(
-                      children: [
-                        SvgPicture.asset("assets/icon/LikePrice.svg",
-                            color: theme.GetColor("textPrimary")),
-                        SizedBox(width: sizes.GetWidth() * 1),
-                        Text("$price"),
-                        SizedBox(width: sizes.GetWidth() * 1),
-                        SvgPicture.asset("assets/icon/SAR.svg",
-                            color: theme.GetColor("textPrimary")),
-                      ],
+                ClipRRect(
+                  borderRadius: const BorderRadius.only(
+                    bottomLeft: Radius.circular(20),
+                    bottomRight: Radius.circular(20),
+                  ),
+                  child: gallery.isEmpty
+                      ? Container(
+                    width: double.infinity,
+                    height: sizes.GetHeight() * 35,
+                    color: theme.GetColor("background"),
+                    child: const Icon(
+                      Icons.image_not_supported,
+                      size: 60,
+                      color: Colors.grey,
                     ),
-                    Row(
-                      children: [
-                        SvgPicture.asset("assets/icon/TablePerson.svg",
-                            color: theme.GetColor("textPrimary")),
-                        SizedBox(width: sizes.GetWidth() * 1),
-                        Text(capacityLabel),
-                        SizedBox(width: sizes.GetWidth() * 1),
-                      ],
-                    ),
-                    Row(
-                      children: [
-                        Container(
-                          width: sizes.GetWidth() * 3,
-                          height: sizes.GetWidth() * 3,
-                          decoration: BoxDecoration(
-                            color: statusColor,
-                            shape: BoxShape.circle,
+                  )
+                      : CarouselSlider(
+                    items: gallery.map((url) {
+                      return Image.network(
+                        url,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        errorBuilder: (_, __, ___) => Container(
+                          width: double.infinity,
+                          height: sizes.GetHeight() * 35,
+                          color: theme.GetColor("background"),
+                          child: const Icon(
+                            Icons.image_not_supported,
+                            size: 40,
+                            color: Colors.grey,
                           ),
-                        ),
-                        SizedBox(width: sizes.GetWidth() * 1),
-                        Text(statusLabel),
-                        SizedBox(width: sizes.GetWidth() * 1),
-                      ],
-                    ),
-                  ],
-                ),
-                SizedBox(height: sizes.GetHeight() * 2),
-                Row(
-                  children: [
-                    Row(
-                      children: [
-                        SvgPicture.asset("assets/icon/Chair.svg",
-                            color: theme.GetColor("textPrimary")),
-                        SizedBox(width: sizes.GetWidth() * 1),
-                        Text(capacityLabel),
-                      ],
-                    ),
-                    SizedBox(width: sizes.GetWidth() * 10),
-                    Row(
-                      children: [
-                        SvgPicture.asset("assets/icon/_location.svg",
-                            color: theme.GetColor("textPrimary")),
-                        SizedBox(width: sizes.GetWidth() * 1),
-                        Text(locationLabel),
-                      ],
-                    ),
-                  ],
-                ),
-                SizedBox(height: sizes.GetHeight() * 2),
-                Row(
-                  children: [
-                    Text(
-                      "Table Features",
-                      style: TextStyle(
-                          color: theme.GetColor("textPrimary"),
-                          fontSize: sizes.GetWidth() * 5.8,
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),
-                SizedBox(height: sizes.GetHeight() * 2),
-                SingleChildScrollView(
-                  scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: featureItems.map((feature) {
-                      final title = feature['title'] ?? '';
-                      final iconKey = feature['icon'] ?? '';
-                      String iconPath;
-                      switch (iconKey) {
-                        case 'window':
-                          iconPath = "assets/icon/Window.svg";
-                          break;
-                        case 'quiet_area':
-                          iconPath = "assets/icon/QuietArea.svg";
-                          break;
-                        case 'non_smoking':
-                          iconPath = "assets/icon/NonSmoking.svg";
-                          break;
-                        default:
-                          iconPath = "assets/icon/QuietArea.svg";
-                      }
-                      return Padding(
-                        padding: EdgeInsets.only(right: sizes.GetWidth() * 1),
-                        child: CustomSelectionCard(
-                          title: title,
-                          svg: iconPath,
                         ),
                       );
                     }).toList(),
+                    options: CarouselOptions(
+                      height: sizes.GetHeight() * 35,
+                      viewportFraction: 1,
+                      autoPlay: gallery.length > 1,
+                    ),
                   ),
                 ),
-                SizedBox(height: sizes.GetHeight() * 2),
-                Row(
-                  children: [
-                    InkWell(
-                      child: SvgPicture.asset(
-                        isChosen
-                            ? "assets/icon/BOXCHECK_OFF.svg"
-                            : "assets/icon/BOXCHECK_ON.svg",
-                        color: isChosen
-                            ? theme.GetColor("textSecondary")
-                            : theme.GetColor("primary"),
-                      ),
-                      onTap: () {
-                        notifier.changePage_();
-                        // يمكن إضافة منطق إرسال table_id إلى Provider الحجز
-                      },
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                        horizontal: sizes.GetWidth() * 4),
+                    child: GlassAppBar(
+                      onBack: () => Navigator.pop(context),
+                      onNotification: () {},
+                      titel: "تفاصيل الطاولة",
                     ),
-                    SizedBox(width: sizes.GetWidth() * 1),
-                    Text(
-                      cta?['label'] ?? "اختر هذه الطاولة",
-                      style: TextStyle(color: theme.GetColor("primary")),
-                    ),
-                  ],
+                  ),
                 ),
               ],
             ),
+            SizedBox(height: sizes.GetHeight() * 2),
+            Expanded(
+              child: SingleChildScrollView(
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                      horizontal: sizes.GetWidth() * 4),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Row(
+                            children: [
+                              SvgPicture.asset("assets/icon/LikePrice.svg",
+                                  color: theme.GetColor("textPrimary")),
+                              SizedBox(width: sizes.GetWidth() * 1),
+                              Text("$price"),
+                              SizedBox(width: sizes.GetWidth() * 1),
+                              SvgPicture.asset("assets/icon/SAR.svg",
+                                  color: theme.GetColor("textPrimary")),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              SvgPicture.asset("assets/icon/TablePerson.svg",
+                                  color: theme.GetColor("textPrimary")),
+                              SizedBox(width: sizes.GetWidth() * 1),
+                              Text(capacityLabel),
+                            ],
+                          ),
+                          Row(
+                            children: [
+                              Container(
+                                width: sizes.GetWidth() * 3,
+                                height: sizes.GetWidth() * 3,
+                                decoration: BoxDecoration(
+                                  color: statusColor,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                              SizedBox(width: sizes.GetWidth() * 1),
+                              Text(statusLabel),
+                            ],
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: sizes.GetHeight() * 2),
+                      Row(
+                        children: [
+                          Row(
+                            children: [
+                              SvgPicture.asset("assets/icon/Chair.svg",
+                                  color: theme.GetColor("textPrimary")),
+                              SizedBox(width: sizes.GetWidth() * 1),
+                              Text(capacityLabel),
+                            ],
+                          ),
+                          SizedBox(width: sizes.GetWidth() * 10),
+                          Row(
+                            children: [
+                              SvgPicture.asset("assets/icon/_location.svg",
+                                  color: theme.GetColor("textPrimary")),
+                              SizedBox(width: sizes.GetWidth() * 1),
+                              Text(locationLabel),
+                            ],
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: sizes.GetHeight() * 2),
+                      Row(
+                        children: [
+                          Text(
+                            "Table Features",
+                            style: TextStyle(
+                              color: theme.GetColor("textPrimary"),
+                              fontSize: sizes.GetWidth() * 5.8,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: sizes.GetHeight() * 2),
+                      if (featureItems.isNotEmpty)
+                        SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          child: Row(
+                            children: featureItems.map((feature) {
+                              final title = feature['title'] ?? '';
+                              final iconKey = feature['icon'] ?? '';
+                              String iconPath;
+                              switch (iconKey) {
+                                case 'window':
+                                  iconPath = "assets/icon/Window.svg";
+                                  break;
+                                case 'quiet_area':
+                                  iconPath = "assets/icon/QuietArea.svg";
+                                  break;
+                                case 'non_smoking':
+                                  iconPath = "assets/icon/NonSmoking.svg";
+                                  break;
+                                default:
+                                  iconPath = "assets/icon/QuietArea.svg";
+                              }
+                              return Padding(
+                                padding: EdgeInsets.only(
+                                    right: sizes.GetWidth() * 1),
+                                child: CustomSelectionCard(
+                                  title: title,
+                                  svg: iconPath,
+                                ),
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      SizedBox(height: sizes.GetHeight() * 2),
+                      Row(
+                        children: [
+                          InkWell(
+                            onTap: () => notifier.changePage_(),
+                            child: SvgPicture.asset(
+                              isChosen
+                                  ? "assets/icon/BOXCHECK_OFF.svg"
+                                  : "assets/icon/BOXCHECK_ON.svg",
+                              color: isChosen
+                                  ? theme.GetColor("textSecondary")
+                                  : theme.GetColor("primary"),
+                            ),
+                          ),
+                          SizedBox(width: sizes.GetWidth() * 1),
+                          Text(
+                            cta?['label'] ?? "اختر هذه الطاولة",
+                            style:
+                            TextStyle(color: theme.GetColor("primary")),
+                          ),
+                        ],
+                      ),
+                      SizedBox(height: sizes.GetHeight() * 5),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+                    ],
+                  ),
           ),
-        ],
-      ),
     );
   }
 }
@@ -290,6 +307,7 @@ class _TableDetailsState extends ConsumerState<TableDetails> {
 class CustomSelectionCard extends StatelessWidget {
   final String title;
   final String svg;
+
   const CustomSelectionCard({
     Key? key,
     this.title = "Near Window",

@@ -315,4 +315,7 @@ final EnLanguag = {
   "جميع الحجوزات":"AII Bookings",
   "الفعاليات":"Events",
   "الفرع غير متوفر":"Branch not available",
+  "سياسة الحجز":"Booking Policy",
+  "سياسة الإلغاء":"Cancellation Policy",
+  "تفاصيل الطاولة":"Table Details"
 };

@@ -68,20 +68,15 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
     final offerData = notifier.offerData;
 
     String countdownText = "-- : -- : --";
-
-    if (offerData?["expires_at"] != null) {
-      final expiry = DateTime.parse(offerData!["expires_at"]);
-      final remaining = expiry.difference(DateTime.now());
-
-      if (!remaining.isNegative) {
-        final days = remaining.inDays;
-        final hours = remaining.inHours % 24;
-        final minutes = remaining.inMinutes % 60;
-
-        countdownText = "${days}D : ${hours}H : ${minutes}M";
-      } else {
-        countdownText = "انتهى العرض";
-      }
+    final countdown = offerData?["countdown_seconds"];
+    if (countdown != null && countdown > 0) {
+      final seconds = (countdown as num).toInt();
+      final days    = seconds ~/ 86400;
+      final hours   = (seconds % 86400) ~/ 3600;
+      final minutes = (seconds % 3600) ~/ 60;
+      countdownText = "${days}D : ${hours}H : ${minutes}M";
+    } else {
+      countdownText = "${0}D : ${0}H : ${0}M";
     }
     final images=offerData?["image_urls"]??[];
     final language = ref.read(OffersDetails_riverpod.notifier).box.read("Language");
@@ -285,7 +280,26 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
                       ),
                     ],
                   ),
-                  SizedBox(height: sizes.GetHeight() * 2),
+                  /*
+                  if (offerData["terms_conditions"] != null) ...[
+                    SizedBox(height: sizes.GetHeight() * 2),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            language == 0
+                                ? offerData["terms_conditions_en"] ?? offerData["terms_conditions"] ?? ""
+                                : offerData["terms_conditions"] ?? "",
+                            style: TextStyle(
+                              color: theme.GetColor("textSecondary"),
+                              fontSize: sizes.GetHeight() * 1.5,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                   */
                   Align(
                     alignment: Alignment.centerRight,
                     child: Text(

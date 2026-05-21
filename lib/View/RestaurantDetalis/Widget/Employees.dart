@@ -2,13 +2,17 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rafatstay/Utils/TextLanguage.dart';
+import '../../../Service/ApiService.dart';
 import '../../../Utils/Sizes.dart';
 import '../../../Utils/Them.dart';
+import '../../../Widget/ShowLoading.dart';
 import '../../../Widget/WidgetButton.dart';
 import '../../EmployeeDetails/EmployeeDetails.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 Widget Employees(List myDataList,int branchId,BuildContext context){
   final sizes = Sizes(context);
   final theme = Themes();
+
   return GridView.builder(
     physics: NeverScrollableScrollPhysics(),
     shrinkWrap: true,
@@ -16,13 +20,12 @@ Widget Employees(List myDataList,int branchId,BuildContext context){
     gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
       crossAxisCount: 3,
       crossAxisSpacing: sizes.GetWidth() * 1,
-      childAspectRatio:  0.78,
+     // mainAxisSpacing: 3,
+      childAspectRatio:0.65,
     ),
     itemCount: myDataList.length,
     itemBuilder: (context, index) {
       return Container(
-        width:sizes.GetWidth()*39,
-        height:sizes.GetHeight()*22,
         decoration:BoxDecoration(
           color: Colors.transparent,
           borderRadius: BorderRadius.circular(20),
@@ -30,6 +33,7 @@ Widget Employees(List myDataList,int branchId,BuildContext context){
         child:Column(
           children: [
             Container(
+              height: sizes.GetHeight() * 9,
               decoration: BoxDecoration(
                 border: Border.all(
                   color:Themes().GetColor("secondary"),
@@ -39,9 +43,27 @@ Widget Employees(List myDataList,int branchId,BuildContext context){
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(13),
-                child: Image.asset(
-                  myDataList[index]["image"]??"assets/images/403b9eb897e7034bc86436e1b7afed428f22b3a4.png",
+                child:  CachedNetworkImage(
+                  imageUrl:"$showImage${myDataList[index]["avatar_url"]??""}",
                   fit: BoxFit.cover,
+                  placeholder: (context, url) =>  Center(
+                    child:showLoading(),
+                  ),
+                  //ضفت هذا حتى لا يطبع الخطا
+                  errorListener: (dynamic exception) {
+                  },
+                  errorWidget: (context, url, error) {
+                    return Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      color: const Color(0xFFEEEEEE),
+                      child: const Icon(
+                        Icons.image_not_supported,
+                        size: 40,
+                        color: Colors.grey,
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
@@ -50,12 +72,12 @@ Widget Employees(List myDataList,int branchId,BuildContext context){
               children: [
                 SvgPicture.asset("assets/icon/stars.svg",height:sizes.GetHeight()*2),
                 SizedBox(width: sizes.GetWidth() * 1),
-                Text(myDataList[index]["rating"].toString(),style:TextStyle(fontSize: sizes.GetHeight() * 1.4,color:theme.GetColor("textSecondary"))),
+                Text(myDataList[index]["rating"].toString(),style:TextStyle(fontSize: sizes.GetHeight() * 1.2,color:theme.GetColor("textSecondary"))),
                 SizedBox(width: sizes.GetWidth() * 1),
                 Expanded( // أضف هذا
                   child: Text(
                     "(${myDataList[index]["reviews_count"]} ${TextLanguage().GetWord("التقييمات")})",
-                    style: TextStyle(fontSize: sizes.GetHeight() * 1.4, color: theme.GetColor("textSecondary")),
+                    style: TextStyle(fontSize: sizes.GetHeight() * 1.2, color: theme.GetColor("textSecondary")),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),

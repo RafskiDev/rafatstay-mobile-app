@@ -5,23 +5,78 @@ import '../../../Utils/Sizes.dart';
 import '../../../Utils/Them.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../RestaurantDetalis_riverpod.dart';
+
 Widget Policy(BuildContext context, WidgetRef ref) {
   final policies = ref.read(RestaurantDetalis_riverpod.notifier).policies;
   if (policies.isEmpty) return const SizedBox.shrink();
+
   final policy = policies[0];
+  final cancellation = policy["cancellation"];
+  final booking = policy["booking"];
   final general = policy["general"];
-  if (general is! List || general.isEmpty) return const SizedBox.shrink();
+
+  final List<Widget> items = [];
+
+  // Cancellation
+  if (cancellation != null) {
+    final desc = cancellation["description"]?.toString() ?? "";
+    if (desc.isNotEmpty) {
+      items.add(infow(
+        icon: "assets/icon/Reservations.svg",
+        text: "سياسة الإلغاء",
+        subtext: desc,
+      ));
+    }
+  }
+
+  // Booking
+  if (booking != null) {
+    final minHours = booking["min_advance_hours"];
+    final maxDays  = booking["max_advance_days"];
+    final hasDeposit = booking["requires_deposit"] == true;
+    final depositPct = booking["deposit_percentage"];
+
+    String bookingDesc = "";
+    if (minHours != null) bookingDesc += "الحجز المسبق: $minHours ساعة على الأقل\n";
+    if (maxDays  != null) bookingDesc += "الحد الأقصى: $maxDays يوم مقدماً\n";
+    if (hasDeposit)       bookingDesc += "عربون: $depositPct%";
+
+    if (bookingDesc.isNotEmpty) {
+      items.add(infow(
+        icon: "assets/icon/Reservations.svg",
+        text: "سياسة الحجز",
+        subtext: bookingDesc.trim(),
+      ));
+    }
+  }
+
+  // General
+  if (general is List) {
+    for (final item in general) {
+      final title = item["title"]?.toString() ?? "";
+      final desc  = item["description"]?.toString() ?? "";
+      if (title.isNotEmpty || desc.isNotEmpty) {
+        items.add(infow(
+          icon: _getIcon(item["key"]?.toString()),
+          text: title,
+          subtext: desc,
+        ));
+      }
+    }
+  }
+
+  if (items.isEmpty) return const SizedBox.shrink();
+
   return Column(
-    children: [
-      for (final item in general)
-        infow(
-          icon: _getIcon(item["key"]),
-          text: item["title"]?.toString() ?? "",
-          subtext: item["description"]?.toString() ?? "",
-        ),
-    ],
+    children: items
+        .map((w) => Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: w,
+    ))
+        .toList(),
   );
 }
+
 String _getIcon(String? key) {
   switch (key) {
     case "dress_code":          return "assets/icon/Bowknot.svg";
@@ -31,24 +86,57 @@ String _getIcon(String? key) {
     default:                    return "assets/icon/Reservations.svg";
   }
 }
+
 class infow extends StatelessWidget {
   final String icon;
   final String text;
   final String subtext;
-  const infow({super.key,required this.text,required this.icon,required this.subtext});
+
+  const infow({
+    super.key,
+    required this.icon,
+    required this.text,
+    required this.subtext,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SvgPicture.asset(icon,color:Themes().GetColor("primaryA"),),
-        SizedBox(width: Sizes(context).GetWidth()*2),
+        Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: SvgPicture.asset(
+            icon,
+            width: 22,
+            height: 22,
+            color: Themes().GetColor("primaryA"),
+          ),
+        ),
+        SizedBox(width: Sizes(context).GetWidth() * 2),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(TextLanguage().GetWord(text)),
-              Text(subtext),
+              if (text.isNotEmpty)
+                Text(
+                  TextLanguage().GetWord(text),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                  ),
+                ),
+              if (subtext.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 2),
+                  child: Text(
+                    subtext,
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF777777),
+                    ),
+                  ),
+                ),
             ],
           ),
         ),

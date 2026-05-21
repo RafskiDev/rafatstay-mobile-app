@@ -32,7 +32,7 @@ Widget Garage(BuildContext context, String title, String image,WidgetRef ref) {
             image,
             width: MediaQuery.of(context).size.width * 0.35,
             height: double.infinity,
-            fit: BoxFit.cover,
+            fit: BoxFit.fill,
           ),
         ),
         SizedBox(width: Sizes(context).GetWidth() * 2),
