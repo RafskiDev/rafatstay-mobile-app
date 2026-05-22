@@ -542,7 +542,7 @@ class _HomeState extends ConsumerState<Home> {
                                 final dishs = dish[i];
                                 final String dishTitle = (dishs["title"] ?? dishs["business_name"] ?? "").toString();
                                 final String dishSubTitle = (dishs["restaurant"]?["name"] ?? dishs["branch_name"] ?? "").toString();
-                                final String dishDesc = (dishs["description"] ?? "").toString();
+                                final String dishDesc = (dishs["description"] ?? "لايوجد بينات").toString();
                                 final String dishPrice = dishs["price"]?.toString() ?? "0";
                                 final dynamic rawId = dishs["id"] ?? dishs["item"]?["id"] ?? dishs["branch_id"];
                                 final int itemId = int.tryParse(rawId?.toString() ?? "0") ?? 0;

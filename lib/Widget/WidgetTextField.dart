@@ -312,7 +312,7 @@ class _ReviewTextFieldState extends State<ReviewTextField> {
     if (isKeyboardClosed && _focusNode.hasFocus) {
       Future.microtask(() => _focusNode.unfocus());
     }
-
+    bool isEmpty = widget.controller.text.trim().isEmpty;
     return Center(
       child: Stack(
         alignment: Alignment.bottomRight,
@@ -332,7 +332,7 @@ class _ReviewTextFieldState extends State<ReviewTextField> {
             child: TextField(
               controller: widget.controller,
               focusNode: _focusNode,
-              onTap: widget.onTop, // ربط الخاصية هنا ليتم تنفيذها عند الضغط
+            //  onTap: widget.onTop,
               maxLines: null,
               cursorColor: _focusNode.hasFocus ? const Color(0xFFC0A060) : Colors.transparent,
               decoration: InputDecoration(
@@ -344,6 +344,28 @@ class _ReviewTextFieldState extends State<ReviewTextField> {
                 ),
               ),
               style: const TextStyle(fontSize: 16, color: Colors.black87),
+            ),
+          ),
+          // الزر الدائري
+          if (widget.onTop != null && !isEmpty)
+          Positioned(
+            right: sizes.GetWidth() * 2,
+            bottom: sizes.GetHeight() * 0.7,
+            child: GestureDetector(
+              onTap:widget.onTop,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: sizes.GetWidth() * 12,
+                height: sizes.GetWidth() * 12,
+                decoration: BoxDecoration(
+                  color:  Colors.black,
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.send,
+                  color: Colors.white,
+                ),
+              ),
             ),
           ),
         ],

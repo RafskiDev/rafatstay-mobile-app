@@ -317,5 +317,9 @@ final EnLanguag = {
   "الفرع غير متوفر":"Branch not available",
   "سياسة الحجز":"Booking Policy",
   "سياسة الإلغاء":"Cancellation Policy",
-  "تفاصيل الطاولة":"Table Details"
+  "تفاصيل الطاولة":"Table Details",
+  "لا توجد وجبات متاحة":"There are no available meals",
+  "الرجاء اختيار طاولة لتتمكن من إتمام الحجز":"Please select a table to complete the reservation",
+  "هل أنت متأكد أنك تريد تسجيل الخروج؟":"Are you sure you want to log out?",
+  "هل أنت متأكد أنك تريد حذف حسابك؟":"Are you sure you want to delete your account?"
 };

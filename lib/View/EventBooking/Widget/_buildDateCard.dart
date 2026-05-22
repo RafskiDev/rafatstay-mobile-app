@@ -49,12 +49,14 @@ Widget buildDateCard({
               ),
             ),
             SizedBox(width: sizes.GetWidth()*1),
-            Text(
-              title_1,
-              style: TextStyle(
-                color: const Color(0xFF102C3D),
-                fontSize: sizes.GetHeight() * 2,
-                fontWeight: FontWeight.bold,
+            Flexible(
+              child: Text(
+                title_1,
+                style: TextStyle(
+                  color: const Color(0xFF102C3D),
+                  fontSize: sizes.GetHeight() * 1.3,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
             ),
           ],

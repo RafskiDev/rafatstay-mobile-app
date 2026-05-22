@@ -245,6 +245,7 @@ class Account extends ConsumerWidget {
                         children: [
                           SvgPicture.asset("assets/icon/LogOuts.svg",),
                           SizedBox(height: Sizes(context).GetHeight() * 2),
+                          Text(textLanguage.GetWord("هل أنت متأكد أنك تريد تسجيل الخروج؟")),
                           SizedBox(height: Sizes(context).GetHeight() * 2),
                           WidgetButton(
                             isCircular: true,
@@ -293,8 +294,9 @@ class Account extends ConsumerWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          SvgPicture.asset("assets/icon/LogOuts.svg",),
+                          SvgPicture.asset("assets/icon/DeleteAccount_.svg",),
                           SizedBox(height: Sizes(context).GetHeight() * 2),
+                          Text(textLanguage.GetWord("هل أنت متأكد أنك تريد حذف حسابك؟")),
                           SizedBox(height: Sizes(context).GetHeight() * 2),
                           WidgetButton(
                             isCircular: true,

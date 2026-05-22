@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../Service/ApiService.dart';
 import '../../Service/LoadingService.dart';
 import '../../Utils/Sizes.dart';
 import '../../Utils/TextLanguage.dart';
 import '../../Utils/Them.dart';
+import '../../Utils/ToastMessage.dart';
 import '../../Widget/ContentCard.dart';
 import '../../Widget/GradientText.dart';
 import '../../Widget/ShowLoading.dart';
@@ -63,9 +65,14 @@ class _EventBookingState extends ConsumerState<EventBooking> {
                         bottomLeft: Radius.circular(20),
                         bottomRight: Radius.circular(20),
                       ),
-                      child: Image.asset(
-                        "assets/images/1c07e950ad312fdaaef1bdd4e1882d79f25c9233.png",
+                      child: Image.network(
+                        "${showImage}${widget.eventBooking["image"]}",
                         fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Image.asset(
+                          "assets/images/1c07e950ad312fdaaef1bdd4e1882d79f25c9233.png",
+                          width: double.infinity,
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                     Positioned(
@@ -310,20 +317,47 @@ class _EventBookingState extends ConsumerState<EventBooking> {
                           borderRadius: sizes.GetHeight() * 5,
                           onTap: () {
                             final bookingNotifier = ref.read(EventBooking_riverpod.notifier);
-                            final payload = bookingNotifier.bookingPayload;
-                           /*
-                            // استخراج الوجبات المختارة فقط
-                            final selectedMeals = bookingNotifier.menuItems
-                                .where((meal) {
+                            if (bookingNotifier.selectedTableIndex == null || bookingNotifier.selectedTableIndex == -1) {
+                              ToastMessages(
+                                context,
+                                textLanguage.GetWord("الرجاء اختيار طاولة لتتمكن من إتمام الحجز"),
+                                Colors.red,
+                                Colors.white,
+                              );
+                              return; // إيقاف العملية ومنع الانتقال
+                            }
+                           // final payload = bookingNotifier.bookingPayload;
+                            final selectedMeals = bookingNotifier.menuItems.where((meal) {
                               final itemId = int.tryParse(meal["id"].toString()) ?? 0;
-                              return bookingNotifier.selectedItemIds.contains(itemId);
-                            })
-                                .toList();
-
-                            print(payload);
-
-                            */
-                            final selectedMeals = [
+                              final count = int.tryParse(meal["count"].toString()) ?? 0;
+                              return bookingNotifier.selectedItemIds.contains(itemId) && count >= 1;
+                            }).toList();
+                            if (selectedMeals.isEmpty) {
+                              ToastMessages(
+                                context,
+                                textLanguage.GetWord("لا توجد وجبات متاحة"),
+                                Colors.red,
+                                Colors.white,
+                              );
+                              return;
+                            }
+                            Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder: (context, animation1, animation2) =>
+                                    MakeItYourWay(
+                                      title: bookingNotifier.eventData["title"] ?? "",
+                                      businessName: widget.eventBooking["business_name"] ?? '',
+                                      branchId: widget.eventBooking["branch_id"]??0,
+                                      selectedMeals: selectedMeals,
+                                      bookingType:'eventBooking',
+                                    ),
+                                transitionDuration: Duration.zero,
+                                reverseTransitionDuration: Duration.zero,
+                              ),
+                            );
+                            /*
+                             final selectedMeals = [
                               {
                                 "id": 1,
                                 "title": "Mojito",
@@ -334,33 +368,8 @@ class _EventBookingState extends ConsumerState<EventBooking> {
                                 "is_spicy": null,
                                 "potsEmpty": false,
                               },
-                              {
-                                "id": 2,
-                                "title": "Lemonade",
-                                "price": "15",
-                                "count": 1,
-                                "sold_count":"10",
-                                "time": null,
-                                "is_spicy": null,
-                                "potsEmpty": false,
-                              },
                             ];
-                            Navigator.push(
-                              context,
-                              PageRouteBuilder(
-                                pageBuilder: (context, animation1, animation2) =>
-                                    MakeItYourWay(
-                                      title: bookingNotifier.eventData["title"] ?? "",
-                                      businessName: widget.eventBooking["business_name"] ?? '',
-                                      branchId: widget.eventBooking["branch_id"],
-                                      selectedMeals: selectedMeals,
-                                      bookingType:'eventBooking',
-                                    ),
-                                transitionDuration: Duration.zero,
-                                reverseTransitionDuration: Duration.zero,
-                              ),
-                            );
-                            print(ref.read(EventBooking_riverpod.notifier).bookingPayload);
+                             */
                           },
                           backgroundColor: theme.GetColor("primaryA"),
                           child: Row(

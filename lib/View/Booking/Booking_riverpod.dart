@@ -70,38 +70,7 @@ class PageNotifier extends Notifier<int> {
     ref.notifyListeners();
   }
 
-  //انشاء حجز
-  Future<void> createBooking({
-    required BuildContext context,
-    required int branchId,
-    required String bookingDate,
-    required String startTime,
-    required String endTime,       // ← أضف هذا
-    required int partySize,
-    String? notes,
-    int? tableId,       // ← اختياري
-  }) async {
-    final response = await ApiService().post(
-      "v1/$roles/bookings",
-      {
-        "branch_id": branchId,
-        "booking_date": bookingDate,
-        "start_time": startTime,
-        "end_time": endTime,        // ← أضف هذا
-        "party_size": partySize,
-        if (tableId != null) "table_id": tableId,
-        if (notes != null && notes.isNotEmpty) "special_requests": notes,
-      },
-      context,
-    );
 
-    if (response?["success"] == true) {
-      final newBooking = Map<String, dynamic>.from(response?['data'] ?? {});
-      bookingsData.insert(0, newBooking);
-      ref.notifyListeners();
-    }
-    print(response);
-  }
 
   Future<void> rebook(BuildContext context, int bookingId, Map<String, dynamic> booking) async {
     String formatTime(String? time) {

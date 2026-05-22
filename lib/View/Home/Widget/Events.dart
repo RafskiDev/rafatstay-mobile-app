@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:rafatstay/Service/ApiService.dart';
 import '../../../Utils/DateTimeHelper.dart';
 import '../../../Utils/Sizes.dart';
 import '../../../Utils/TextLanguage.dart';
@@ -86,7 +87,7 @@ class Events extends ConsumerWidget {
                       ref: ref,
                       event: item,
                       //item["image"]
-                      imagePath:"assets/images/1c07e950ad312fdaaef1bdd4e1882d79f25c9233.png",
+                      imagePath:events[index]["image"],
 
                       title:item["title"],
                       date:date,
@@ -167,7 +168,6 @@ class CustomCard extends StatelessWidget {
     Themes theme = Themes();
     Sizes sizes = Sizes(context);
     TextLanguage language = TextLanguage();
-
     return Container(
       width: width,
       height: height,
@@ -183,22 +183,15 @@ class CustomCard extends StatelessWidget {
           ClipRRect(
             borderRadius:
             const BorderRadius.vertical(top: Radius.circular(12)),
-            child: imagePath.startsWith("assets/")
-                ? Image.asset(
-              imagePath,
+            child:Image.network(
+              "${showImage}${imagePath}",
               width: double.infinity,
-              height: 150,
-              fit: BoxFit.cover,
-            )
-                : Image.network(
-              imagePath,
-              width: double.infinity,
-              height: 150,
+              height: sizes.GetHeight() * 18,
               fit: BoxFit.cover,
               errorBuilder: (_, __, ___) => Image.asset(
                 "assets/images/1c07e950ad312fdaaef1bdd4e1882d79f25c9233.png",
                 width: double.infinity,
-                height: 150,
+                height: sizes.GetHeight() * 18,
                 fit: BoxFit.cover,
               ),
             ),

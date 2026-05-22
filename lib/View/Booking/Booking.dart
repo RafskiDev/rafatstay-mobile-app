@@ -18,7 +18,7 @@ class Booking extends ConsumerWidget {
     final sizes=Sizes(context);
     Themes theme = Themes();
     TextLanguage textLanguage = TextLanguage();
-    final selectedIndex = ref.watch(Booking_riverpod); // index المحدد
+    final selectedIndex = ref.watch(Booking_riverpod);
     final notifier = ref.read(Booking_riverpod.notifier);
     return Scaffold(
       appBar:buildCustomAppBar(context,"Booking",showBackButton:false),

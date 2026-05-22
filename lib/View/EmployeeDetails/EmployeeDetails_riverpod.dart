@@ -22,7 +22,6 @@ class PageNotifier extends Notifier<int> {
       {},
       context,
     );
-    print(res);
     return res;
   }
 
@@ -49,32 +48,37 @@ class PageNotifier extends Notifier<int> {
   }
   Future<void> addReviewSimple({
     required BuildContext context,
-    required int branchId,
+    required int staffId,
     required String comment,
     required int professionalism,
     required int attitudeRating,
     required int attentionRating,
 
   }) async {
-    // جسم الطلب
+    int total = professionalism + attitudeRating + attentionRating;
+
+    if (professionalism == 0 || attitudeRating == 0 || attentionRating == 0) {
+      ToastMessages(context, "الرجاء إعطاء تقييم لجميع الحقول", Colors.red, Colors.white);
+      return;
+    }
     final body = {
-      "branch_id": branchId,
       "professionalism": professionalism,
       "attitude_rating": attitudeRating,
       "attention_to_detail_rating": attentionRating,
-      "overall_rating": (professionalism + attitudeRating + attentionRating) ~/ 3,
+      "overall_rating": total ~/ 3,
       "comment": comment,
       "review_type": "review", // مجرد تقييم
     };
 
     // إرسال POST
     final res = await ApiService().post(
-      "v1/$roles/reviews",
+      "v1/$roles/staff/${staffId}/reviews",
       body,
       context,
     );
     if (res["success"] == true) {
-      await fetchReviews(context, branchId);
+      ToastMessages(context,"نجح ارسال التقيم",Colors.green,Colors.white);
+     // await fetchReviews(context, branchId);
     } else {
       ToastMessages(context,res?["message"],Colors.red,Colors.white);
     }

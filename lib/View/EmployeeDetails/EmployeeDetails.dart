@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:rafatstay/Utils/Sizes.dart';
 import 'package:rafatstay/Utils/TextLanguage.dart';
 import 'package:rafatstay/Utils/Them.dart';
+import '../../Service/ApiService.dart';
 import '../../Service/LoadingService.dart';
 import '../../Utils/DateTimeHelper.dart';
 import '../../Widget/ReviewCard.dart';
@@ -12,7 +13,7 @@ import '../../Widget/WidgetAppBar.dart';
 import '../../Widget/WidgetButton.dart';
 import '../../Widget/WidgetTextField.dart';
 import 'EmployeeDetails_riverpod.dart';
-
+import 'package:cached_network_image/cached_network_image.dart';
 class EmployeeDetails extends ConsumerStatefulWidget {
   final int branchId;
   final List<Map<String, dynamic>> employeeDetails;
@@ -55,7 +56,9 @@ class _EmployeeDetails extends ConsumerState<EmployeeDetails> {
       widget.employeeDetails[0]["highlights"] ?? [],
     );
 
+
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: theme.GetColor("background"),
       appBar: buildCustomAppBar(
         context,
@@ -74,10 +77,29 @@ class _EmployeeDetails extends ConsumerState<EmployeeDetails> {
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(20),
-                    child: Image.asset(
-                      "assets/images/403b9eb897e7034bc86436e1b7afed428f22b3a4.png",
+                    child:CachedNetworkImage(
+                      imageUrl:"$showImage${widget.employeeDetails[0]["avatar_url"]??""}",
                       fit: BoxFit.cover,
                       width: double.infinity,
+                      height:Sizes(context).GetHeight() * 20,
+                      placeholder: (context, url) =>  Center(
+                        child:showLoading(),
+                      ),
+                      //ضفت هذا حتى لا يطبع الخطا
+                      errorListener: (dynamic exception) {
+                      },
+                      errorWidget: (context, url, error) {
+                        return Container(
+                          width: double.infinity,
+                          height:Sizes(context).GetHeight() * 20,
+                          color: const Color(0xFFEEEEEE),
+                          child: const Icon(
+                            Icons.image_not_supported,
+                            size: 40,
+                            color: Colors.grey,
+                          ),
+                        );
+                      },
                     ),
                   ),
                   SizedBox(height: sizes.GetHeight() * 2),
@@ -248,12 +270,13 @@ class _EmployeeDetails extends ConsumerState<EmployeeDetails> {
                     onTop: () async {
                       await reviewNotifier.addReviewSimple(
                         context: context,
-                        branchId: widget.branchId,
+                        staffId: widget.employeeDetails[0]["id"],
                         comment: reviewNotifier.reviewController.text,
                         professionalism: reviewNotifier.professionalism,
                         attitudeRating: reviewNotifier.attitudeRating,
                         attentionRating: reviewNotifier.attentionRating,
                       );
+                      reviewNotifier.reviewController.clear();
                       reviewNotifier.professionalism=0;
                       reviewNotifier.attitudeRating=0;
                       reviewNotifier.attentionRating=0;
@@ -262,6 +285,7 @@ class _EmployeeDetails extends ConsumerState<EmployeeDetails> {
                     controller: reviewNotifier.reviewController,
                   ),
                   SizedBox(height: sizes.GetHeight() * 6),
+
                 ],
               );
             }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rafatstay/Utils/TextLanguage.dart';
+import '../../../Service/ApiService.dart';
 import '../../../Service/LoadingService.dart';
 import '../../../Utils/DateTimeHelper.dart';
 import '../../../Utils/Sizes.dart';
@@ -11,7 +12,7 @@ import '../../../Widget/WidgetButton.dart';
 import '../../BookingDetailsSummary/BookingDetailsSummary.dart';
 import '../../RestaurantDetalis/RestaurantDetalis.dart';
 import '../Booking_riverpod.dart';
-
+import 'package:cached_network_image/cached_network_image.dart';
 class Cancelled extends ConsumerStatefulWidget {
   const Cancelled({super.key});
 
@@ -162,11 +163,29 @@ class BookingCard extends StatelessWidget {
   Widget _image(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
-      child: Image.asset(
-        mainImage,
+      child: CachedNetworkImage(
+        imageUrl:"$showImage${mainImage??""}",
         width: Sizes(context).GetWidth() * 30,
         height: Sizes(context).GetHeight() * 14,
         fit: BoxFit.cover,
+        placeholder: (context, url) =>  Center(
+          child:showLoading(),
+        ),
+        //ضفت هذا حتى لا يطبع الخطا
+        errorListener: (dynamic exception) {
+        },
+        errorWidget: (context, url, error) {
+          return Container(
+            width: Sizes(context).GetWidth() * 30,
+            height: Sizes(context).GetHeight() * 14,
+            color: const Color(0xFFEEEEEE),
+            child: const Icon(
+              Icons.image_not_supported,
+              size: 40,
+              color: Colors.grey,
+            ),
+          );
+        },
       ),
     );
   }
@@ -341,6 +360,7 @@ class _InfoRow extends StatelessWidget {
     );
   }
 }
+
 String getCancelledTime(Map<String, dynamic> booking) {
   try {
     if (booking['cancelled_at'] == null) return "--:--:--";
