@@ -72,9 +72,22 @@ class Events extends ConsumerWidget {
                 itemCount:events.length,
                 itemBuilder: (context, index) {
                   final item = events[index];
-                  final String date = DateTimeHelper.extractDate(item["ends_at"]);
-                  final String time = "${DateTimeHelper.extractTime(item["starts_at"])}";
+                  final String date = item["ends_at"] != null
+                      ? DateTimeHelper.extractDate(item["ends_at"])
+                      : "";
+                  final String rawTime = item["starts_at"] != null
+                      ? DateTimeHelper.extractTime(item["starts_at"]).toString()
+                      : "";
+                  String processedTime = "";
+                  List<String> timeParts = rawTime.trim().split(" ");
 
+                  if (timeParts.length >= 3) {
+                    processedTime = "${timeParts[1]} ${timeParts[2]}";
+                  } else if (timeParts.length == 2) {
+                    processedTime = "${timeParts[0]} ${timeParts[1]}";
+                  } else {
+                    processedTime = rawTime;
+                  }
                   return Padding(
                     padding: EdgeInsets.symmetric(
                         horizontal:
@@ -87,11 +100,11 @@ class Events extends ConsumerWidget {
                       ref: ref,
                       event: item,
                       //item["image"]
-                      imagePath:events[index]["image"],
+                      imagePath:events[index]["image"]??"",
 
                       title:item["title"],
                       date:date,
-                      time:"${time.split(" ")[1]} "+time.split(" ")[2],
+                      time:processedTime,
                       location:item["location"]??"",
                       price:item["price"]??"",
                       showButton: true,

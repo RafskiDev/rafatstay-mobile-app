@@ -37,6 +37,8 @@ import 'Widget/MealDropdown.dart';
 import 'Widget/Policy.dart';
 import 'Widget/SuperGuest.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+
+import 'Widget/build3DSection.dart';
 class RestaurantDetalis extends ConsumerStatefulWidget {
   final String title;
   final int branchId;
@@ -442,25 +444,15 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                             ],
                           ),
                         ),
-                        SizedBox(height: sizes.GetHeight() * 2),
-                        Row(
-                          children: [
-                            SvgPicture.asset(
-                              "assets/icon/3D.svg",
-                              height: sizes.GetHeight() * 2,
-                            ),
-                            SizedBox(width: sizes.GetWidth() * 1),
-                            Text(textLanguage.GetWord("مطعم بإطلالة كاملة"),
-                                style: TextStyle(fontWeight: FontWeight.bold,
-                                    fontSize: sizes.GetHeight() * 2)),
-                          ],
-                        ),
-                        SizedBox(height: sizes.GetHeight() * 2),
+                        build3DSection(branches[0]['parallax_scene'], sizes, theme, textLanguage,context),
+                        /*
                         VideoImageCard(
                           imagePath: "assets/images/66fed65c893473ef90356d043c26c12940be6cf5.png",
                           width: double.infinity,
                           height: sizes.GetHeight() * 25,
                         ),
+
+                         */
                         SizedBox(height: sizes.GetHeight() * 2),
                         Row(
                           children: [
