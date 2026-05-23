@@ -40,7 +40,7 @@ class _EmployeeDetails extends ConsumerState<EmployeeDetails> {
       final staffId = widget.employeeDetails[0]["id"] as int;
       ref.read(EmployeeDetails_riverpod.notifier).fetchReviews(
         context,
-        staffId,  // ← هنا
+        staffId,
       );
     });
   }
@@ -195,36 +195,42 @@ class _EmployeeDetails extends ConsumerState<EmployeeDetails> {
                       ],
                     ),
                     SizedBox(height: sizes.GetHeight() * 1),
-                    SizedBox(
-                      // height: sizes.GetHeight() * 60,
-                      child: ListView.builder(
-                        physics: const NeverScrollableScrollPhysics(),
-                        shrinkWrap: true,
-                        itemCount: reviews.length,
-                        itemBuilder: (context, index) {
-                          final review = reviews[index];
-                          String time = DateTimeHelper.extractTime(review["created_at"] ?? "");
-                          return Padding(
-                            padding: EdgeInsets.symmetric(
-                                vertical: sizes.GetHeight() * 0.5),
-                            child: ReviewCard(
-                              name: review["user"]?["full_name"] ?? "Anonymous",
-                              date: time,
-                              rating: review["overall_rating"] ?? 0,
-                              comment: review["comment"] ?? "",
-                              image:
-                              "assets/images/38a2a034cbe4ac063cad704f0bc1eb89da98ec7f.png",
-                              sizes: sizes,
-                              theme: theme,
-                              onAvatarTap: () {
-                                print(
-                                    "Tapped on avatar of ${review["user"]?["full_name"]}");
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                    ),
+                    ListView.builder(
+                      physics: const NeverScrollableScrollPhysics(),
+                      shrinkWrap: true,
+                      itemCount: reviews.length,
+                      itemBuilder: (context, index) {
+                        final review = reviews[index];
+                        String time = DateTimeHelper.extractTime(review["created_at"] ?? "");
+
+                        // 1. استخراج القيمة الخام وتجنب الـ Null
+                        final rawRating = review["overall_rating"] ?? review["rating"] ?? 0;
+
+                        // 2. تحويلها بأمان إلى int لتتوافق مع الـ ReviewCard
+                        int finalRating;
+                        if (rawRating is String) {
+                          finalRating = double.tryParse(rawRating)?.round() ?? 0;
+                        } else if (rawRating is num) {
+                          finalRating = rawRating.round(); // تحويل الـ double إلى أقرب int والـ int بيبقى كما هو
+                        } else {
+                          finalRating = 0;
+                        }
+
+                        return Padding(
+                          padding: EdgeInsets.symmetric(vertical: sizes.GetHeight() * 0.5),
+                          child: ReviewCard(
+                            name: review["user"]?["full_name"] ?? review["name"] ?? "Anonymous",
+                            date: time,
+                            rating: finalRating, // ← تم الإصلاح هنا بـ int صريح
+                            comment: review["comment"] ?? review["bio"] ?? "",
+                            image: "assets/images/38a2a034cbe4ac063cad704f0bc1eb89da98ec7f.png",
+                            sizes: sizes,
+                            theme: theme,
+                            onAvatarTap: () {},
+                          ),
+                        );
+                      },
+                    )
                   ],
                   // Rate Section
                   Column(

@@ -103,6 +103,8 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
     final branches = notifier.branches;
     final sizes = Sizes(context);
     final theme = Themes();
+
+
     final textLanguage = TextLanguage();
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
@@ -450,29 +452,31 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                         ),
 
                          */
-                        SizedBox(height: sizes.GetHeight() * 2),
-                        Row(
-                          children: [
-                            Container(
-                              width: sizes.GetWidth()*50,
-                              padding: EdgeInsets.all(8.0),
-                              decoration:BoxDecoration(
-                                color:Themes().GetColor("backgroundOffWhite"),
-                                borderRadius: BorderRadius.circular(sizes.GetHeight() * 10),
+                        if(branches[0]["min_order_amount"]!=null)...[
+                          SizedBox(height: sizes.GetHeight() * 2),
+                          Row(
+                            children: [
+                              Container(
+                                width: sizes.GetWidth()*50,
+                                padding: EdgeInsets.all(8.0),
+                                decoration:BoxDecoration(
+                                  color:Themes().GetColor("backgroundOffWhite"),
+                                  borderRadius: BorderRadius.circular(sizes.GetHeight() * 10),
+                                ),
+                                child:Center(
+                                  child:GradientText(
+                                    widget: Text(
+                                      "${textLanguage.GetWord("الحد الأدنى للطلب")}: ${branches[0]["min_order_amount"]??0} SAR",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                ),
                               ),
-                              child:Center(
-                                child:GradientText(
-                                widget: Text(
-                                  "${textLanguage.GetWord("الحد الأدنى للطلب")}: 200 SAR",
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w500,
-                                   ),
-                                 ),
-                               ),
-                             ),
-                           ),
-                          ],
-                        ),
+                            ],
+                          ),
+                        ],
                         if(ref.read(RestaurantDetalis_riverpod.notifier).allMeals.isNotEmpty)...[
                           SizedBox(height: sizes.GetHeight() * 2),
                           Row(
@@ -491,7 +495,7 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                                           fontSize: sizes.GetHeight() * 2.5)),
                                 ],
                               ),
-                              MealDropdown(),
+                              //MealDropdown(),
                             ],
                           ),
                           SizedBox(height: sizes.GetHeight() * 2),
@@ -612,24 +616,27 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                                     return;
                                   }
 
-                                  // 👇 حساب المجموع
-                                  double totalPrice = 0;
-                                  const double minOrder = 200;
-                                  for (var meal in selectedMeals) {
-                                    final price = double.tryParse(meal['price'].toString()) ?? 0;
-                                    final count = meal['count'] ?? 1;
-                                    totalPrice += price * count;
-                                  }
 
-                                  if (totalPrice < minOrder) {
-                                    ToastMessages(
-                                      context,
-                                      "الحد الأدنى للطلب 200 SAR",
-                                      Themes().GetColor("error"),
-                                      Themes().GetColor("white"),
-                                    );
-                                    return;
-                                  }
+                                  final minOrderRaw = branches.isNotEmpty ? branches[0]["min_order_amount"] : null;
+                                  final double? minOrder = minOrderRaw != null ? double.tryParse(minOrderRaw.toString()) : null;
+                                   if (minOrder != null && minOrder > 0) {
+                                     double totalPrice = 0;
+                                     for (var meal in selectedMeals) {
+                                       final price = double.tryParse(meal['price'].toString()) ?? 0;
+                                       final count = meal['count'] ?? 1;
+                                       totalPrice += price * count;
+                                     }
+                                     if (totalPrice < minOrder) {
+                                       ToastMessages(
+                                         context,
+                                         "الحد الأدنى للطلب 200 SAR",
+                                         Themes().GetColor("error"),
+                                         Themes().GetColor("white"),
+                                       );
+                                       return;
+                                     }
+                                   }
+
                                   Navigator.push(
                                     context,
                                     PageRouteBuilder(

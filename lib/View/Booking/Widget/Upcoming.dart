@@ -8,6 +8,7 @@ import '../../../Utils/Sizes.dart';
 import '../../../Utils/TextLanguage.dart';
 import '../../../Utils/Them.dart';
 import '../../../Utils/ToastMessage.dart';
+import '../../../Widget/CountdownText.dart';
 import '../../../Widget/GradientText.dart';
 import '../../../Widget/ShowLoading.dart';
 import '../../../Widget/WidgetButton.dart';
@@ -95,10 +96,9 @@ class _UpcomingState extends ConsumerState<Upcoming> {
                       SvgPicture.asset("assets/icon/SandGlass.svg",
                         color: Themes().GetColor("textPrimary"),),
                       SizedBox(width: sizes.GetWidth() * 1),
-                      Text(
-                        ref.read(Booking_riverpod.notifier)
-                            .bookingsData[0]['time_remaining']?['formatted_compact']?.toString()
-                            ?? "0D : 0H : 0M : S",
+                      CountdownText(
+                        bookingData: ref.read(Booking_riverpod.notifier).bookingsData[0] as Map<String, dynamic>?
+                            ?? {},
                       ),
                     ],
                   ),

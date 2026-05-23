@@ -9,7 +9,7 @@ Widget Garage(BuildContext context, String title, String image,WidgetRef ref) {
   final Color secondaryColor = Themes().GetColor("secondary");
   final garage = ref.read(RestaurantDetalis_riverpod.notifier).garage;
   if (garage.isEmpty) return Container();
-  print(garage);
+ // print(garage);
   return Container(
     width: double.infinity,
     height: Sizes(context).GetHeight() * 25,
@@ -71,7 +71,7 @@ Widget Garage(BuildContext context, String title, String image,WidgetRef ref) {
                   ),
                 ],
               ),
-              buildIconText(context,"assets/icon/Reservations.svg", "Reservation: With table booking", secondaryColor),
+              buildIconText(context,"assets/icon/Reservations.svg", "Reservation: ${garage[0]["details"]??""}", secondaryColor),
             ],
           ),
         ),

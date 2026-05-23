@@ -165,7 +165,6 @@ class PageNotifier extends Notifier<int> {
     isFetchingMore = false;
     hasFetched = true;
    // getBookingDetails(context: context, bookingId: 68);
-    print(bookingsData);
 
     ref.notifyListeners();
   }

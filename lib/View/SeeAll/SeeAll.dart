@@ -38,7 +38,7 @@ class SeeAll extends ConsumerStatefulWidget {
 
 class _SeeAllState extends ConsumerState<SeeAll> {
   late ScrollController _scrollController;
-  Timer? _debounce; // للـ debounce عند البحث
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -50,7 +50,6 @@ class _SeeAllState extends ConsumerState<SeeAll> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       ref.read(SeeAll_riverpod.notifier).resetAll();
-     // ref.read(SeeAll_riverpod.notifier).fetchFilters(context, widget.sectionKey); // ✅ هذا السطر مهم
       ref.read(SeeAll_riverpod.notifier).fetchSection(
         context,
         section: widget.section,
@@ -65,11 +64,9 @@ class _SeeAllState extends ConsumerState<SeeAll> {
 
     final position = _scrollController.position;
 
-    // لما يوصل لـ 300px قبل الآخر، جيب المزيد
     if (position.pixels >= position.maxScrollExtent - 300) {
       final notifier = ref.read(SeeAll_riverpod.notifier);
 
-      // تحقق إنه مو بيجيب بيانات هلق
       if (notifier.getCurrentHasMore() && !notifier.isFetchingMore) {
         notifier.loadMoreCurrent(context, widget.sectionKey);
       }
@@ -78,7 +75,7 @@ class _SeeAllState extends ConsumerState<SeeAll> {
 
   @override
   void dispose() {
-    _debounce?.cancel(); // إلغاء المؤقت
+    _debounce?.cancel();
     _scrollController.removeListener(_onScroll);
     _scrollController.dispose();
     super.dispose();
@@ -91,101 +88,97 @@ class _SeeAllState extends ConsumerState<SeeAll> {
     final sizes = Sizes(context);
     final notifier = ref.watch(SeeAll_riverpod.notifier);
     ref.watch(SeeAll_riverpod);
+
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final notifier = ref.read(SeeAll_riverpod.notifier);
       if (notifier.filtersList.isEmpty && widget.filters.isNotEmpty) {
         notifier.filtersList = widget.filters;
       }
     });
+
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
       appBar: buildCustomAppBar(context, widget.title),
       body: ValueListenableBuilder<bool>(
         valueListenable: LoadingService.isLoading,
         builder: (context, isLoading, child) {
-          if (isLoading && notifier.currentPage == 1 && !notifier.isSearching)return showLoading();
+          if (isLoading && notifier.currentPage == 1 && !notifier.isSearching) return showLoading();
           return Column(
             children: [
-             if (widget.section != RestaurantSection.offers && widget.section != RestaurantSection.favorites)
+              if (widget.section != RestaurantSection.offers && widget.section != RestaurantSection.favorites)
                 Padding(
-                padding: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 2),
-                child: WidgetTextField(
-                  Controller: notifier.searchController,
-                  HintText: textLanguage.GetWord("بحث"),
-                  iconData: "assets/icon/Search.svg",
-                  Horizontal: sizes.GetWidth() * 2,
-                  focusNode: notifier.searchNode,
-                  onChanged: (value) {
-                    // Debounce لتأخير البحث
-                    _debounce?.cancel();
-                    _debounce = Timer(const Duration(milliseconds: 500), () {
-                      if (!mounted) return;
-                      if (value.trim().isEmpty) {
-                        // إذا كان البحث فارغاً، نرجع للعرض العادي
-                        ref.read(SeeAll_riverpod.notifier).resetSearch();
-                        // نعيد جلب القسم الأصلي
-                        ref.read(SeeAll_riverpod.notifier).fetchSection(
-                          context,
-                          section: widget.section,
-                          filter: widget.filter,
-                          key: widget.sectionKey,
-                        );
-                      } else {
-                        // تنفيذ البحث
-                        ref.read(SeeAll_riverpod.notifier).search(
-                          context,
-                        );
-                      }
-                    });
-                  },
-                ),
-              ),
-                SizedBox(height: sizes.GetHeight() * 2),
-                widget.filters.isNotEmpty?SizedBox(
-                  height: sizes.GetHeight() * 5,
-                  child: ListView.builder(
-                    scrollDirection: Axis.horizontal,
-                    padding: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 2),
-                    itemCount: widget.filters.length, // ✅ من widget مباشرة
-                    itemBuilder: (context, index) {
-                      final filter = widget.filters[index]; // ✅
-                      final isSelected = notifier.selectedFilterIndex == index;
-                      final label = filter["label_en"] ?? filter["label"] ?? filter["key"] ?? "";
-                      return GestureDetector(
-                        onTap: (){
-                          final filter = widget.filters[index]; // الحصول على الفلتر من القائمة المتاحة في الـ Widget
-                          ref.read(SeeAll_riverpod.notifier)
-                              .selectFilter(context, index, widget.sectionKey, filter); // تمرير الفلتر
-                        },
-                        child: Container(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: sizes.GetWidth() * 4,
-                            vertical: sizes.GetHeight() * 1,
-                          ),
-                          margin: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 1),
-                          decoration: BoxDecoration(
-                            color: isSelected ? Color(0xFFA56C0B) : Color(0xFFF4EBD7),
-                            borderRadius: BorderRadius.circular(30),
-                            border: Border.all(
-                              color: isSelected ? Color(0xFFA56C0B) : Color(0xFFD4B896),
-                            ),
-                          ),
-                          alignment: Alignment.center,
-                          child: Text(
-                            label,
-                            style: TextStyle(
-                              color: isSelected ? Colors.white : Color(0xFFA56C0B),
-                              fontSize: 12,
-                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                            ),
-                          ),
-                        ),
-                      );
+                  padding: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 2),
+                  child: WidgetTextField(
+                    Controller: notifier.searchController,
+                    HintText: textLanguage.GetWord("بحث"),
+                    iconData: "assets/icon/Search.svg",
+                    Horizontal: sizes.GetWidth() * 2,
+                    focusNode: notifier.searchNode,
+                    onChanged: (value) {
+                      _debounce?.cancel();
+                      _debounce = Timer(const Duration(milliseconds: 500), () {
+                        if (!mounted) return;
+                        if (value.trim().isEmpty) {
+                          ref.read(SeeAll_riverpod.notifier).resetSearch();
+                          ref.read(SeeAll_riverpod.notifier).fetchSection(
+                            context,
+                            section: widget.section,
+                            filter: widget.filter,
+                            key: widget.sectionKey,
+                          );
+                        } else {
+                          ref.read(SeeAll_riverpod.notifier).search(context);
+                        }
+                      });
                     },
                   ),
-                ):const SizedBox(),
-              if (widget.filters.isNotEmpty)
+                ),
               SizedBox(height: sizes.GetHeight() * 2),
+              widget.filters.isNotEmpty ? SizedBox(
+                height: sizes.GetHeight() * 5,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 2),
+                  itemCount: widget.filters.length,
+                  itemBuilder: (context, index) {
+                    final filter = widget.filters[index];
+                    final isSelected = notifier.selectedFilterIndex == index;
+                    final label = filter["label_en"] ?? filter["label"] ?? filter["key"] ?? "";
+                    return GestureDetector(
+                      onTap: (){
+                        final filter = widget.filters[index];
+                        ref.read(SeeAll_riverpod.notifier)
+                            .selectFilter(context, index, widget.sectionKey, filter);
+                      },
+                      child: Container(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: sizes.GetWidth() * 4,
+                          vertical: sizes.GetHeight() * 1,
+                        ),
+                        margin: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 1),
+                        decoration: BoxDecoration(
+                          color: isSelected ? Color(0xFFA56C0B) : Color(0xFFF4EBD7),
+                          borderRadius: BorderRadius.circular(30),
+                          border: Border.all(
+                            color: isSelected ? Color(0xFFA56C0B) : Color(0xFFD4B896),
+                          ),
+                        ),
+                        alignment: Alignment.center,
+                        child: Text(
+                          label,
+                          style: TextStyle(
+                            color: isSelected ? Colors.white : Color(0xFFA56C0B),
+                            fontSize: 12,
+                            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ) : const SizedBox(),
+              if (widget.filters.isNotEmpty)
+                SizedBox(height: sizes.GetHeight() * 2),
               Expanded(
                 child: _buildSectionContent(notifier, sizes, theme, textLanguage),
               ),
@@ -203,7 +196,9 @@ class _SeeAllState extends ConsumerState<SeeAll> {
       TextLanguage textLanguage,
       ) {
     final currentList = notifier.getCurrentList();
-    final hasMore = notifier.getCurrentHasMore();
+
+    // تم تعديل التحقق هنا ليعتمد على الـ state الفعلي للتحميل من الـ notifier
+    final bool isLoaderVisible = notifier.isFetchingMore;
 
     switch (widget.section) {
     // ─── Offers ───────────────────────────────────────────────────────────
@@ -213,14 +208,8 @@ class _SeeAllState extends ConsumerState<SeeAll> {
             Expanded(
               child: ListView.builder(
                 controller: _scrollController,
-                itemCount: currentList.length + (hasMore ? 1 : 0),
+                itemCount: currentList.length,
                 itemBuilder: (context, index) {
-                  if (index >= currentList.length) {
-                    return  Padding(
-                      padding: EdgeInsets.all(16),
-                      child: showLoading(),
-                    );
-                  }
                   final offer = currentList[index];
                   return Container(
                     margin: EdgeInsets.symmetric(
@@ -252,7 +241,15 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                 },
               ),
             ),
-            SizedBox(height: notifier.isFetchingMore ? 0 : sizes.GetHeight() * 1),
+            // ✅ هنا يظهر مؤشر التحميل في المنتصف تماماً أسفل القائمة
+            if (isLoaderVisible)
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Center(child: showLoading()),
+                ),
+              ),
+            SizedBox(height: sizes.GetHeight() * 3),
           ],
         );
 
@@ -264,95 +261,58 @@ class _SeeAllState extends ConsumerState<SeeAll> {
               child: GridView.builder(
                 controller: _scrollController,
                 padding: EdgeInsets.all(sizes.GetWidth() * 2),
-                gridDelegate:  SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  mainAxisExtent: Sizes(context).GetHeight() *36,
+                  mainAxisExtent: Sizes(context).GetHeight() * 36,
                   crossAxisSpacing: Sizes(context).GetWidth() * 1,
                   mainAxisSpacing: Sizes(context).GetHeight() * 1,
                 ),
-                itemCount: currentList.length + (notifier.isFetchingMore ? 1 : 0),
+                itemCount: currentList.length,
                 itemBuilder: (context, index) {
-                  if (index >= currentList.length) {
-                    return  Padding(
-                      padding: EdgeInsets.all(16),
-                      child: showLoading(),
-                    );
-                  }
                   final item = currentList[index];
                   return ContentCard(
                     showIcon: true,
-                    imagePath:item["image"]??"",
+                    imagePath: item["image"] ?? "",
                     title: item["business_name"] ?? "",
                     description: item["name"] ?? "",
-                    circleImagePath:
-                    "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
+                    circleImagePath: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
                     buttonText: textLanguage.GetWord("اطلب الآن"),
                     additionalInfo: Column(
                       children: [
-                        SizedBox(
-                            height: sizes
-                                .GetHeight() *
-                                1),
+                        SizedBox(height: sizes.GetHeight() * 1),
                         Row(
                           children: [
-                            SvgPicture.asset(
-                                "assets/icon/site.svg",
-                                height: sizes
-                                    .GetHeight() *
-                                    1.7),
-                            SizedBox(
-                                width: sizes
-                                    .GetWidth() *
-                                    0.4),
+                            SvgPicture.asset("assets/icon/site.svg", height: sizes.GetHeight() * 1.7),
+                            SizedBox(width: sizes.GetWidth() * 0.4),
                             Flexible(
                                 child: Text(
                                   (item["distance_km"] ?? "0 KM").toString(),
-                                  style: const TextStyle(
-                                      fontSize:
-                                      10),
-                                  overflow:
-                                  TextOverflow
-                                      .ellipsis,
+                                  style: const TextStyle(fontSize: 10),
+                                  overflow: TextOverflow.ellipsis,
                                 )),
-                            SizedBox(
-                                width: sizes
-                                    .GetWidth() *
-                                    1.5),
-                            SvgPicture.asset(
-                                "assets/icon/time.svg",
-                                height: sizes
-                                    .GetHeight() *
-                                    1.7),
-                            SizedBox(
-                                width: sizes
-                                    .GetWidth() *
-                                    0.4),
+                            SizedBox(width: sizes.GetWidth() * 1.5),
+                            SvgPicture.asset("assets/icon/time.svg", height: sizes.GetHeight() * 1.7),
+                            SizedBox(width: sizes.GetWidth() * 0.4),
                             Text(
                               (item["eta_minutes"] ?? "0 Mins").toString(),
-                              style: const TextStyle(
-                                  fontSize: 10),
-                              overflow:
-                              TextOverflow
-                                  .ellipsis,
+                              style: const TextStyle(fontSize: 10),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
                       ],
                     ),
-                    onButtonTap: ()async {
+                    onButtonTap: () async {
                       final branchId = item["id"];
                       await Navigator.push(
                         context,
                         PageRouteBuilder(
-                          pageBuilder:
-                              (_, __, ___) =>
-                              RestaurantDetalis(
-                                title: (item["business_name"] ?? "").toString(),
-                                branchId: branchId,),
-                          transitionDuration:
-                          Duration.zero,
-                          reverseTransitionDuration:
-                          Duration.zero,
+                          pageBuilder: (_, __, ___) => RestaurantDetalis(
+                            title: (item["business_name"] ?? "").toString(),
+                            branchId: branchId,
+                          ),
+                          transitionDuration: Duration.zero,
+                          reverseTransitionDuration: Duration.zero,
                         ),
                       );
                     },
@@ -360,14 +320,22 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                     height: sizes.GetHeight() * 40,
                     liked: notifier.favoriteStatus[item['id']] ?? false,
                     onLikeTap: () {
-                      notifier.toggleFavorite(item['id'], context,"branch");
+                      notifier.toggleFavorite(item['id'], context, "branch");
                     },
                     menuItemId: item["id"],
                   );
                 },
               ),
             ),
-            SizedBox(height: notifier.isFetchingMore ? 0 : sizes.GetHeight() * 5),
+            // ✅ تم إخراجه من الـ GridView ليصبح في السطر الأخير ممتد في السنتر تماماً
+            if (isLoaderVisible)
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Center(child: showLoading()),
+                ),
+              ),
+            SizedBox(height: sizes.GetHeight() * 3),
           ],
         );
 
@@ -379,44 +347,34 @@ class _SeeAllState extends ConsumerState<SeeAll> {
               child: GridView.builder(
                 controller: _scrollController,
                 padding: EdgeInsets.all(sizes.GetWidth() * 2),
-                gridDelegate:SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  mainAxisExtent:Sizes(context).GetHeight() *40,
+                  mainAxisExtent: Sizes(context).GetHeight() * 40,
                   crossAxisSpacing: Sizes(context).GetWidth() * 1,
                   mainAxisSpacing: Sizes(context).GetHeight() * 1,
                 ),
-                itemCount: currentList.length + (hasMore ? 1 : 0),
+                itemCount: currentList.length,
                 itemBuilder: (context, index) {
-                  if (index >= currentList.length) {
-                    return  Padding(
-                      padding: EdgeInsets.all(16),
-                      child: showLoading(),
-                    );
-                  }
                   final favorite = currentList[index];
                   final item = favorite["item"] ?? {};
                   return ContentCard(
                     showIcon: true,
-                    imagePath:item["image"]??"",
+                    imagePath: item["image"] ?? "",
                     title: item["business_name"] ?? "",
-                    description: "${item["description"] ?? "لا يوجد بينات"}",
-                    circleImagePath:
-                    "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
+                    description: "${item["description"] ?? "لا يوجد بيانات"}",
+                    circleImagePath: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
                     buttonText: textLanguage.GetWord("يكتشف"),
-                    onButtonTap: ()async {
+                    onButtonTap: () async {
                       final branchId = item["id"];
                       await Navigator.push(
                         context,
                         PageRouteBuilder(
-                          pageBuilder:
-                              (_, __, ___) =>
-                              RestaurantDetalis(
-                                title: (item["business_name"] ?? "").toString(),
-                                branchId: branchId,),
-                          transitionDuration:
-                          Duration.zero,
-                          reverseTransitionDuration:
-                          Duration.zero,
+                          pageBuilder: (_, __, ___) => RestaurantDetalis(
+                            title: (item["business_name"] ?? "").toString(),
+                            branchId: branchId,
+                          ),
+                          transitionDuration: Duration.zero,
+                          reverseTransitionDuration: Duration.zero,
                         ),
                       );
                     },
@@ -424,76 +382,43 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                     height: sizes.GetHeight() * 40,
                     liked: notifier.favoriteStatus[item['id']] ?? false,
                     onLikeTap: () {
-                      notifier.toggleFavorite(item['id'], context,favorite["type"]);
+                      notifier.toggleFavorite(item['id'], context, favorite["type"]);
                     },
                     additionalInfo: Column(
                       children: [
                         Row(
                           children: [
-                            SvgPicture.asset(
-                                "assets/icon/site.svg",
-                                height:
-                                sizes.GetHeight() *
-                                    1.7),
-                            SizedBox(
-                                width:
-                                sizes.GetWidth() *
-                                    0.4),
+                            SvgPicture.asset("assets/icon/site.svg", height: sizes.GetHeight() * 1.7),
+                            SizedBox(width: sizes.GetWidth() * 0.4),
                             Flexible(
                               child: Text(
                                 (item["distance_km"] ?? "0 KM").toString(),
-                                style: const TextStyle(
-                                    fontSize: 10),
-                                overflow:
-                                TextOverflow.ellipsis,
+                                style: const TextStyle(fontSize: 10),
+                                overflow: TextOverflow.ellipsis,
                               ),
                             ),
-                            SizedBox(
-                                width:
-                                sizes.GetWidth() *
-                                    1.5),
-                            SvgPicture.asset(
-                                "assets/icon/time.svg",
-                                height:
-                                sizes.GetHeight() *
-                                    1.7),
-                            SizedBox(
-                                width:
-                                sizes.GetWidth() *
-                                    0.4),
+                            SizedBox(width: sizes.GetWidth() * 1.5),
+                            SvgPicture.asset("assets/icon/time.svg", height: sizes.GetHeight() * 1.7),
+                            SizedBox(width: sizes.GetWidth() * 0.4),
                             Text(
                               (item["eta_minutes"] ?? "0 Mins").toString(),
-                              style: const TextStyle(
-                                  fontSize: 10),
-                              overflow:
-                              TextOverflow.ellipsis,
+                              style: const TextStyle(fontSize: 10),
+                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),
                         Row(
                           children: [
-                            SvgPicture.asset(
-                                "assets/icon/evaluation.svg"),
-                            SizedBox(
-                                width:
-                                sizes.GetWidth() * 1),
-                            Text(
-                                "${item["reviews_count"] ?? "0"} reviews",
-                                style: TextStyle(
-                                    fontSize: 10)),
+                            SvgPicture.asset("assets/icon/evaluation.svg"),
+                            SizedBox(width: sizes.GetWidth() * 1),
+                            Text("${item["reviews_count"] ?? "0"} reviews", style: TextStyle(fontSize: 10)),
                           ],
                         ),
                         Row(
                           children: [
-                            SvgPicture.asset(
-                                "assets/icon/Viewers.svg"),
-                            SizedBox(
-                                width:
-                                sizes.GetWidth() * 1),
-                            Text(
-                                "${item["visits_count"] ?? "0"} visits",
-                                style: TextStyle(
-                                    fontSize: 10)),
+                            SvgPicture.asset("assets/icon/Viewers.svg"),
+                            SizedBox(width: sizes.GetWidth() * 1),
+                            Text("${item["visits_count"] ?? "0"} visits", style: TextStyle(fontSize: 10)),
                           ],
                         ),
                       ],
@@ -503,7 +428,15 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                 },
               ),
             ),
-            SizedBox(height: notifier.isFetchingMore ? 0 : sizes.GetHeight() * 5),
+            // ✅ مؤشر تحميل نظيف في السنتر تماماً
+            if (isLoaderVisible)
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Center(child: showLoading()),
+                ),
+              ),
+            SizedBox(height: sizes.GetHeight() * 3),
           ],
         );
 
@@ -515,31 +448,37 @@ class _SeeAllState extends ConsumerState<SeeAll> {
               child: GridView.builder(
                 controller: _scrollController,
                 padding: EdgeInsets.all(sizes.GetWidth() * 2),
-                gridDelegate:SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   crossAxisCount: 2,
-                  mainAxisExtent: Sizes(context).GetHeight() *36.2,
+                  mainAxisExtent: Sizes(context).GetHeight() * 36.2,
                   crossAxisSpacing: Sizes(context).GetWidth() * 1,
                   mainAxisSpacing: Sizes(context).GetHeight() * 1,
                 ),
-                itemCount: currentList.length + (hasMore ? 1 : 0),
+                itemCount: currentList.length,
                 itemBuilder: (context, index) {
-                  if (index >= currentList.length) {
-                    return  Padding(
-                      padding: EdgeInsets.all(16),
-                      child: showLoading(),
-                    );
-                  }
                   final dish = currentList[index];
-                  final String dishPrice =dish["price"]?.toString() ?? "0";
+                  final String dishPrice = dish["price"]?.toString() ?? "0";
                   return ContentCard(
                     showIcon: true,
-                    imagePath:dish["image"]??"",
+                    imagePath: dish["image"] ?? "",
                     title: dish["business_name"]?.toString() ?? "",
-                    description: dish["description"]?.toString() ?? "",
-                    circleImagePath:
-                    "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
+                    description: dish["description"]?.toString() ?? "لا يوجد بينات",
+                    circleImagePath: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
                     buttonText: textLanguage.GetWord("يكتشف"),
-                    onButtonTap: () {},
+                    onButtonTap: ()async {
+                      final branchId = dish["id"];
+                      await Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (_, __, ___) => RestaurantDetalis(
+                            title: (dish["business_name"] ?? "").toString(),
+                            branchId: branchId,
+                          ),
+                          transitionDuration: Duration.zero,
+                          reverseTransitionDuration: Duration.zero,
+                        ),
+                      );
+                    },
                     width: sizes.GetWidth() * 50,
                     height: sizes.GetHeight() * 40,
                     liked: notifier.favoriteStatus[dish['id']] ?? false,
@@ -551,18 +490,25 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                       SvgPicture.asset("assets/icon/SAR.svg", color: theme.GetColor("secondaryPrimary")),
                     ]),
                     onLikeTap: () {
-                      notifier.toggleFavorite(dish['id'], context,"menu_item");
+                      notifier.toggleFavorite(dish['id'], context, "menu_item");
                     },
                     menuItemId: dish["id"],
                   );
                 },
               ),
             ),
-            SizedBox(height: notifier.isFetchingMore ? 0 : sizes.GetHeight() * 5),
+            // ✅ مؤشر تحميل نظيف في السنتر تماماً
+            if (isLoaderVisible)
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Center(child: showLoading()),
+                ),
+              ),
+            SizedBox(height: sizes.GetHeight() * 3),
           ],
         );
 
-    // يمكن إضافة باقي الأقسام بنفس النمط...
       default:
         return const SizedBox();
     }

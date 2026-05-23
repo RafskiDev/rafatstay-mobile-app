@@ -8,6 +8,7 @@ import '../../Utils/TextLanguage.dart';
 import '../../Utils/Them.dart';
 import '../../Utils/ToastMessage.dart';
 import '../../Widget/CheckBox.dart';
+import '../../Widget/CountdownText.dart';
 import '../../Widget/GradientText.dart';
 import '../../Widget/ShowLoading.dart';
 import '../../Widget/WidgetAppBar.dart';
@@ -145,7 +146,7 @@ class _BookingDetailsTakeawayState extends ConsumerState<BookingDetailsTakeaway>
                                 SvgPicture.asset(height: sizes.GetHeight() * 2,
                                   "assets/icon/SandGlass.svg",
                                   color: theme.GetColor("textPrimary"),),
-                                _CountdownText(bookingData: widget.bookingData),
+                                CountdownText(bookingData: widget.bookingData),
                                 /*
                                 Text(DateTimeHelper().getRemainingTime(
                                     widget.bookingData)),
@@ -783,35 +784,5 @@ class TableInfoRow extends StatelessWidget {
         ),
       ],
     );
-  }
-}
-class _CountdownText extends StatefulWidget {
-  final Map<String, dynamic> bookingData;
-  const _CountdownText({required this.bookingData});
-
-  @override
-  State<_CountdownText> createState() => _CountdownTextState();
-}
-
-class _CountdownTextState extends State<_CountdownText> {
-  Timer? _timer;
-
-  @override
-  void initState() {
-    super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
-      if (mounted) setState(() {});
-    });
-  }
-
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(DateTimeHelper().getRemainingTime(widget.bookingData));
   }
 }

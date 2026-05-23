@@ -226,6 +226,10 @@ class Toppicks extends ConsumerWidget {
                               context);
                         },
                         onButtonTap: ()async {
+                          if (!context.mounted) return;
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            ref.read(Home_riverpod.notifier).changeCardsCarousel(0);
+                          });
                           final branchId = (items[i] as Map<String, dynamic>)["id"];
                            await Navigator.push(
                             context,
@@ -242,10 +246,6 @@ class Toppicks extends ConsumerWidget {
                               Duration.zero,
                             ),
                           );
-                          if (!context.mounted) return;
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            ref.read(Home_riverpod.notifier).changeCardsCarousel(0);
-                          });
 
 
                         },

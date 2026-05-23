@@ -36,6 +36,7 @@ class CustomCarousel extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Themes();
     final sizes = Sizes(context);
+   // print(items);
     return Column(
       children: [
         CarouselSlider(
@@ -181,25 +182,28 @@ class CarouselTextImageItem extends StatelessWidget {
               ],
             ),
           ),
-          /*
-          if(item['image_url']!=null)
+
+          if(item['image']!=null)
           Directionality(
             textDirection:
             language.storage.read("Language") == 0
                 ? TextDirection.rtl
                 : TextDirection.ltr,
             child: PositionedDirectional(
-              start: sizes.GetWidth() * 2,
-              bottom: sizes.GetHeight() * 2,
-              child: Image.asset(
-                item['image_url'],
-                height: height * 0.7,
+              start: sizes.GetWidth() * 0,
+              top: sizes.GetHeight() * 4,
+              child: Image.network(
+                item['image']??"",
+                height: height * 0.5,
                 fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) => Image.asset(
+                  "assets/images/ChickenDish.png",
+                  height: height * 0.5,
+                  fit: BoxFit.contain,
+                ),
               ),
             ),
           ),
-
-           */
         ],
       ),
     );
