@@ -25,10 +25,10 @@ class PageNotifier extends Notifier<int> {
     return res;
   }
 
-  Future<void> fetchReviews(BuildContext context, int branchId) async {
+  Future<void> fetchReviews(BuildContext context, int staffId) async {
     ApiService api = ApiService();
     final res = await api.get(
-      "v1/$roles/branches/$branchId/reviews",
+      "v1/$roles/staff/$staffId/reviews",
       {},
       context,
     );
@@ -41,7 +41,6 @@ class PageNotifier extends Notifier<int> {
     } else {
       reviews = [];
     }
-   // print(reviews);
 
     reviewController.clear();
     ref.notifyListeners();
@@ -76,9 +75,10 @@ class PageNotifier extends Notifier<int> {
       body,
       context,
     );
+    print(res);
     if (res["success"] == true) {
       ToastMessages(context,"نجح ارسال التقيم",Colors.green,Colors.white);
-     // await fetchReviews(context, branchId);
+      await fetchReviews(context, staffId);
     } else {
       ToastMessages(context,res?["message"],Colors.red,Colors.white);
     }

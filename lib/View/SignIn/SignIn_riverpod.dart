@@ -154,4 +154,3 @@ class PageNotifier extends Notifier<int> {
 
 // Provider
 final signInRiverpod =NotifierProvider<PageNotifier, int>(PageNotifier.new);
-

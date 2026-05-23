@@ -98,10 +98,7 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
 
   @override
   Widget build(BuildContext context) {
-  //  ref.watch(RestaurantDetalis_riverpod);
-    final currentIndex = ref.watch(RestaurantDetalis_riverpod);
-    final items=ref.watch(RestaurantDetalis_riverpod.notifier).carouselItems;
-   // final controller = ref.watch(RestaurantDetalis_riverpod.notifier).controller;
+    ref.watch(RestaurantDetalis_riverpod);
     final notifier = ref.read(RestaurantDetalis_riverpod.notifier);
     final branches = notifier.branches;
     final sizes = Sizes(context);
@@ -476,178 +473,179 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                            ),
                           ],
                         ),
-                        SizedBox(height: sizes.GetHeight() * 2),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Row(
-                              children: [
-                                SvgPicture.asset(
-                                  "assets/icon/Menu.svg",
-                                  height: sizes.GetHeight() * 2,
-                                ),
-                                SizedBox(width: sizes.GetWidth() * 1),
-                                Text(textLanguage.GetWord("قائمة طعام"),
-                                    style: TextStyle(fontWeight: FontWeight.bold,
-                                        fontSize: sizes.GetHeight() * 2.5)),
-                              ],
-                            ),
-                            MealDropdown(),
-                          ],
-                        ),
-                        SizedBox(height: sizes.GetHeight() * 2),
-                        Container(
-                          width: double.infinity,
-                          height: sizes.GetHeight() * 6,
-                          padding: EdgeInsets.symmetric(horizontal: sizes
-                              .GetWidth() * 2),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFD3E9F8),
-                            borderRadius: BorderRadius.circular(
-                                sizes.GetWidth() * 10),
-                          ),
-                          child:ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            // +1 لزر "الكل"
-                            itemCount: ref.read(RestaurantDetalis_riverpod.notifier).tagss.length + 1,
-                            itemBuilder: (context, index) {
-                              final isAll = index == 0;
-                              final tag = isAll
-                                  ? "الكل"
-                                  : ref.read(RestaurantDetalis_riverpod.notifier).tagss[index - 1];
-                              final isSelected = isAll
-                                  ? ref.watch(RestaurantDetalis_riverpod.notifier).isSelectedMenu == -1
-                                  : ref.watch(RestaurantDetalis_riverpod.notifier).isSelectedMenu == index - 1;
-
-                              return GestureDetector(
-                                onTap: () {
-                                  if (isAll) {
-                                    ref.read(RestaurantDetalis_riverpod.notifier).resetMenu();
-                                  } else {
-                                    ref.read(RestaurantDetalis_riverpod.notifier).changeMenu(index - 1);
-                                  }
-                                },
-                                child: Container(
-                                  margin: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 1),
-                                  padding: EdgeInsets.symmetric(
-                                    horizontal: sizes.GetWidth() * 0.2,
-                                    vertical: sizes.GetHeight() * 1,
+                        if(ref.read(RestaurantDetalis_riverpod.notifier).allMeals.isNotEmpty)...[
+                          SizedBox(height: sizes.GetHeight() * 2),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  SvgPicture.asset(
+                                    "assets/icon/Menu.svg",
+                                    height: sizes.GetHeight() * 2,
                                   ),
-                                  child: Center(
-                                    child: Text(
-                                      tag,
-                                      style: TextStyle(
-                                        fontSize: sizes.GetHeight() * 1.8,
-                                        fontWeight: FontWeight.w500,
-                                        color: isSelected
-                                            ? theme.GetColor("secondary500")
-                                            : theme.GetColor("secondaryPrimary"),
+                                  SizedBox(width: sizes.GetWidth() * 1),
+                                  Text(textLanguage.GetWord("قائمة طعام"),
+                                      style: TextStyle(fontWeight: FontWeight.bold,
+                                          fontSize: sizes.GetHeight() * 2.5)),
+                                ],
+                              ),
+                              MealDropdown(),
+                            ],
+                          ),
+                          SizedBox(height: sizes.GetHeight() * 2),
+                          Container(
+                            width: double.infinity,
+                            height: sizes.GetHeight() * 6,
+                            padding: EdgeInsets.symmetric(horizontal: sizes
+                                .GetWidth() * 2),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFD3E9F8),
+                              borderRadius: BorderRadius.circular(
+                                  sizes.GetWidth() * 10),
+                            ),
+                            child:ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              // +1 لزر "الكل"
+                              itemCount: ref.read(RestaurantDetalis_riverpod.notifier).tagss.length + 1,
+                              itemBuilder: (context, index) {
+                                final isAll = index == 0;
+                                final tag = isAll
+                                    ? "الكل"
+                                    : ref.read(RestaurantDetalis_riverpod.notifier).tagss[index - 1];
+                                final isSelected = isAll
+                                    ? ref.watch(RestaurantDetalis_riverpod.notifier).isSelectedMenu == -1
+                                    : ref.watch(RestaurantDetalis_riverpod.notifier).isSelectedMenu == index - 1;
+
+                                return GestureDetector(
+                                  onTap: () {
+                                    if (isAll) {
+                                      ref.read(RestaurantDetalis_riverpod.notifier).resetMenu();
+                                    } else {
+                                      ref.read(RestaurantDetalis_riverpod.notifier).changeMenu(index - 1);
+                                    }
+                                  },
+                                  child: Container(
+                                    margin: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 1),
+                                    padding: EdgeInsets.symmetric(
+                                      horizontal: sizes.GetWidth() * 0.2,
+                                      vertical: sizes.GetHeight() * 1,
+                                    ),
+                                    child: Center(
+                                      child: Text(
+                                        tag,
+                                        style: TextStyle(
+                                          fontSize: sizes.GetHeight() * 1.8,
+                                          fontWeight: FontWeight.w500,
+                                          color: isSelected
+                                              ? theme.GetColor("secondary500")
+                                              : theme.GetColor("secondaryPrimary"),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
+                                );
+                              },
+                            ),
+                          ),
+                          SizedBox(height: sizes.GetHeight() * 2),
+                          GridView.builder(
+                            padding: EdgeInsets.zero,
+                            physics: NeverScrollableScrollPhysics(),
+                            shrinkWrap: true,
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: 3,
+                              crossAxisSpacing: sizes.GetWidth() * 1,
+                              mainAxisSpacing: sizes.GetWidth() * 2,
+                              mainAxisExtent: sizes.GetHeight() * 30,
+                            ),
+                            itemCount: ref
+                                .read(RestaurantDetalis_riverpod.notifier)
+                                .meals
+                                .length,
+                            itemBuilder: (context, index) {
+                              final meal = ref
+                                  .read(RestaurantDetalis_riverpod.notifier)
+                                  .meals[index];
+                              return MealCard(
+                                  item: meal,
+                                  sizes: sizes,
+                                  theme: theme,
+                                  onTap: () {
+                                    ref
+                                        .read(RestaurantDetalis_riverpod.notifier)
+                                        .increaseCount(
+                                      meal, context,
+                                      widget.branchId,
+                                    );
+                                  },
+                                  onTapDelete: () {
+                                    ref.read(RestaurantDetalis_riverpod.notifier).deleteMeal(index,context);
+                                  }
                               );
                             },
                           ),
-                        ),
-                        SizedBox(height: sizes.GetHeight() * 2),
-                        GridView.builder(
-                          padding: EdgeInsets.zero,
-                          physics: NeverScrollableScrollPhysics(),
-                          shrinkWrap: true,
-                          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 3,
-                            crossAxisSpacing: sizes.GetWidth() * 1,
-                            mainAxisSpacing: sizes.GetWidth() * 2,
-                            mainAxisExtent: sizes.GetHeight() * 30,
-                          ),
-                          itemCount: ref
-                              .read(RestaurantDetalis_riverpod.notifier)
-                              .meals
-                              .length,
-                          itemBuilder: (context, index) {
-                            final meal = ref
-                                .read(RestaurantDetalis_riverpod.notifier)
-                                .meals[index];
-                            return MealCard(
-                                item: meal,
-                                sizes: sizes,
-                                theme: theme,
+                          SizedBox(height: sizes.GetHeight() * 2),
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              SquareButton(
+                                width: sizes.GetWidth() * 45,
+                                height: sizes.GetHeight() * 5,
+                                backgroundColor: theme.GetColor("primary"),
+                                borderRadius: sizes.GetHeight() * 5,
+                                elevation: 6,
                                 onTap: () {
-                                  ref
-                                      .read(RestaurantDetalis_riverpod.notifier)
-                                      .increaseCount(
-                                    meal, context,
-                                    widget.branchId,
-                                  );
-                                },
-                                onTapDelete: () {
-                                  ref.read(RestaurantDetalis_riverpod.notifier).deleteMeal(index,context);
-                                }
-                            );
-                          },
-                        ),
-                        SizedBox(height: sizes.GetHeight() * 2),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SquareButton(
-                              width: sizes.GetWidth() * 45,
-                              height: sizes.GetHeight() * 5,
-                              backgroundColor: theme.GetColor("primary"),
-                              borderRadius: sizes.GetHeight() * 5,
-                              elevation: 6,
-                              onTap: () {
-                                final notifier = ref.read(RestaurantDetalis_riverpod.notifier);
+                                  final notifier = ref.read(RestaurantDetalis_riverpod.notifier);
 
-                                final selectedMeals = notifier.allMeals
-                                    .where((meal) => (meal['count'] ?? 0) > 0)
-                                    .toList();
-                                if (selectedMeals.isEmpty) {
-                                  ToastMessages(
+                                  final selectedMeals = notifier.allMeals
+                                      .where((meal) => (meal['count'] ?? 0) > 0)
+                                      .toList();
+                                  if (selectedMeals.isEmpty) {
+                                    ToastMessages(
+                                      context,
+                                      "اختر وجبة واحدة على الأقل",
+                                      Themes().GetColor("error"),
+                                      Themes().GetColor("white"),
+                                    );
+                                    return;
+                                  }
+
+                                  // 👇 حساب المجموع
+                                  double totalPrice = 0;
+                                  const double minOrder = 200;
+                                  for (var meal in selectedMeals) {
+                                    final price = double.tryParse(meal['price'].toString()) ?? 0;
+                                    final count = meal['count'] ?? 1;
+                                    totalPrice += price * count;
+                                  }
+
+                                  if (totalPrice < minOrder) {
+                                    ToastMessages(
+                                      context,
+                                      "الحد الأدنى للطلب 200 SAR",
+                                      Themes().GetColor("error"),
+                                      Themes().GetColor("white"),
+                                    );
+                                    return;
+                                  }
+                                  Navigator.push(
                                     context,
-                                    "اختر وجبة واحدة على الأقل",
-                                    Themes().GetColor("error"),
-                                    Themes().GetColor("white"),
+                                    PageRouteBuilder(
+                                      pageBuilder: (context, animation1, animation2) =>
+                                          MakeItYourWay(
+                                            title: "Make It Your Way",
+                                            branchId: widget.branchId,
+                                            selectedMeals: selectedMeals,
+                                            businessName: widget.title,
+                                          ),
+                                      transitionDuration: Duration.zero,
+                                      reverseTransitionDuration: Duration.zero,
+                                    ),
                                   );
-                                  return;
-                                }
 
-                                // 👇 حساب المجموع
-                                double totalPrice = 0;
-                                const double minOrder = 200;
-                                for (var meal in selectedMeals) {
-                                  final price = double.tryParse(meal['price'].toString()) ?? 0;
-                                  final count = meal['count'] ?? 1;
-                                  totalPrice += price * count;
-                                }
-
-                                if (totalPrice < minOrder) {
-                                  ToastMessages(
-                                    context,
-                                    "الحد الأدنى للطلب 200 SAR",
-                                    Themes().GetColor("error"),
-                                    Themes().GetColor("white"),
-                                  );
-                                  return;
-                                }
-                                Navigator.push(
-                                  context,
-                                  PageRouteBuilder(
-                                    pageBuilder: (context, animation1, animation2) =>
-                                        MakeItYourWay(
-                                          title: "Make It Your Way",
-                                          branchId: widget.branchId,
-                                          selectedMeals: selectedMeals,
-                                          businessName: widget.title,
-                                        ),
-                                    transitionDuration: Duration.zero,
-                                    reverseTransitionDuration: Duration.zero,
-                                  ),
-                                );
-
-                                /*
+                                  /*
                                 Navigator.push(
                                   context,
                                   PageRouteBuilder(
@@ -661,24 +659,25 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                                 );
 
                                  */
-                              },
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Text(
-                                    'Make It Your Way',
-                                  ),
-                                  SizedBox(width: sizes.GetWidth() * 1),
-                                  SvgPicture.asset(
-                                    "assets/icon/arrow.svg",
-                                    height: sizes.GetHeight() * 2.5,
-                                    //  color:theme.GetColor("textSecondary"),
-                                  ),
-                                ],
+                                },
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    const Text(
+                                      'Make It Your Way',
+                                    ),
+                                    SizedBox(width: sizes.GetWidth() * 1),
+                                    SvgPicture.asset(
+                                      "assets/icon/arrow.svg",
+                                      height: sizes.GetHeight() * 2.5,
+                                      //  color:theme.GetColor("textSecondary"),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          ],
-                        ),
+                            ],
+                          ),
+                        ],
                         SizedBox(height: sizes.GetHeight() * 2),
                         if (ref
                             .read(RestaurantDetalis_riverpod.notifier)

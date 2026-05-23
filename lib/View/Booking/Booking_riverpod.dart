@@ -143,13 +143,12 @@ class PageNotifier extends Notifier<int> {
       final pagination = data?['pagination'];
 
       final list = List<Map<String, dynamic>>.from(items);
-
       if (loadMore) {
         bookingsData.addAll(list);
       } else {
         bookingsData = list;
       }
-
+      // print(bookingsData[0]);
       if (pagination != null) {
         final lastPage = pagination['last_page'] ?? 1;
         hasMore = currentPage < lastPage;
@@ -166,6 +165,7 @@ class PageNotifier extends Notifier<int> {
     isFetchingMore = false;
     hasFetched = true;
    // getBookingDetails(context: context, bookingId: 68);
+    print(bookingsData);
 
     ref.notifyListeners();
   }

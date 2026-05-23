@@ -327,7 +327,8 @@ class PageNotifier extends Notifier<int> {
         );
         if (dishItem.isNotEmpty) itemData = dishItem;
       } else {
-        final allItems = [...getTopPickItems(home), ...closestCheapest, ...mostOrdered];
+       // final allItems = [...getTopPickItems(home), ...closestCheapest, ...mostOrdered];
+        final allItems = [...getTopPickItems(home), ...topPicks, ...closestCheapest, ...mostOrdered];
         itemData = allItems.firstWhere(
               (element) {
             final id = element["id"] is int ? element["id"] : int.tryParse(element["id"]?.toString() ?? "");
@@ -338,16 +339,24 @@ class PageNotifier extends Notifier<int> {
       }
 
       if (itemData.isNotEmpty) {
+        /*
         final String name = type == "menu_item"
             ? (itemData["name"] ?? itemData["title"] ?? "").toString()
             : (itemData["business_name"] ?? itemData["name"] ?? "").toString();
         final String image = (itemData["image"] ?? itemData["image_url"] ?? "").toString();
 
+         */
+
         favorite.insert(0, {
+          ...itemData,
           "item_id": itemId,
           "type": type,
           "liked": true,
-          "item": {"id": itemId, "business_name": name, "image": image},
+          "item": {
+            "id": itemId,
+            "business_name": itemData["business_name"] ?? itemData["name"] ?? itemData["title"] ?? "",
+            "image": itemData["image"] ?? itemData["image_url"] ?? "",
+          },
           "distance_km": itemData["distance_km"],
           "eta_minutes": itemData["eta_minutes"],
           "min_price": itemData["min_price"],

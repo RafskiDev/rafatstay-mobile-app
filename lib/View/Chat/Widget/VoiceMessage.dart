@@ -32,7 +32,8 @@ class _VoiceMessageState extends State<VoiceMessage> {
   void initState() {
     super.initState();
     _initPlayer();
-    _currentProgress = widget.progress-1;
+   // _currentProgress = widget.progress-1;
+    _currentProgress = widget.progress;
   }
 
   void _initPlayer() {

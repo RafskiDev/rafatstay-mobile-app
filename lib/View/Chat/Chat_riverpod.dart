@@ -212,14 +212,14 @@ class PageNotifier extends Notifier<int> {
         "v1/guest/chat/conversations/$conversationId/messages",
         audioFile,
         context,
-        fieldName: "file",
+        fieldName: "attachment",
         mimeType: "audio/aac",
         fields: {
-          "body": "🎤 رسالة صوتية",
-          "type": "file",
+          "body": "voice",
+          "type": "audio",
         },
       );
-      print(res);
+
       messages.removeWhere((msg) => msg['id'] == tempId);
 
       if (res != null && res['success'] == true && res['data'] != null) {
@@ -232,9 +232,9 @@ class PageNotifier extends Notifier<int> {
           'time': messageData['created_at'] ?? formattedTime,
           'isSentByMe': true,
           'type': 'voice',
-          'attachment_url': attachmentUrl,       // ← من السيرفر
-          'mediaUrl': audioFile.path,            // ← ✅ المسار المحلي دائماً
-          'duration': duration,
+          'attachment_url': attachmentUrl,
+          'mediaUrl': audioFile.path,
+          "body": "voice",
           'progress': 0.0,
           'status': 'sent',
         });
@@ -246,7 +246,7 @@ class PageNotifier extends Notifier<int> {
           'isSentByMe': true,
           'type': 'voice',
           'mediaUrl': audioFile.path,
-          'duration': duration,
+          'duration': 0,
           'progress': 0.0,
           'status': 'failed',
         });
@@ -298,17 +298,20 @@ class PageNotifier extends Notifier<int> {
             'time': msg['created_at'] ?? '',
             'isSentByMe': msg['sender_type'] == 'guest',
             'type': msg['type'] ?? 'text',
-            'attachment_url': msg['attachment_url'], // هذا قد يكون null
+            'attachment_url': msg['attachment_url'],
+            'duration':0,
             'status': 'sent',
           };
         }).toList();
-
+         /*
         // طباعة للتحقق من الصور
         for (var msg in messages) {
           if (msg['type'] == 'image') {
             print("Image message: id=${msg['id']}, url=${msg['attachment_url']}");
           }
         }
+
+          */
       }
     }
     ref.notifyListeners();

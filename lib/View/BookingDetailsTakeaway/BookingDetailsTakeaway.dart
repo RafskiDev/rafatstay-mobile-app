@@ -17,6 +17,8 @@ import '../MakeItYourWay/MakeItYourWay_riverpod.dart';
 import '../OffersDetails/OffersDetails_riverpod.dart';
 import '../Review_Confirm/Review_Confirm.dart';
 import 'BookingDetailsTakeaway_riverpod.dart';
+import 'dart:async';
+
 class BookingDetailsTakeaway extends  ConsumerStatefulWidget{
   final Map<String, dynamic> bookingData;
   const BookingDetailsTakeaway({super.key, required this.bookingData});
@@ -26,15 +28,24 @@ class BookingDetailsTakeaway extends  ConsumerStatefulWidget{
 }
 
 class _BookingDetailsTakeawayState extends ConsumerState<BookingDetailsTakeaway> {
+  Timer? _timer;
   @override
   void initState() {
     super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       ref.read(BookingDetailsTakeaway_riverpod.notifier).resetToDefault();
       ref.read(BookingDetailsTakeaway_riverpod.notifier).loadFromBookingData(widget.bookingData);
       ref.read(BookingDetailsTakeaway_riverpod.notifier).garages(context,widget.bookingData["branch_id"]??0);
     });
+  }
+  @override
+  void dispose() {
+    _timer?.cancel();  // ← مهم عشان ما يسبب memory leak
+    super.dispose();
   }
   @override
   Widget build(BuildContext context) {
@@ -134,8 +145,12 @@ class _BookingDetailsTakeawayState extends ConsumerState<BookingDetailsTakeaway>
                                 SvgPicture.asset(height: sizes.GetHeight() * 2,
                                   "assets/icon/SandGlass.svg",
                                   color: theme.GetColor("textPrimary"),),
+                                _CountdownText(bookingData: widget.bookingData),
+                                /*
                                 Text(DateTimeHelper().getRemainingTime(
                                     widget.bookingData)),
+
+                                 */
                               ],
                             ),
                           ],
@@ -768,5 +783,35 @@ class TableInfoRow extends StatelessWidget {
         ),
       ],
     );
+  }
+}
+class _CountdownText extends StatefulWidget {
+  final Map<String, dynamic> bookingData;
+  const _CountdownText({required this.bookingData});
+
+  @override
+  State<_CountdownText> createState() => _CountdownTextState();
+}
+
+class _CountdownTextState extends State<_CountdownText> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(DateTimeHelper().getRemainingTime(widget.bookingData));
   }
 }

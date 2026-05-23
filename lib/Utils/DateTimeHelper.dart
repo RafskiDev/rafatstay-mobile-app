@@ -97,6 +97,7 @@ class DateTimeHelper {
       return "--";
     }
   }
+
   String formatDate(String? dateStr) {
     if (dateStr == null) return "";
     try {

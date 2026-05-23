@@ -37,9 +37,10 @@ class _EmployeeDetails extends ConsumerState<EmployeeDetails> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final staffId = widget.employeeDetails[0]["id"] as int;
       ref.read(EmployeeDetails_riverpod.notifier).fetchReviews(
         context,
-        widget.branchId,
+        staffId,  // ← هنا
       );
     });
   }
@@ -144,6 +145,7 @@ class _EmployeeDetails extends ConsumerState<EmployeeDetails> {
                     iconPath: "assets/icon/Highlights.svg",
                     title: textLanguage.GetWord("أبرز النقاط"),
                     contentWidgets: [
+                      SizedBox(height: sizes.GetHeight() * 1),
                       Column(
                         children: List.generate(
                           (highlights.length / 2).ceil(),
@@ -173,55 +175,57 @@ class _EmployeeDetails extends ConsumerState<EmployeeDetails> {
                       )
                     ],
                   ),
-                  SizedBox(height: sizes.GetHeight() * 2),
                   // --- Reviews List ---
-                  Row(
-                    children: [
-                      SvgPicture.asset(
-                        "assets/icon/Reviews.svg",
-                        height: sizes.GetHeight() * 1.8,
-                        color: theme.GetColor("textPrimary"),
-                      ),
-                      SizedBox(width: sizes.GetWidth() * 1),
-                      Text(
-                        textLanguage.GetWord("التقييمات"),
-                        style: TextStyle(
-                            color: theme.GetColor("textPrimary"),
-                            fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: sizes.GetHeight() * 1),
-                  SizedBox(
-                   // height: sizes.GetHeight() * 60,
-                    child: ListView.builder(
-                      physics: const NeverScrollableScrollPhysics(),
-                      shrinkWrap: true,
-                      itemCount: reviews.length,
-                      itemBuilder: (context, index) {
-                        final review = reviews[index];
-                        String time = DateTimeHelper.extractTime(review["created_at"] ?? "");
-                        return Padding(
-                          padding: EdgeInsets.symmetric(
-                              vertical: sizes.GetHeight() * 0.5),
-                          child: ReviewCard(
-                            name: review["user"]?["full_name"] ?? "Anonymous",
-                            date: time,
-                            rating: review["overall_rating"] ?? 0,
-                            comment: review["comment"] ?? "",
-                            image:
-                            "assets/images/38a2a034cbe4ac063cad704f0bc1eb89da98ec7f.png",
-                            sizes: sizes,
-                            theme: theme,
-                            onAvatarTap: () {
-                              print(
-                                  "Tapped on avatar of ${review["user"]?["full_name"]}");
-                            },
-                          ),
-                        );
-                      },
+                  if(reviews.isNotEmpty)...[
+                    SizedBox(height: sizes.GetHeight() * 2),
+                    Row(
+                      children: [
+                        SvgPicture.asset(
+                          "assets/icon/Reviews.svg",
+                          height: sizes.GetHeight() * 1.8,
+                          color: theme.GetColor("textPrimary"),
+                        ),
+                        SizedBox(width: sizes.GetWidth() * 1),
+                        Text(
+                          textLanguage.GetWord("التقييمات"),
+                          style: TextStyle(
+                              color: theme.GetColor("textPrimary"),
+                              fontWeight: FontWeight.bold),
+                        ),
+                      ],
                     ),
-                  ),
+                    SizedBox(height: sizes.GetHeight() * 1),
+                    SizedBox(
+                      // height: sizes.GetHeight() * 60,
+                      child: ListView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
+                        shrinkWrap: true,
+                        itemCount: reviews.length,
+                        itemBuilder: (context, index) {
+                          final review = reviews[index];
+                          String time = DateTimeHelper.extractTime(review["created_at"] ?? "");
+                          return Padding(
+                            padding: EdgeInsets.symmetric(
+                                vertical: sizes.GetHeight() * 0.5),
+                            child: ReviewCard(
+                              name: review["user"]?["full_name"] ?? "Anonymous",
+                              date: time,
+                              rating: review["overall_rating"] ?? 0,
+                              comment: review["comment"] ?? "",
+                              image:
+                              "assets/images/38a2a034cbe4ac063cad704f0bc1eb89da98ec7f.png",
+                              sizes: sizes,
+                              theme: theme,
+                              onAvatarTap: () {
+                                print(
+                                    "Tapped on avatar of ${review["user"]?["full_name"]}");
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ],
                   // Rate Section
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -320,10 +324,12 @@ class _EmployeeDetails extends ConsumerState<EmployeeDetails> {
             height: sizes.GetHeight() * 1.8,
             color: theme.GetColor("textPrimary"),
           ),
-          SizedBox(width: sizes.GetWidth() * 1),
-          Text(
-            label,
-            style: TextStyle(color: theme.GetColor("textPrimary"), fontSize: 13),
+          SizedBox(width: sizes.GetWidth() * 0.5),
+          Flexible(
+            child: Text(
+              label,
+              style: TextStyle(color: theme.GetColor("textPrimary"), fontSize: 13),
+            ),
           ),
         ],
       ),

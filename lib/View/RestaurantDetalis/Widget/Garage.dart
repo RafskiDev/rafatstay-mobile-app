@@ -9,6 +9,7 @@ Widget Garage(BuildContext context, String title, String image,WidgetRef ref) {
   final Color secondaryColor = Themes().GetColor("secondary");
   final garage = ref.read(RestaurantDetalis_riverpod.notifier).garage;
   if (garage.isEmpty) return Container();
+  print(garage);
   return Container(
     width: double.infinity,
     height: Sizes(context).GetHeight() * 25,
@@ -52,7 +53,7 @@ Widget Garage(BuildContext context, String title, String image,WidgetRef ref) {
               ),
               Row(
                 children: [
-                   buildIconText(context,"assets/icon/Status.svg", "Status: ${garage[0][["available"]] ?? false ? "Available" : "Not Available"}", secondaryColor),
+                   buildIconText(context,"assets/icon/Status.svg", "Status: ${garage[0]["available"] == true ? "Available" : "Not Available"}", secondaryColor),
                    SizedBox(width: Sizes(context).GetWidth() * 1),
                    buildIconText(context,"assets/icon/Spots.svg", "Spots: ${garage[0]["total_spots"] ?? 0}", secondaryColor),
                 ],

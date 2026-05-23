@@ -242,7 +242,7 @@ class _UpcomingState extends ConsumerState<Upcoming> {
                                 SizedBox(width: sizes.GetWidth() * 1),
                                 SvgPicture.asset("assets/icon/dollar.svg"),
                                 SizedBox(width: sizes.GetWidth() * 1),
-                                Text("2300"),
+                                Text(ref.read(Booking_riverpod.notifier).bookingsData[0]['detail_sections']?['booking_details']?['items_summary']?['amount']?.toString() ?? "0"),
                                 SizedBox(width: sizes.GetWidth() * 1),
                                 SvgPicture.asset("assets/icon/SAR.svg",height: Sizes(context).GetHeight()*1.1),
                               ],

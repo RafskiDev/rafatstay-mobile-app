@@ -242,7 +242,7 @@ class Toppicks extends ConsumerWidget {
                               Duration.zero,
                             ),
                           );
-                           if(!context.mounted) return;
+                          if (!context.mounted) return;
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             ref.read(Home_riverpod.notifier).changeCardsCarousel(0);
                           });

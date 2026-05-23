@@ -114,15 +114,14 @@ class _ChatState extends ConsumerState<Chat> {
                           );
                           break;
                         case "voice":
-                        case "file":
-                        String voiceUrl = msg["attachment_url"]?.toString() ?? "";
-                        if (voiceUrl.isEmpty) {
-                          voiceUrl = msg["mediaUrl"]?.toString() ?? ""; // ← لما تجي من getMessages مافي mediaUrl
-                        }
-                          // الحصول على المدة والتقدم
-                          int duration = (msg["duration"] as num?)?.toInt() ?? 5;
-                          double progress = (msg["progress"] as num?)?.toDouble() ?? 0.0;
+                        case "audio":
+                        final attachmentUrl = msg["attachment_url"]?.toString() ?? "";
+                        final mediaUrl = msg["mediaUrl"]?.toString() ?? "";
+                        final voiceUrl = attachmentUrl.isNotEmpty ? attachmentUrl : mediaUrl;
 
+                        // سيأخذ الآن المدة المستخرجة الحقيقية من السيرفر
+                        int duration = (msg["duration"] as num?)?.toInt() ?? 5;
+                        double progress = (msg["progress"] as num?)?.toDouble() ?? 0.0;
                           messageWidget = VoiceMessage(
                             voiceUrl: voiceUrl,
                             time: time,

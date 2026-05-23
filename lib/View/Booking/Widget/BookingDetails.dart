@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:rafatstay/View/Maps/Maps.dart';
 import '../../../Utils/Sizes.dart';
 import '../../../Utils/TextLanguage.dart';
 import '../../../Utils/Them.dart';
@@ -17,6 +18,7 @@ class BookingDetail extends StatelessWidget {
   Widget build(BuildContext context) {
     final sizes = Sizes(context);
     final items = booking?['items'] as List?;
+   // final primaryCta = booking?['actions']?['primary_cta'];
     return Column(
       children: [
         if ((booking?['items'] as List?)?.isNotEmpty == true) ...[
@@ -191,18 +193,34 @@ class BookingDetail extends StatelessWidget {
           ),
 
         ],
-        SizedBox(height: Sizes(context).GetHeight() * 1),
-        WidgetButton(
-          width: sizes.GetWidth() * 50,
-          isCircular: true,
-          context: context,
-          buttonText: TextLanguage().GetWord("متوجه إلى المطعم"),
-          textColor: Themes().GetColor("textPrimary"),
-          onPressed: () {
 
-          },
-          backgroundColor: Themes().GetColor("primary"),
-        ),
+          SizedBox(height: Sizes(context).GetHeight() * 1),
+          WidgetButton(
+            width: sizes.GetWidth() * 50,
+            isCircular: true,
+            context: context,
+            buttonText: TextLanguage().GetWord("متوجه إلى المطعم"),
+            textColor: Themes().GetColor("textPrimary"),
+            onPressed: () {
+            //  final bookings = ref.read(Booking_riverpod.notifier).bookingsData;
+            //  final restaurantLat = booking?['restaurant']['lat'] ?? 0.0;
+            //  final restaurantLng = booking?['restaurant']['lng'] ?? 0.0;
+            //  print("restaurantLat: ${bookings}}");
+              /*
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation1, animation2) =>
+                   Maps(restaurantLat: restaurantLat, restaurantLng: restaurantLng),
+                  transitionDuration: Duration.zero,
+                  reverseTransitionDuration: Duration.zero,
+                ),
+              );
+
+               */
+            },
+            backgroundColor: Themes().GetColor("primary"),
+          ),
         WidgetButton(
           width: sizes.GetWidth() * 50,
           isCircular: true,

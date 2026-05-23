@@ -80,6 +80,7 @@ class _VoiceRecordButtonState extends State<VoiceRecordButton> {
     final path = await _recorder.stop();
     setState(() {
       _isRecording = false;
+      if (path != null) _recordingPath = path;
     });
   }
 
