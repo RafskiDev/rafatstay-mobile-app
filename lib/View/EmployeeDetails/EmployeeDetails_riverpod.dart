@@ -32,7 +32,7 @@ class PageNotifier extends Notifier<int> {
       {},
       context,
     );
-    print(res);
+   // print("staff: $res");
     // التحقق قبل التحويل
     if (res != null && res["success"] == true && res["data"] != null) {
       // بنحول الداتا لـ List مباشرة
