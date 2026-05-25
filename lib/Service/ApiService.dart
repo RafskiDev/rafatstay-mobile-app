@@ -11,7 +11,8 @@ import 'LoadingService.dart';
 final box = GetStorage();
 String baseUrl="https://api.rafatstay.com/api/";
 final showImage = "https://api.rafatstay.com/storage/";
-String roles=box.read("user")["roles"][0]["name"];
+String roles=box.read("user")["roles"][0]["name"];//guest
+
 Future<String?> get token async {
   final storage = GetStorage();
   return storage.read("token");

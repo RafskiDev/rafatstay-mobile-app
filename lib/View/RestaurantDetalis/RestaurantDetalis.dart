@@ -103,8 +103,37 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
     final branches = notifier.branches;
     final sizes = Sizes(context);
     final theme = Themes();
+    if (LoadingService.isLoading.value && branches.isEmpty) {
+      return Scaffold(
+        backgroundColor: theme.GetColor("background"),
+        body: Center(child: showLoading()),
+      );
+    }
+    if (branches.isEmpty) {
+      return Scaffold(
+        backgroundColor: theme.GetColor("background"),
+        body: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.store_outlined, size: 64, color: theme.GetColor("textSecondary")),
+              SizedBox(height: sizes.GetHeight() * 2),
+              Text(
+                TextLanguage().GetWord("الفرع غير متوفر"),
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: theme.GetColor("textSecondary"),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
 
-
+    // 🛑 3. تعريف المتغير الآمن الآن بعد ضمان امتلاء المصفوفة
+    final List<dynamic> branchPhotos = branches[0]['photos'] as List? ?? [];
     final textLanguage = TextLanguage();
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
@@ -112,25 +141,6 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
         child: ValueListenableBuilder<bool>(
           valueListenable: LoadingService.isLoading,
           builder: (context, isLoading, child) {
-            if (branches.isEmpty && !LoadingService.isLoading.value) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.store_outlined, size: 64, color: theme.GetColor("textSecondary")),
-                    SizedBox(height: sizes.GetHeight() * 2),
-                    Text(
-                      textLanguage.GetWord("الفرع غير متوفر"),
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: theme.GetColor("textSecondary"),
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            }
             if (branches.isEmpty) return showLoading();
             return SingleChildScrollView(
               child: Column(
@@ -142,12 +152,13 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                           bottomLeft: Radius.circular(sizes.GetHeight() * 3),
                           bottomRight: Radius.circular(sizes.GetHeight() * 3),
                         ),
-                        child: CarouselSlider(
+                        child:branchPhotos.isNotEmpty? CarouselSlider(
                           items: (branches[0]['photos'] as List? ?? []).map((item) {
                             final url = item['url'] ?? "";
+
                             return CachedNetworkImage(
                               width: double.infinity,
-                              imageUrl:"$showImage$url",
+                              imageUrl:url,
                               fit: BoxFit.cover,
                               placeholder: (context, url) =>  Center(
                                 child:showLoading(),
@@ -177,6 +188,15 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                             onPageChanged: (index, reason) {
                               ref.read(RestaurantDetalis_riverpod.notifier).changePage(index);
                             },
+                          ),
+                        ): Container(
+                          height: sizes.GetHeight() * 35,
+                          width: double.infinity,
+                          color: theme.GetColor("background"),
+                          child: const Icon(
+                            Icons.store_outlined, // أيقونة فرع أو متجر احترافية عند غياب الصور
+                            size: 50,
+                            color: Colors.grey,
                           ),
                         ),
                       ),

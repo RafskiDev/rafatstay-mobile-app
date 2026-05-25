@@ -33,14 +33,14 @@ class RateYourExperience extends ConsumerWidget {
             children: [
               Row(
                 children: [
-                  Text(textLanguage.GetWord('احصل على 50 نقطة مقابل تقييمك.')),
+                  Text(textLanguage.GetWord("احصل على 50 نقطة مقابل تقييمك.")),
                 ],
               ),
               SizedBox(height: sizes.GetHeight() * 2),
               Row(
                 children: [
                   Text(
-                    textLanguage.GetWord('احصل على مزايا وخصومات حصرية.'),
+                    textLanguage.GetWord("احصل على مزايا وخصومات حصرية."),
                     style: TextStyle(color: theme.GetColor("textSecondary")),
                   ),
                 ],
@@ -49,7 +49,7 @@ class RateYourExperience extends ConsumerWidget {
 
               // ✅ overall_rating + atmosphere_rating
               Row(
-                children: [Text(textLanguage.GetWord('تقييم المطعم'))],
+                children: [Text(textLanguage.GetWord("تقييم المطعم"))],
               ),
               SizedBox(height: sizes.GetHeight() * 2),
               SizedBox(
@@ -77,7 +77,7 @@ class RateYourExperience extends ConsumerWidget {
 
               // ✅ food_rating + service_rating
               Row(
-                children: [Text("Service Rating")],
+                children: [Text(TextLanguage().GetWord("تقييم الخدمة"))],
               ),
               SizedBox(height: sizes.GetHeight() * 2),
               SizedBox(
@@ -119,7 +119,7 @@ class RateYourExperience extends ConsumerWidget {
 
               // ✅ best_employee_id — موظف واحد فقط
               Row(
-                children: [Text(textLanguage.GetWord('تقييم الموظفين'))],
+                children: [Text(textLanguage.GetWord("تقييم الموظفين"))],
               ),
               SizedBox(height: sizes.GetHeight() * 2),
               SizedBox(
@@ -173,7 +173,7 @@ class RateYourExperience extends ConsumerWidget {
               // ),
 
               // ✅ comment للموظف
-              FeedbackInput(context, textLanguage.GetWord('شاركنا رأيك…')),
+              FeedbackInput(context, textLanguage.GetWord("شاركنا رأيك…")),
               SizedBox(height: sizes.GetHeight() * 2),
 
               // ✅ tip_amount
@@ -190,7 +190,7 @@ class RateYourExperience extends ConsumerWidget {
                   child: Column(
                     children: [
                       Row(
-                        children: [Text("Would you like to add a tip?")],
+                        children: [Text(TextLanguage().GetWord("هل ترغب في إضافة إكرامية؟"))],
                       ),
                       SizedBox(height: sizes.GetHeight() * 2),
                       WidgetTextField(
@@ -198,7 +198,7 @@ class RateYourExperience extends ConsumerWidget {
                         borderColor: Themes().GetColor("secondary"),
                         Controller: ref.read(RateYourExperience_riverpod.notifier).controller,
                         focusNode: ref.read(RateYourExperience_riverpod.notifier).focusNodeController,
-                        HintText: "Enter Amount",
+                        HintText:TextLanguage().GetWord('أدخل المبلغ'),
                         keyboardType: TextInputType.number,
                         iconData: 'assets/icon/LikePrice.svg',
                       ),

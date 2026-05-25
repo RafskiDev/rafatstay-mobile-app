@@ -9,6 +9,7 @@ import '../../Utils/ToastMessage.dart';
 import '../../Widget/ContentCard.dart';
 import '../../Widget/GradientText.dart';
 import '../../Widget/ShowLoading.dart';
+import '../../Widget/TableCard.dart';
 import '../../Widget/WidgetButton.dart';
 import '../AvailableTables/AvailableTables.dart';
 import '../MakeItYourWay/MakeItYourWay.dart';
@@ -287,13 +288,14 @@ class _EventBookingState extends ConsumerState<EventBooking> {
                             final table = notifier.tables[index];
                             final isSelected = notifier.selectedTableIndex ==
                                 index;
+                            final List mediaList = table['media_paths'] ?? [];
+                            final String imageUrl = mediaList.isNotEmpty
+                                ? mediaList[0]
+                                : "";
                             return TableCard(
                               title: "Table #${table['table_number']?.toString() ??
                                   (index + 1).toString()}",
-                              image: (table['media_paths'] is List &&
-                                  (table['media_paths'] as List).isNotEmpty)
-                                  ? "https://www.rafatstay.com${(table['media_paths'] as List)[0]}"
-                                  : "assets/images/2509e72c5c9928d0f7ab2e1d37bd28c83c2c2603.png",
+                              image:imageUrl,
                               subtitle: table['location_type']?.toString() ??
                                   "",
                               isChecked: isSelected,

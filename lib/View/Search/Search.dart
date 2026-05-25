@@ -75,12 +75,16 @@ class _SearchState extends ConsumerState<Search> {
                                       .read(Search_riverpod.notifier)
                                       .searchNode,
                                   onFieldSubmitted: (value) async {
+                                    await notifier.search(context);
+                                    /*
                                     await ref
                                         .read(Search_riverpod.notifier)
                                         .fetchRecentSearches(context);
                                     await ref
                                         .read(Search_riverpod.notifier)
                                         .search(context);
+
+                                     */
                                   },
                                 ),
                               ),
@@ -106,6 +110,7 @@ class _SearchState extends ConsumerState<Search> {
                             ],
                           ),
                           SizedBox(height: sizes.GetHeight() * 2),
+                          if (notifier.searchResults.isEmpty)
                           Row(
                             children: [
                               Text(textLanguage.GetWord('عمليات البحث الأخيرة'),
@@ -113,7 +118,7 @@ class _SearchState extends ConsumerState<Search> {
                                       "textSecondary"))),
                             ],
                           ),
-                          if (ref.read(Search_riverpod.notifier).isSearching && !notifier.searchResults.isNotEmpty)
+                          if (notifier.isSearching && notifier.searchResults.isEmpty)
                             Padding(
                               padding: const EdgeInsets.symmetric(vertical: 20.0),
                               child: Center(
@@ -126,7 +131,9 @@ class _SearchState extends ConsumerState<Search> {
                                 ),
                               ),
                            ),
-                          if (ref.read(Search_riverpod.notifier).recentSearches.isNotEmpty && !ref.read(Search_riverpod.notifier).isSearching)
+                          if (notifier.recentSearches.isNotEmpty &&
+                              notifier.searchResults.isEmpty &&
+                              !notifier.isSearching)
                             ListView.builder(
                               physics: NeverScrollableScrollPhysics(),
                               shrinkWrap: true,
@@ -217,7 +224,6 @@ class _SearchState extends ConsumerState<Search> {
                                 return InkWell(
                                   onTap: () async {
                                     final branchId = item["id"];
-                                    print(item["business_name"]);
                                     final title = (item["business_name"] ?? item["name"]).toString();
                                     await Navigator.push(
                                       context,

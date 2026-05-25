@@ -33,17 +33,7 @@ class _EmployeeDetails extends ConsumerState<EmployeeDetails> {
   late Sizes sizes;
   late TextLanguage textLanguage;
 
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final staffId = widget.employeeDetails[0]["id"] as int;
-      ref.read(EmployeeDetails_riverpod.notifier).fetchReviews(
-        context,
-        staffId,
-      );
-    });
-  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -52,12 +42,11 @@ class _EmployeeDetails extends ConsumerState<EmployeeDetails> {
     textLanguage = TextLanguage();
     ref.watch(EmployeeDetails_riverpod);
     final reviewNotifier = ref.read(EmployeeDetails_riverpod.notifier);
-    final reviews = ref.watch(EmployeeDetails_riverpod.notifier).reviews;
     final highlights = List<String>.from(
       widget.employeeDetails[0]["highlights"] ?? [],
     );
-
-
+    final employeeData = widget.employeeDetails[0];
+    final List<dynamic> reviews = employeeData["reviews"] ?? [];
     return Scaffold(
       resizeToAvoidBottomInset: true,
       backgroundColor: theme.GetColor("background"),
@@ -205,25 +194,16 @@ class _EmployeeDetails extends ConsumerState<EmployeeDetails> {
 
                         // 1. استخراج القيمة الخام وتجنب الـ Null
                         final rawRating = review["overall_rating"] ?? review["rating"] ?? 0;
-
-                        // 2. تحويلها بأمان إلى int لتتوافق مع الـ ReviewCard
-                        int finalRating;
-                        if (rawRating is String) {
-                          finalRating = double.tryParse(rawRating)?.round() ?? 0;
-                        } else if (rawRating is num) {
-                          finalRating = rawRating.round(); // تحويل الـ double إلى أقرب int والـ int بيبقى كما هو
-                        } else {
-                          finalRating = 0;
-                        }
-
+                        int finalRating = (rawRating is num) ? rawRating.round() : 0;
+                        print(review["user"]["avatar"]);
                         return Padding(
                           padding: EdgeInsets.symmetric(vertical: sizes.GetHeight() * 0.5),
                           child: ReviewCard(
                             name: review["user"]?["full_name"] ?? review["name"] ?? "Anonymous",
                             date: time,
-                            rating: finalRating, // ← تم الإصلاح هنا بـ int صريح
+                            rating: finalRating,
                             comment: review["comment"] ?? review["bio"] ?? "",
-                            image: "assets/images/38a2a034cbe4ac063cad704f0bc1eb89da98ec7f.png",
+                            image:review["user"]["avatar"]??"",
                             sizes: sizes,
                             theme: theme,
                             onAvatarTap: () {},

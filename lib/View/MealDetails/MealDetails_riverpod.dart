@@ -68,7 +68,6 @@ class PageNotifier extends Notifier<int> {
   Future<void> fetchMealDetails(BuildContext context, int menuItemId) async {
     isLoadingMeal = true;
     state = state + 1;
-
     final response = await ApiService().get(
       "v1/$roles/menu-items/$menuItemId",
       null,
@@ -86,13 +85,11 @@ class PageNotifier extends Notifier<int> {
         meals = mediaPaths.map<Map<String, dynamic>>((url) => {"image": url}).toList();
       }
     }
-   // print("mealData:$mealData");
     state = state + 1;
   }
   List<dynamic> branches = [];
   Future<void> branch(BuildContext context) async {
     final branchId = mealData?["branch"]?["id"]; // يجيب 1 من mealData
-    print("branchId:$branchId");
     branches.clear();
     final response = await ApiService().get(
       "v1/$roles/branches/$branchId",

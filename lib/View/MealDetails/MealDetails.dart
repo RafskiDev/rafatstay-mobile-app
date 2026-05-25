@@ -14,6 +14,7 @@ import '../../Widget/WidgetAppBar.dart';
 import '../../Widget/WidgetButton.dart';
 import '../MakeItYourWay/MakeItYourWay.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import '../RestaurantDetalis/RestaurantDetalis.dart';
 import 'MealDetails_riverpod.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 class MealDetails extends ConsumerStatefulWidget {
@@ -38,24 +39,41 @@ class _MealDetailsState extends ConsumerState<MealDetails> {
 
   @override
   Widget build(BuildContext context) {
-     ref.watch(MealDetails_riverpod);
+    // مراقبة الحالة العامة للتأكد من إعادة البناء عند تحديث البيانات
+    final state = ref.watch(MealDetails_riverpod);
+    final notifier = ref.watch(MealDetails_riverpod.notifier);
+
     final sizes = Sizes(context);
-    Themes theme = Themes();
-    TextLanguage textLanguage = TextLanguage();
-    final items=ref.watch(MealDetails_riverpod.notifier).meals;
-    if (items.isEmpty) return Container();
-    final currentIndex = ref.watch(MealDetails_riverpod.notifier).currentIndex;
-    final slecteds=ref.read(MealDetails_riverpod.notifier).slected;
-     final mealData = ref.watch(MealDetails_riverpod.notifier).mealData;
-     final protein = double.tryParse(mealData?["protein"]?.toString() ?? "") ?? 0.0;
-     final carbs   = double.tryParse(mealData?["carbs"]?.toString()   ?? "") ?? 0.0;
-     final fats    = double.tryParse(mealData?["fats"]?.toString()    ?? "") ?? 0.0;
-     final total = protein + carbs + fats;
-     final allergens = mealData?["allergens"] as List? ?? [];
-     final branches = ref.watch(MealDetails_riverpod.notifier).branches;
-     final photos = branches.isNotEmpty
-         ? List.from(branches[0]['photos'] ?? [])
-         : [];
+    final Themes theme = Themes();
+    final TextLanguage textLanguage = TextLanguage();
+
+    final mealData = notifier.mealData;
+    final branches = notifier.branches;
+    final slecteds = notifier.slected;
+    final currentIndex = notifier.currentIndex;
+
+    // التأكد من أن البيانات تم تحميلها وليست فارغة، وإلا نعرض واجهة تحميل متحركة ومريحة للمستخدم
+    if (mealData == null || branches.isEmpty) {
+      return Scaffold(
+        backgroundColor: theme.GetColor("background"),
+        body: Center(child: showLoading()),
+      );
+    }
+
+    // استخراج الصور بأمان
+    final List<dynamic> photos = mealData['media_paths'] ?? [];
+
+    // حساب النسب الغذائية
+    final protein = double.tryParse(mealData["protein"]?.toString().trim() ?? "") ?? 0.0;
+    final carbs   = double.tryParse(mealData["carbs"]?.toString().trim()   ?? "") ?? 0.0;
+    final fats    = double.tryParse(mealData["fats"]?.toString().trim()    ?? "") ?? 0.0;
+
+    final total = protein + carbs + fats;
+    const double maxGramLimit = 100.0;
+    final double proteinPercent = protein / maxGramLimit;
+    final double carbsPercent   = carbs / maxGramLimit;
+    final double fatsPercent    = fats / maxGramLimit;
+    final allergens = mealData["allergens"] as List? ?? [];
      return  Scaffold(
       backgroundColor: theme.GetColor("background"),
       body:ValueListenableBuilder<bool>(
@@ -72,11 +90,10 @@ class _MealDetailsState extends ConsumerState<MealDetails> {
                           bottomLeft: Radius.circular(sizes.GetHeight() * 3),
                           bottomRight:Radius.circular(sizes.GetHeight() * 3),
                         ),
-                        child: CarouselSlider(
-                          items: photos.map((photo) {
-                            final imageUrl = photo['url'];
+                        child: photos.isNotEmpty ? CarouselSlider(
+                          items: photos.map((photoUrl) {
                             return CachedNetworkImage(
-                              imageUrl:"$showImage${imageUrl??""}",
+                              imageUrl: photoUrl.toString(),
                               fit: BoxFit.cover,
                               width: double.infinity,
                               placeholder: (context, url) =>  Center(
@@ -110,6 +127,11 @@ class _MealDetailsState extends ConsumerState<MealDetails> {
                                   .changePage(index);
                             },
                           ),
+                        ):Container(
+                          height: sizes.GetHeight() * 35,
+                          width: double.infinity,
+                          color:theme.GetColor("background"),
+                          child: const Icon(Icons.fastfood, size: 50, color: Colors.grey),
                         ),
                       ),
                       Positioned(
@@ -160,7 +182,7 @@ class _MealDetailsState extends ConsumerState<MealDetails> {
                                       SvgPicture.asset("assets/icon/Kcal.svg"),
                                       SizedBox(width: Sizes(context).GetWidth()*1),
                                       Text(
-                                        '${mealData?["calories"]} ${textLanguage.GetWord("سعرات حرارية")}',
+                                        '${mealData["calories"]??0} ${textLanguage.GetWord("سعرات حرارية")}',
                                         style: TextStyle(
                                           color:Themes().GetColor("textPrimary"),
                                         ),
@@ -220,21 +242,21 @@ class _MealDetailsState extends ConsumerState<MealDetails> {
                             children: [
                               NutrientCard(
                                 label:textLanguage.GetWord('البروتينات'),
-                                percentage: total > 0 ? (protein / total).clamp(0.0, 1.0) : 0,
+                                percentage:proteinPercent.clamp(0.0, 1.0),
                                 weight: '${protein.toInt()} g',
                                 primaryColor: Themes().GetColor('secondaryPrimary'),
                               ),
                               SizedBox(width: sizes.GetWidth() * 2),
                               NutrientCard(
                                 label:textLanguage.GetWord('الكربوهيدرات'),
-                                percentage: total > 0 ? (carbs / total).clamp(0.0, 1.0) : 0,
+                                percentage: carbsPercent.clamp(0.0, 1.0), // ستظهر 0% لأن الوزن 0g
                                 weight: '${carbs.toInt()} g',
                                 primaryColor: Themes().GetColor('secondaryPrimary'),
                               ),
                               SizedBox(width: sizes.GetWidth() * 2),
                               NutrientCard(
                                 label:textLanguage.GetWord('الدهون'),
-                                percentage: total > 0 ? (fats / total).clamp(0.0, 1.0) : 0,
+                                percentage: fatsPercent.clamp(0.0, 1.0), // ستظهر 0% لأن الوزن 0g
                                 weight: '${fats.toInt()} g',
                                 primaryColor: Themes().GetColor('secondaryPrimary'),
                               ),
@@ -313,11 +335,13 @@ class _MealDetailsState extends ConsumerState<MealDetails> {
                               backgroundColor:Themes().GetColor("primaryA"),
                               borderRadius:sizes.GetWidth()*10,
                               onTap: () {
+                                final branchId = branches[0]["id"];
+                                final branchName = branches[0]["name"]??"";
                                 Navigator.push(
                                   context,
                                   PageRouteBuilder(
                                     pageBuilder: (context, animation1, animation2) =>
-                                        Payment(),
+                                        RestaurantDetalis(title:branchName, branchId:branchId,),
                                     transitionDuration: Duration.zero,
                                     reverseTransitionDuration: Duration.zero,
                                   ),
@@ -350,10 +374,14 @@ class _MealDetailsState extends ConsumerState<MealDetails> {
     );
   }
   double allergenPercentage(List allergens) {
-    const maxAllergens = 8;
-    if (allergens.isEmpty) return 0;
+    const maxAllergens = 12;
+    if (allergens.isEmpty) return 0.0;
 
-    return (allergens.length / maxAllergens).clamp(0.0, 1.0);
+    // الحساب الفعلي للنسبة بشكل مرن
+    final double calculatedProgress = allergens.length / maxAllergens;
+
+    // نضمن بقاء القيمة محصورة بين 0% و 85% كحد أقصى مريح للعين ولا تقفل الدائرة بالكامل
+    return calculatedProgress.clamp(0.0, 0.85);
   }
   String allergenText(List allergens, TextLanguage lang) {
     if (allergens.isEmpty) {
@@ -384,7 +412,7 @@ class Description extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final mealData = ref.watch(MealDetails_riverpod.notifier).mealData;
-    final description = mealData?["description"] ?? "";
+    final description = mealData?["description"] ?? "لا يوجد وصف متاح لهذا العنصر حالياً.";
     return  Row(
       children: [
         Expanded(child: Text(style:TextStyle(color:Themes().GetColor("textSecondary")),description)),
@@ -436,7 +464,6 @@ class Instructions extends ConsumerWidget {
     if (instructions.isEmpty) {
       return SizedBox.shrink();
     }
-
     return Row(
       children: [
         Expanded(
@@ -520,7 +547,7 @@ class NutrientCard extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Text(
-                      "${(percentage * 100).toInt()}%",
+                      "${100}%",
                       style: const TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
@@ -592,13 +619,17 @@ class FoodItemCard extends StatelessWidget {
         children: [
          SvgPicture.asset(imageTitle,height:Sizes(context).GetHeight()*6),
          SizedBox(height: Sizes(context).GetHeight()*2),
-          Text(
-            label,
-            textAlign: TextAlign.center,
-            style:  TextStyle(
-              fontSize: 9,
-              fontWeight: FontWeight.w500,
-              color:Themes().GetColor("textPrimary"),
+          Flexible(
+            child: Text(
+              label,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w500,
+                  color: Themes().GetColor("textPrimary")
+              ),
             ),
           ),
           SizedBox(height: Sizes(context).GetHeight()*1),

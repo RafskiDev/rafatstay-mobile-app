@@ -466,7 +466,7 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                     circleImagePath: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
                     buttonText: textLanguage.GetWord("يكتشف"),
                     onButtonTap: ()async {
-                      final branchId = dish["id"];
+                      final branchId = dish["branch_id"];
                       await Navigator.push(
                         context,
                         PageRouteBuilder(

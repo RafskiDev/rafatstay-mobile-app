@@ -25,24 +25,7 @@ class PageNotifier extends Notifier<int> {
     return res;
   }
 
-  Future<void> fetchReviews(BuildContext context, int staffId) async {
-    ApiService api = ApiService();
-    final res = await api.get(
-      "v1/$roles/branches/$staffId/staff",
-      {},
-      context,
-    );
-   // print("staff: $res");
-    // التحقق قبل التحويل
-    if (res != null && res["success"] == true && res["data"] != null) {
-      // بنحول الداتا لـ List مباشرة
-      reviews = List<Map<String, dynamic>>.from(res["data"]);
-    } else {
-      reviews = [];
-    }
-    reviewController.clear();
-    ref.notifyListeners();
-  }
+
   Future<void> addReviewSimple({
     required BuildContext context,
     required int staffId,
@@ -76,7 +59,6 @@ class PageNotifier extends Notifier<int> {
     if (res["success"] == true) {
       print(res);
       ToastMessages(context,"نجح ارسال التقيم",Colors.green,Colors.white);
-      await fetchReviews(context, staffId);
     } else {
       ToastMessages(context,res?["message"],Colors.red,Colors.white);
     }

@@ -1,33 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
+import 'package:carousel_slider/carousel_slider.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:rafatstay/Service/ApiService.dart';
 import 'package:rafatstay/View/MakeItYourWay/MakeItYourWay.dart';
 import 'package:rafatstay/View/SetYourBookingDetails/SetYourBookingDetails.dart';
 import '../../Utils/Sizes.dart';
 import '../../Utils/TextLanguage.dart';
 import '../../Utils/Them.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:carousel_slider/carousel_slider.dart';
 import '../../Widget/CarouselIndicator.dart';
+import '../../Widget/CountdownText.dart';
 import '../../Widget/WidgetAppBar.dart';
 import '../../Widget/WidgetButton.dart';
 import '../MakeItYourWay/MakeItYourWay_riverpod.dart';
 import '../Payment/Payment.dart';
 import '../RestaurantDetalis/RestaurantDetalis_riverpod.dart';
 import '../SetYourBookingDetails/SetYourBookingDetails_riverpod.dart';
-import 'OffersDetails_riverpod.dart';
-
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../Utils/Sizes.dart';
-import '../../Utils/TextLanguage.dart';
-import '../../Utils/Them.dart';
-import 'package:flutter_svg/svg.dart';
-import 'package:carousel_slider/carousel_slider.dart';
-import '../../Widget/CarouselIndicator.dart';
-import '../../Widget/WidgetAppBar.dart';
-import '../../Widget/WidgetButton.dart';
-import '../Payment/Payment.dart';
 import 'OffersDetails_riverpod.dart';
 
 class OffersDetails extends ConsumerStatefulWidget {
@@ -60,30 +49,21 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
     TextLanguage textLanguage = TextLanguage();
     ref.read(MakeItYourWay_riverpod.notifier).menuItems.clear();
     final notifier_ = ref.read(RestaurantDetalis_riverpod.notifier);
-    notifier_.supportsTakeaway=false;
+    notifier_.supportsTakeaway = false;
     final notifier = ref.watch(OffersDetails_riverpod.notifier);
     final items = notifier.carouselItems;
     final item = notifier.items;
     final currentIndex = ref.watch(OffersDetails_riverpod);
     final offerData = notifier.offerData;
-
-    String countdownText = "-- : -- : --";
+    
     final countdown = offerData?["countdown_seconds"];
-    if (countdown != null && countdown > 0) {
-      final seconds = (countdown as num).toInt();
-      final days    = seconds ~/ 86400;
-      final hours   = (seconds % 86400) ~/ 3600;
-      final minutes = (seconds % 3600) ~/ 60;
-      countdownText = "${days}D : ${hours}H : ${minutes}M";
-    } else {
-      countdownText = "${0}D : ${0}H : ${0}M";
-    }
-    final images=offerData?["image_urls"]??[];
+    final images = offerData?["image_urls"] ?? [];
     final language = ref.read(OffersDetails_riverpod.notifier).box.read("Language");
+
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
       body: offerData == null
-          ?  Center(child: CircularProgressIndicator(color:theme.GetColor("primary")))
+          ? Center(child: CircularProgressIndicator(color: theme.GetColor("primary")))
           : SingleChildScrollView(
         child: Column(
           children: [
@@ -105,34 +85,27 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
                       )
                     ]
                         : images.map<Widget>((img) {
-                      final url = img.toString();
-                      return url.startsWith("http")
-                          ? Image.network(
-                          url,
+                      String url = img.toString();
+
+                      return CachedNetworkImage(
+                        imageUrl: url,
                         fit: BoxFit.cover,
                         width: double.infinity,
-                        errorBuilder: (context, error, stackTrace) {
+                        placeholder: (context, url) => Center(
+                          child: CircularProgressIndicator(color: theme.GetColor("primary")),
+                        ),
+                        errorWidget: (context, url, error) {
                           return Container(
                             width: double.infinity,
                             height: double.infinity,
-                            color:theme.GetColor("background"),
+                            color: const Color(0xFFEEEEEE),
                             child: const Icon(
                               Icons.image_not_supported,
                               size: 40,
                               color: Colors.grey,
                             ),
                           );
-                        }
-                      )
-                          : Container(
-                        width: double.infinity,
-                        height: double.infinity,
-                        color: const Color(0xFFEEEEEE),
-                        child: const Icon(
-                          Icons.image_not_supported,
-                          size: 40,
-                          color: Colors.grey,
-                        ),
+                        },
                       );
                     }).toList(),
                     options: CarouselOptions(
@@ -196,13 +169,13 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
                         children: [
                           SvgPicture.asset("assets/icon/stars.svg"),
                           SizedBox(width: sizes.GetWidth() * 1),
-                          Text(
-                              "${offerData["rating"].toString()}"
-                          ),
+                          Text("${offerData["rating"].toString()}"),
                           SizedBox(width: sizes.GetWidth() * 1),
                           Text(
                             "(${offerData["reviews_count"].toString()} ${textLanguage.GetWord("التقييمات")})",
-                            style:TextStyle(color: theme.GetColor("textSecondary"),fontSize: sizes.GetHeight()*1.5),
+                            style: TextStyle(
+                                color: theme.GetColor("textSecondary"),
+                                fontSize: sizes.GetHeight() * 1.5),
                           ),
                         ],
                       ),
@@ -218,22 +191,21 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
                             "assets/icon/LikePrice.svg",
                             height: sizes.GetHeight() * 2,
                           ),
-                         if (offerData["original_price"] != null)...[
-                           SizedBox(width: sizes.GetWidth() * 2),
-                           Text(
-                               "${offerData["original_price"]}",
-                               style: TextStyle(
-                                 color:
-                                 theme.GetColor("secondaryPrimary"),
-                                 fontWeight: FontWeight.bold,
-                               ),
-                             ),
-                           SvgPicture.asset(
-                             "assets/icon/SAR.svg",
-                             height: sizes.GetHeight() * 2,
-                           ),
-                         ],
-                          if (offerData["discount_value"] != null)...[
+                          if (offerData["original_price"] != null) ...[
+                            SizedBox(width: sizes.GetWidth() * 2),
+                            Text(
+                              "${offerData["original_price"]}",
+                              style: TextStyle(
+                                color: theme.GetColor("secondaryPrimary"),
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SvgPicture.asset(
+                              "assets/icon/SAR.svg",
+                              height: sizes.GetHeight() * 2,
+                            ),
+                          ],
+                          if (offerData["discount_value"] != null) ...[
                             SizedBox(width: sizes.GetWidth() * 2),
                             Text(
                               "${offerData["discount_value"]}",
@@ -245,13 +217,12 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
                                 decorationThickness: 2,
                               ),
                             ),
-                             SvgPicture.asset(
-                                "assets/icon/SAR.svg",
-                                height: sizes.GetHeight() * 2,
-                                color: theme.GetColor("error"),
-                              ),
+                            SvgPicture.asset(
+                              "assets/icon/SAR.svg",
+                              height: sizes.GetHeight() * 2,
+                              color: theme.GetColor("error"),
+                            ),
                           ],
-                          ///
                         ],
                       ),
                       Row(
@@ -261,7 +232,9 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
                             height: sizes.GetHeight() * 2,
                           ),
                           SizedBox(width: sizes.GetWidth() * 2),
-                          Text(countdownText),
+                          CountdownSeconds(
+                            countdownSeconds: countdown.toInt(),
+                          ),
                         ],
                       ),
                     ],
@@ -280,32 +253,13 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
                       ),
                     ],
                   ),
-                  /*
-                  if (offerData["terms_conditions"] != null) ...[
-                    SizedBox(height: sizes.GetHeight() * 2),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            language == 0
-                                ? offerData["terms_conditions_en"] ?? offerData["terms_conditions"] ?? ""
-                                : offerData["terms_conditions"] ?? "",
-                            style: TextStyle(
-                              color: theme.GetColor("textSecondary"),
-                              fontSize: sizes.GetHeight() * 1.5,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                   */
                   Align(
                     alignment: Alignment.centerRight,
                     child: Text(
-                     language==0? offerData["description_en"] ?? "": offerData["description"] ?? "",
-                      style:
-                      TextStyle(color: theme.GetColor("primaryS")),
+                      language == 0
+                          ? offerData["description_en"] ?? ""
+                          : offerData["description"] ?? "",
+                      style: TextStyle(color: theme.GetColor("primaryS")),
                     ),
                   ),
                   SizedBox(height: sizes.GetHeight() * 3),
@@ -334,11 +288,9 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
                             child: ImageWithTitleItem(
                               svgPath: item[index]["image"] ?? "",
                               title: item[index]["title"] ?? "",
-                              iconColor:
-                              theme.GetColor("textPrimary"),
+                              iconColor: theme.GetColor("textPrimary"),
                               size: sizes.GetHeight() * 11,
-                              backgroundColor:
-                              theme.GetColor("background"),
+                              backgroundColor: theme.GetColor("background"),
                               onTap: () {},
                             ),
                           );
@@ -353,36 +305,29 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
                     height: sizes.GetHeight() * 5,
                     borderRadius: sizes.GetHeight() * 5,
                     onTap: () {
-                      final businessName = offerData["branch"]["business_name"] ?? "";
+                      final businessName =
+                          offerData["branch"]["business_name"] ?? "";
                       final branchId = offerData["branch"]["id"] ?? 0;
                       final title = offerData["title"] ?? "";
-                    //  final includedItems = offerData["included_items"] ?? [];
-                      final includedItems =ref.read(OffersDetails_riverpod.notifier).items;
+                      final includedItems = ref
+                          .read(OffersDetails_riverpod.notifier)
+                          .items;
                       if (includedItems.isNotEmpty) {
                         Navigator.push(
                           context,
                           PageRouteBuilder(
                             pageBuilder:
                                 (context, animation1, animation2) =>
-                                MakeItYourWay(selectedMeals:includedItems,title: title, businessName: businessName, branchId: branchId),
+                                MakeItYourWay(
+                                    selectedMeals: includedItems,
+                                    title: title,
+                                    businessName: businessName,
+                                    branchId: branchId),
                             transitionDuration: Duration.zero,
                             reverseTransitionDuration: Duration.zero,
                           ),
                         );
                       }
-                      /*
-                      Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder:
-                              (context, animation1, animation2) =>
-                              SetYourBookingDetails(includedItems:includedItems,title: title, businessName: businessName, branchId: branchId),
-                          transitionDuration: Duration.zero,
-                          reverseTransitionDuration: Duration.zero,
-                        ),
-                      );
-
-                       */
                     },
                     child: Padding(
                       padding: const EdgeInsets.all(8),

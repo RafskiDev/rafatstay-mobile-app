@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import '../Service/ApiService.dart';
 import '../Utils/Sizes.dart';
 import '../Utils/Them.dart';
 import 'VideoImageCard.dart';
 import 'WidgetButton.dart';
-
+import 'package:cached_network_image/cached_network_image.dart';
 class ReviewCard extends StatelessWidget {
   final String name;
   final String date;
@@ -43,7 +44,6 @@ class ReviewCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
 
-          /// ===== Header
           Row(
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
@@ -53,14 +53,17 @@ class ReviewCard extends StatelessWidget {
                 size: sizes.GetHeight() * 7,
                 onTap: onAvatarTap ?? () {},
                 child: ClipOval(
-                  child: Container(
+                  child: CachedNetworkImage(
+                    imageUrl: "$showImage$image",
                     width: sizes.GetHeight() * 7,
                     height: sizes.GetHeight() * 7,
-                    decoration: BoxDecoration(
-                      image: DecorationImage(
-                        image: AssetImage(image),
-                        fit: BoxFit.cover,
-                      ),
+                    fit: BoxFit.cover,
+                    errorWidget: (context, url, error) => Image.asset(
+                      "assets/images/38a2a034cbe4ac063cad704f0bc1eb89da98ec7f.png",
+                      fit: BoxFit.cover,
+                    ),
+                    placeholder: (context, url) => Center(
+                      child: CircularProgressIndicator(strokeWidth: 2),
                     ),
                   ),
                 ),

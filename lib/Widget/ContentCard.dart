@@ -48,6 +48,7 @@ class ContentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+   // print(imagePath);
     final theme = Themes();
     final sizes = Sizes(context);
     final storage = GetStorage();
@@ -90,7 +91,7 @@ class ContentCard extends StatelessWidget {
                       topRight: Radius.circular(25),
                     ),
                     child: CachedNetworkImage(
-                      imageUrl:"$showImage$imagePath",
+                      imageUrl:imagePath,
                       fit: BoxFit.cover,
                       width: double.infinity,
                       height: double.infinity,
@@ -304,14 +305,14 @@ class MealCard extends StatelessWidget {
                       context,
                       PageRouteBuilder(
                         pageBuilder: (context, animation1, animation2) =>
-                            MealDetails(title:item["title"],image:"assets/images/A_Tazaj.png", menuItemId:int.parse(item["id"].toString()) ,),
+                            MealDetails(title:item["title"],image:item["image"]??"", menuItemId:int.parse(item["id"].toString()) ,),
                         transitionDuration: Duration.zero,
                         reverseTransitionDuration: Duration.zero,
                       ),
                     );
                   },
                   child: CachedNetworkImage(
-                    imageUrl:"$showImage${item["image"]??""}",
+                    imageUrl:item["image"]??"",
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: sizes.GetHeight() * 14,

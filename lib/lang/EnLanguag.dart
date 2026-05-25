@@ -322,5 +322,9 @@ final EnLanguag = {
   "الرجاء اختيار طاولة لتتمكن من إتمام الحجز":"Please select a table to complete the reservation",
   "هل أنت متأكد أنك تريد تسجيل الخروج؟":"Are you sure you want to log out?",
   "هل أنت متأكد أنك تريد حذف حسابك؟":"Are you sure you want to delete your account?",
-  "قريباً":"Coming Soon"
+  "قريباً":"Coming Soon",
+  "هل ترغب في إضافة إكرامية؟":"Would you like to add a tip?",
+  "أدخل المبلغ":"Enter Amount",
+  "تقييم الموظفين":"Employee evaluation",
+  "تقييم المطعم":"Restaurant review"
 };
