@@ -1,7 +1,10 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rafatstay/Utils/TextLanguage.dart';
 
 import '../../Service/ApiService.dart';
+import '../../Utils/Them.dart';
+import '../../Utils/ToastMessage.dart';
 
 class PageNotifier extends Notifier<int> {
   TextEditingController controller = TextEditingController(); // tip_amount
@@ -36,7 +39,15 @@ class PageNotifier extends Notifier<int> {
   final Set<int> selectedPersonIndexes = {};
 
   @override
-  int build() => 0;
+  int build() {
+    ref.onDispose(() {
+      controller.dispose();
+      focusNodeController.dispose();
+      birthday.dispose();
+      focusNodeBirthday.dispose();
+    });
+    return 0;
+  }
 
   void reset() => state = 0;
 
@@ -95,12 +106,17 @@ class PageNotifier extends Notifier<int> {
       body,
       context,
     );
-
+    if (!context.mounted) return;
     if (response != null) {
-      // نجح الإرسال
-      print(response);
+      ToastMessages(
+        context,
+        TextLanguage().GetWord("تم إرسال التقييم بنجاح!"),
+        Themes().GetColor("success"),
+        Themes().GetColor("white"),
+      );
     }
   }
+
 }
 
 final RateYourExperience_riverpod =

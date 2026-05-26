@@ -18,6 +18,7 @@ class Favorites extends ConsumerWidget {
     final sizes = Sizes(context);
     final textLanguage = TextLanguage();
     final theme = Themes();
+    //print(favorite);
     return  Visibility(
       visible: ref
           .read(Home_riverpod.notifier)
@@ -126,7 +127,7 @@ class Favorites extends ConsumerWidget {
                 textLanguage.GetWord("يكتشف"),
                 onButtonTap: () {
                   final itemData = favorites["item"] as Map<String, dynamic>?;
-                  final int branchId = itemData?["id"] ?? 0;
+                  final int branchId = itemData?["branch_id"] ?? 0;
                   Navigator.push(
                     context,
                     PageRouteBuilder(

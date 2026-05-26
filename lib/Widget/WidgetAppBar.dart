@@ -109,7 +109,15 @@ class GlassAppBar extends StatelessWidget {
                   ),
                 ),
               ),
-              Text(titel),
+              Expanded(
+                child: Center(
+                  child: Text(
+                    titel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ),
               Container(
                 padding: EdgeInsets.all(5),
                 decoration: BoxDecoration(

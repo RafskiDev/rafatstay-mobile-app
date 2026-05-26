@@ -4,7 +4,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../../../Utils/Sizes.dart';
 import '../../../Utils/Them.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../Widget/ShowLoading.dart';
 import '../RestaurantDetalis_riverpod.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 Widget SuperGuest(BuildContext context,WidgetRef ref){
   final superGuests = ref.read(RestaurantDetalis_riverpod.notifier).superGuests;
   if (superGuests.isEmpty || !superGuests[0]["is_super_guest"]) return Container();
@@ -32,6 +34,7 @@ Widget SuperGuest(BuildContext context,WidgetRef ref){
         child:Column(
           children: [
             Container(
+              height: sizes.GetHeight() * 10,
               decoration: BoxDecoration(
                 border: Border.all(
                   color:Themes().GetColor("secondary"),
@@ -41,9 +44,27 @@ Widget SuperGuest(BuildContext context,WidgetRef ref){
               ),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(13),
-                child: Image.asset(
-                  superGuests[index]["image"],
+                child:CachedNetworkImage(
+                  imageUrl:superGuests[index]["image"]??"",
                   fit: BoxFit.cover,
+                  placeholder: (context, url) =>  Center(
+                    child:showLoading(),
+                  ),
+                  //ضفت هذا حتى لا يطبع الخطا
+                  errorListener: (dynamic exception) {
+                  },
+                  errorWidget: (context, url, error) {
+                    return Container(
+                      width: double.infinity,
+                      height: double.infinity,
+                      color: const Color(0xFFEEEEEE),
+                      child: const Icon(
+                        Icons.image_not_supported,
+                        size: 40,
+                        color: Colors.grey,
+                      ),
+                    );
+                  },
                 ),
               ),
             ),

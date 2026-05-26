@@ -194,7 +194,7 @@ class ContentCard extends StatelessWidget {
                     Text(
                       subTitle,
                       overflow: TextOverflow.ellipsis,
-                      maxLines: 2,
+                      maxLines: 1,
                   ),
                   SizedBox(height: sizes.GetHeight() * 0.5),
                   description.isNotEmpty?SizedBox(

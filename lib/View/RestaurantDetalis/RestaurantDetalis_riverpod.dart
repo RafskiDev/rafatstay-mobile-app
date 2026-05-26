@@ -236,6 +236,7 @@ class PageNotifier extends Notifier<int> {
     ref.notifyListeners();
   }
   List<dynamic> branches = [];
+  bool isFetchingBranch = true;
   Future<void> branche(BuildContext context, int? branchId) async {
     branches.clear();
     final response = await ApiService().get(
@@ -251,6 +252,7 @@ class PageNotifier extends Notifier<int> {
     } else {
       branches = [];
     }
+    isFetchingBranch = false;
     ref.notifyListeners();
   }
 

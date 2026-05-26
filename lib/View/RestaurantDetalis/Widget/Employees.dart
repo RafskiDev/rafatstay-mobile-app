@@ -44,7 +44,7 @@ Widget Employees(List myDataList,int branchId,BuildContext context){
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(13),
                 child:  CachedNetworkImage(
-                  imageUrl:"$showImage${myDataList[index]["avatar_url"]??""}",
+                  imageUrl:myDataList[index]["avatar_url"]??"",
                   fit: BoxFit.cover,
                   placeholder: (context, url) =>  Center(
                     child:showLoading(),

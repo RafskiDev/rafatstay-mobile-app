@@ -326,5 +326,7 @@ final EnLanguag = {
   "هل ترغب في إضافة إكرامية؟":"Would you like to add a tip?",
   "أدخل المبلغ":"Enter Amount",
   "تقييم الموظفين":"Employee evaluation",
-  "تقييم المطعم":"Restaurant review"
+  "تقييم المطعم":"Restaurant review",
+  "تم إرسال التقييم بنجاح!":"Review submitted successfully!",
+  "الكل":"All"
 };

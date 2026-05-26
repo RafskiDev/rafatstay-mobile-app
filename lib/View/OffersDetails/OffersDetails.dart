@@ -86,7 +86,6 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
                     ]
                         : images.map<Widget>((img) {
                       String url = img.toString();
-
                       return CachedNetworkImage(
                         imageUrl: url,
                         fit: BoxFit.cover,
@@ -98,7 +97,7 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
                           return Container(
                             width: double.infinity,
                             height: double.infinity,
-                            color: const Color(0xFFEEEEEE),
+                            color: theme.GetColor("background"),
                             child: const Icon(
                               Icons.image_not_supported,
                               size: 40,

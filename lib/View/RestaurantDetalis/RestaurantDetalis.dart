@@ -103,12 +103,13 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
     final branches = notifier.branches;
     final sizes = Sizes(context);
     final theme = Themes();
-    if (LoadingService.isLoading.value && branches.isEmpty) {
+    if (notifier.isFetchingBranch) {
       return Scaffold(
         backgroundColor: theme.GetColor("background"),
         body: Center(child: showLoading()),
       );
     }
+
     if (branches.isEmpty) {
       return Scaffold(
         backgroundColor: theme.GetColor("background"),
@@ -536,7 +537,7 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                               itemBuilder: (context, index) {
                                 final isAll = index == 0;
                                 final tag = isAll
-                                    ? "الكل"
+                                    ? textLanguage.GetWord("الكل")
                                     : ref.read(RestaurantDetalis_riverpod.notifier).tagss[index - 1];
                                 final isSelected = isAll
                                     ? ref.watch(RestaurantDetalis_riverpod.notifier).isSelectedMenu == -1

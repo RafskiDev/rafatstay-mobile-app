@@ -4,6 +4,7 @@ import 'package:flutter_svg/svg.dart';
 import '../../Utils/Sizes.dart';
 import '../../Utils/TextLanguage.dart';
 import '../../Utils/Them.dart';
+import '../../Utils/ToastMessage.dart';
 import '../../Widget/TimeDate.dart';
 import '../../Widget/WidgetAppBar.dart';
 import '../../Widget/WidgetButton.dart';
@@ -48,7 +49,8 @@ class _SetYourBookingDetailsState extends ConsumerState<SetYourBookingDetails> {
     Themes theme = Themes();
     TextLanguage textLanguage = TextLanguage();
     final sizes = Sizes(context);
-    ref.watch(SetYourBookingDetails_riverpod);
+    final pageState = ref.watch(SetYourBookingDetails_riverpod);
+    final notifier = ref.read(SetYourBookingDetails_riverpod.notifier);
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
       appBar: buildCustomAppBar(context,textLanguage.GetWord("حدد تفاصيل حجزك")),
@@ -74,14 +76,14 @@ class _SetYourBookingDetailsState extends ConsumerState<SetYourBookingDetails> {
                 arrowHeight: sizes.GetHeight() * 3.3,
                 arrowColor: theme.GetColor("textPrimary"),
                 onTimeChanged: (String newTime) {
-                  ref.read(SetYourBookingDetails_riverpod.notifier).setEndTime(newTime);
+                  ref.read(SetYourBookingDetails_riverpod.notifier).setStartTime(newTime);
                 },
               ),
               SizedBox(height: sizes.GetHeight() * 2),
               GuestSelector(
                 title: textLanguage.GetWord("كم عدد الضيوف؟"),
                 icon: "assets/icon/user_plus.svg",
-                count: ref.read(SetYourBookingDetails_riverpod.notifier).guests,
+                count: notifier.guests,
                 onIncrement: () {
                   ref.read(SetYourBookingDetails_riverpod.notifier).setGuests("+");
                 },
@@ -183,31 +185,54 @@ class _SetYourBookingDetailsState extends ConsumerState<SetYourBookingDetails> {
                     borderRadius: sizes.GetHeight() * 5,
                     elevation: 6,
                     onTap: () async {
-                      final results= ref.read(MakeItYourWay_riverpod.notifier);
                       /*
                       final selectedMeals = results.menuItems
                           .where((m) => results.selectedIds.contains(m["id"].toString()))
                           .toList();
                     //  print(selectedMeals);
                        */
-                      final notifier = ref.read(SetYourBookingDetails_riverpod.notifier);
+                      final results= ref.read(MakeItYourWay_riverpod.notifier);
                       final data = notifier.collectBookingData(widget.branchId, widget.businessName);
-                      if (data["booking_date"] == null ||
-                          data["service_mode"] == null ||
-                          data["start_time"] == null ||
-                          data["end_time"] == null) {
+
+                      if (data["booking_date"] == "" || data["booking_date"] == null) {
+                        ToastMessages(
+                          context,
+                          "خطأ: لم يتم اختيار التاريخ",
+                          Colors.red,
+                          Colors.white,
+                        );
+                        return;
+                      }
+                      if (data["service_mode"] == null) {
+                        ToastMessages(
+                          context,
+                          "خطأ: لم يتم اختيار طريقة استلام الطلب (Takeaway / Dine In)",
+                          Colors.red,
+                          Colors.white,
+                        );
                         return;
                       }
                       final selectedDate = DateTime.tryParse(data["booking_date"]?.toString() ?? "");
                       final today = DateTime.now();
                       final todayDateOnly = DateTime(today.year, today.month, today.day);
-
                       if (selectedDate == null || selectedDate.isBefore(todayDateOnly)) {
-                        print("يجب اختيار تاريخ اليوم أو بعده");
+                        ToastMessages(
+                          context,
+                          "يجب اختيار تاريخ اليوم أو بعده",
+                          Colors.red,
+                          Colors.white,
+                        );
                         return; // لا تمر البيانات
                       }
                       final result = validateTime(data["start_time"], data["end_time"],notifier.startDate);
                       if (!result.isValid) {
+                        ToastMessages(
+                          context,
+                          result.errorMessage.toString(),
+                          Colors.red,
+                          Colors.white,
+                        );
+                        print("خطأ في التحقق من الوقت: ${result.errorMessage}");
                         return;
                       }
                       final selectedMeals = results.getItemsForBooking(); // يفترض ترجّع List<Map<String,dynamic>>

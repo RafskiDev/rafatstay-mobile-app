@@ -202,22 +202,21 @@ class BookingDetail extends StatelessWidget {
             buttonText: TextLanguage().GetWord("متوجه إلى المطعم"),
             textColor: Themes().GetColor("textPrimary"),
             onPressed: () {
-            //  final bookings = ref.read(Booking_riverpod.notifier).bookingsData;
-            //  final restaurantLat = booking?['restaurant']['lat'] ?? 0.0;
-            //  final restaurantLng = booking?['restaurant']['lng'] ?? 0.0;
-            //  print("restaurantLat: ${bookings}}");
-              /*
+
+             final restaurantLat = booking!["branch"]['latitude'];
+             final restaurantLng = booking?['branch']['longitude'];
+            if(restaurantLat!=null && restaurantLng!=null){
               Navigator.push(
                 context,
                 PageRouteBuilder(
                   pageBuilder: (context, animation1, animation2) =>
-                   Maps(restaurantLat: restaurantLat, restaurantLng: restaurantLng),
+                      Maps(restaurantLat: restaurantLat, restaurantLng: restaurantLng),
                   transitionDuration: Duration.zero,
                   reverseTransitionDuration: Duration.zero,
                 ),
               );
+            }
 
-               */
             },
             backgroundColor: Themes().GetColor("primary"),
           ),

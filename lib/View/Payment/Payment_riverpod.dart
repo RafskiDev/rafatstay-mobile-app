@@ -74,7 +74,7 @@ class PageNotifier extends Notifier<int> {
       'branch_id': bookingData['branch_id'],
       'booking_date': bookingData['booking_date'],
       'start_time': bookingData['start_time'],
-      'end_time': bookingData['end_time'],
+      'end_time':  _addOneHour(bookingData['start_time']),//bookingData['end_time']
       'party_size': bookingData['party_size'],
       'table_id': bookingData['table_id'],
       if ((bookingData['children_count'] ?? 0) > 0)
@@ -159,6 +159,16 @@ class PageNotifier extends Notifier<int> {
     }
     return false; // ❌ فشل
   }
+
+  // يحسب وقت الانتهاء تلقائياً = وقت البداية + ساعة واحدة
+  String _addOneHour(String startTime) {
+    final parts = startTime.split(':');
+    final hour = (int.parse(parts[0]) + 1) % 24;
+    final minute = parts[1];
+    print('hour:${hour.toString().padLeft(2, '0')}:$minute');
+    return '${hour.toString().padLeft(2, '0')}:$minute';
+  }
+
 }
 
 final Payment_riverpod = NotifierProvider<PageNotifier, int>(PageNotifier.new);

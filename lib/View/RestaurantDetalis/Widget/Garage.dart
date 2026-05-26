@@ -9,7 +9,6 @@ Widget Garage(BuildContext context, String title, String image,WidgetRef ref) {
   final Color secondaryColor = Themes().GetColor("secondary");
   final garage = ref.read(RestaurantDetalis_riverpod.notifier).garage;
   if (garage.isEmpty) return Container();
- // print(garage);
   return Container(
     width: double.infinity,
     height: Sizes(context).GetHeight() * 25,
@@ -58,7 +57,7 @@ Widget Garage(BuildContext context, String title, String image,WidgetRef ref) {
                    buildIconText(context,"assets/icon/Spots.svg", "Spots: ${garage[0]["total_spots"] ?? 0}", secondaryColor),
                 ],
               ),
-              buildIconText(context,"assets/icon/Parking.svg", "Parking Type: ${garage[0]["parking_available"]}", secondaryColor),
+              buildIconText(context,"assets/icon/Parking.svg", "Parking Type: ${garage[0]["parking_type"]}", secondaryColor),
               Row(
                 children: [
                   buildIconText(context,"assets/icon/dollar.svg", "Price:${garage[0]["price"]??0}", secondaryColor),
@@ -66,12 +65,12 @@ Widget Garage(BuildContext context, String title, String image,WidgetRef ref) {
                   buildIconText(
                     context,
                     "assets/icon/time.svg",
-                    "Duration: ${garage[0]["open_time"] ?? "N/A"}",
+                    "Duration: ${garage[0]["duration"] ?? "N/A"}",
                     secondaryColor,
                   ),
                 ],
               ),
-              buildIconText(context,"assets/icon/Reservations.svg", "Reservation: ${garage[0]["details"]??""}", secondaryColor),
+              buildIconText(context,"assets/icon/Reservations.svg",  "Reservation: ${garage[0]["reservation"] == true ? "Available" : "Not Available"}", secondaryColor),
             ],
           ),
         ),

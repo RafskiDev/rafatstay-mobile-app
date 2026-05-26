@@ -64,20 +64,21 @@ class PageNotifier extends Notifier<int> {
     return DateFormat('yyyy-MM-dd').format(startDate!);
   }
 
-  void setEndTime(String time) {
+  void setStartTime(String time) {
     final parts = time.split(':');
-
     if (parts.length >= 3) {
       int hour = int.parse(parts[0]);
       String minute = parts[1].padLeft(2, '0');
-      final ampm = parts[2].toUpperCase();
+      final ampm = parts[2].toUpperCase().trim();
 
       if (ampm == "PM" && hour != 12) hour += 12;
       if (ampm == "AM" && hour == 12) hour = 0;
 
-      endTime = "${hour.toString().padLeft(2, '0')}:$minute";
+      startTime = "${hour.toString().padLeft(2, '0')}:$minute";
+    } else if (parts.length == 2) {
+      startTime = "${parts[0].padLeft(2, '0')}:${parts[1].padLeft(2, '0')}";
     }
-    ref.notifyListeners();
+    state++;
   }
 
   void setGuests(String operation) {
@@ -111,6 +112,7 @@ class PageNotifier extends Notifier<int> {
       'service_mode': selectedServiceMode,
       'businessName':businessName,
     };
+    print(bookingData);
     /*
         "booking_date": "2026-03-24",
       "start_time": "18:30",

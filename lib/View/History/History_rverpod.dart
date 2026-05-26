@@ -26,7 +26,6 @@ class PageNotifier extends Notifier<int> {
       {},
       context,
     );
-
     if (res?["success"] == true) {
       final data = res?['data'];
       final sections = data?['sections'] ?? {};
