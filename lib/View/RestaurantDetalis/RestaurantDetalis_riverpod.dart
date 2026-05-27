@@ -158,18 +158,16 @@ class PageNotifier extends Notifier<int> {
   List<dynamic> allMeals = [];
   Future<void> menus(BuildContext context, int branchId) async {
     ApiService api = ApiService();
-    final Map<String, dynamic> params = {};
-    if (selectedMealIndex >= 0) {
-      params["meal_period"] = mealCategoriesBackend[selectedMealIndex];
-    }
+
 
     final res = await api.get(
-      "v1/$roles/branches/$branchId/menus",
+      "v1/guest/branches/$branchId/menus",
       {
-        "meal_period": mealCategoriesBackend[selectedMealIndex]
+     //   "meal_period":"Lunch"
       },
       context,
     );
+    print(res);
     if (res?["success"] == true) {
       menu = List<Map<String, dynamic>>.from(res["data"] ?? []);
       supportsTakeaway =

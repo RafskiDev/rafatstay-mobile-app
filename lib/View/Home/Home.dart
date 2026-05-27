@@ -41,9 +41,9 @@ class Home extends ConsumerStatefulWidget {
 class _HomeState extends ConsumerState<Home> {
   @override
   void initState() {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    if (mounted) {
       ref.read(Home_riverpod.notifier).restaurants(context);
-    });
+    }
     super.initState();
   }
 

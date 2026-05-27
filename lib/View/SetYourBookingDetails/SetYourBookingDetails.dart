@@ -224,17 +224,6 @@ class _SetYourBookingDetailsState extends ConsumerState<SetYourBookingDetails> {
                         );
                         return; // لا تمر البيانات
                       }
-                      final result = validateTime(data["start_time"], data["end_time"],notifier.startDate);
-                      if (!result.isValid) {
-                        ToastMessages(
-                          context,
-                          result.errorMessage.toString(),
-                          Colors.red,
-                          Colors.white,
-                        );
-                        print("خطأ في التحقق من الوقت: ${result.errorMessage}");
-                        return;
-                      }
                       final selectedMeals = results.getItemsForBooking(); // يفترض ترجّع List<Map<String,dynamic>>
                       Map<String, dynamic> enrichedData = {};
                       if(widget.includedItems.isNotEmpty){

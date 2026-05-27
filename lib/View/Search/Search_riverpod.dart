@@ -66,19 +66,15 @@ class PageNotifier extends Notifier<int> {
       if (res?["success"] == true) {
         final data = res["data"];
         final branches = (data["branches"]?["items"] ?? []) as List<dynamic>;
-        final menuItems = (data["menu_items"]?["items"] ?? []) as List<dynamic>;
+      //  final menuItems = (data["menu_items"]?["items"] ?? []) as List<dynamic>;
         final taggedBranches = branches.map((e) => {
           ...Map<String, dynamic>.from(e as Map), // ✅ cast أولاً
           "type": "branch",
         }).toList();
 
-        final taggedMenuItems = menuItems.map((e) => {
-          ...Map<String, dynamic>.from(e as Map), // ✅ cast أولاً
-          "type": "menu_item",
-        }).toList();
 
-        searchResults = [...taggedBranches, ...taggedMenuItems];
-
+      //  searchResults = [...taggedBranches, ...taggedMenuItems];
+        searchResults = [...taggedBranches];
         // 🟢 حفظ البحث في السجل
         /*
         final newSearch = {
@@ -156,13 +152,12 @@ class PageNotifier extends Notifier<int> {
       ToastMessages(context, res?["message"] ?? "خطأ في جلب آخر البحث",Themes().GetColor("error"), Themes().GetColor("white"));
     }
     isSearching = false;
-
   }
 
   Future<bool> deleteRecentSearch(int id, BuildContext context) async {
     ApiService api = ApiService();
     final res = await api.delete("v1/$roles/search/recent/$id",context,{});
-    if(res["success"] == true){
+    if(res?["success"] == true){
       recentSearches.removeWhere((element) => element["id"] == id);
       ref.notifyListeners();
       return true;

@@ -19,30 +19,17 @@ class PageNotifier extends Notifier<int> {
   @override
   int build() {
     resetToDefault();
-    final now = TimeOfDay.now();
-    final hour = now.hour;
-    final minute = now.minute.toString().padLeft(2, '0');
-    startTime = "${hour.toString().padLeft(2, '0')}:$minute";
-    endTime = "${(hour).toString().padLeft(2, '0')}:$minute";
     return 0;
   }
   void resetToDefault() {
     startDate = null;
+
     final now = DateTime.now();
-    final hour = now.hour;
-    final minute = now.minute.toString().padLeft(2, '0');
-
-    // startTime = الوقت الحالي + دقيقة واحدة
     final startDateTime = now.add(const Duration(minutes: 1));
-    final startHour = startDateTime.hour;
-    final startMinute = startDateTime.minute.toString().padLeft(2, '0');
-    startTime = "${startHour.toString().padLeft(2, '0')}:$startMinute";
+    final endDateTime = startDateTime.add(const Duration(hours: 2));
 
-
-    final endDateTime = now.add(const Duration(hours: 1, minutes: 1));
-    final endHour = endDateTime.hour;
-    final endMinute = endDateTime.minute.toString().padLeft(2, '0');
-    endTime = "${endHour.toString().padLeft(2, '0')}:$endMinute";
+    startTime = _formatTime(startDateTime);
+    endTime = _formatTime(endDateTime);
 
     guests = 1;
     children = 0;
@@ -50,9 +37,13 @@ class PageNotifier extends Notifier<int> {
     selectedServiceMode = null;
     bookingData = {};
     state = 0;
-    ref.notifyListeners();
   }
 
+  String _formatTime(DateTime dt) {
+    final h = dt.hour.toString().padLeft(2, '0');
+    final m = dt.minute.toString().padLeft(2, '0');
+    return "$h:$m";
+  }
   void setDate(DateTime date) {
     startDate = date;
     state = date.millisecondsSinceEpoch;
@@ -70,14 +61,20 @@ class PageNotifier extends Notifier<int> {
       int hour = int.parse(parts[0]);
       String minute = parts[1].padLeft(2, '0');
       final ampm = parts[2].toUpperCase().trim();
-
       if (ampm == "PM" && hour != 12) hour += 12;
       if (ampm == "AM" && hour == 12) hour = 0;
-
       startTime = "${hour.toString().padLeft(2, '0')}:$minute";
     } else if (parts.length == 2) {
       startTime = "${parts[0].padLeft(2, '0')}:${parts[1].padLeft(2, '0')}";
     }
+
+    // ← احسب end_time بشكل صحيح
+    final parsed = DateTime(2000, 1, 1,
+      int.parse(startTime!.split(':')[0]),
+      int.parse(startTime!.split(':')[1]),
+    );
+    endTime = _formatTime(parsed.add(const Duration(hours: 2)));
+
     state++;
   }
 

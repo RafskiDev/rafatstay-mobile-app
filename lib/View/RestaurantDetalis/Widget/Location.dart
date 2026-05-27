@@ -17,16 +17,12 @@ Widget Location(BuildContext context,WidgetRef ref){
       Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              SvgPicture.asset(
-                "assets/icon/locations.svg",
-                height: sizes.GetHeight() * 2,
-              ),
-              SizedBox(width: sizes.GetWidth() * 1),
-              Text(restaurantDetalis.branches[0]["address_line"]??""),
-            ],
+          SvgPicture.asset(
+            "assets/icon/locations.svg",
+            height: sizes.GetHeight() * 2,
           ),
+          SizedBox(width: sizes.GetWidth() * 1),
+          Expanded(child: Text(restaurantDetalis.branches[0]["address_line"]??"")),
           InkWell(
             onTap: (){
               final branch = restaurantDetalis.branches[0];

@@ -173,12 +173,12 @@ class PageNotifier extends Notifier<int> {
     required BuildContext context,
     required int bookingId,
   }) async {
+  //  print("checkIn: $bookingId");
     final response = await ApiService().patch(
       "v1/$roles/bookings/$bookingId/check-in",
       {},
       context,
     );
-
     if (response?["success"] == true) {
       ref.notifyListeners();
     }else{

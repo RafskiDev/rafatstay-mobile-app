@@ -48,7 +48,7 @@ class ApiService {
         url,
         headers: {
           'Content-Type': 'application/json',
-          'Accept': 'application/json', // 🟢 مهم جداً
+          'Accept': 'application/json',
           'Authorization':'Bearer $myToken',
         },
       );
