@@ -284,8 +284,6 @@ class PageNotifier extends Notifier<int> {
       context,
     );
 
-    print("Messages response: $response");
-
     if (response != null && response['data'] != null) {
       final data = response['data'];
 
@@ -299,6 +297,7 @@ class PageNotifier extends Notifier<int> {
             'isSentByMe': msg['sender_type'] == 'guest',
             'type': msg['type'] ?? 'text',
             'attachment_url': msg['attachment_url'],
+            'is_read': msg['is_read'] ?? false,
             'duration':0,
             'status': 'sent',
           };

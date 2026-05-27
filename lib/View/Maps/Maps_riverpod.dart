@@ -83,7 +83,9 @@ class MapsNotifier extends Notifier<MapsState> {
   @override
   MapsState build() {
     showCard = false;
-    ref.notifyListeners();
+    ref.onDispose(() {
+      _positionStream?.cancel();
+    });
     return const MapsState();
   }
 
@@ -235,32 +237,61 @@ class MapsNotifier extends Notifier<MapsState> {
           },
         );
   }
-
+  int _routeRequestId = 0;
   Future<void> _fetchRouteOnly({
     required double myLat,
     required double myLng,
     required double restaurantLat,
     required double restaurantLng,
   }) async {
+    final requestId = ++_routeRequestId;
     try {
       final url =
           'http://router.project-osrm.org/route/v1/driving/'
           '$myLng,$myLat;'
           '$restaurantLng,$restaurantLat?overview=full&geometries=geojson';
 
-      final response = await http.get(Uri.parse(url));
+      final response = await http
+          .get(Uri.parse(url))
+          .timeout(const Duration(seconds: 15));
+
+      // تجاهل الـ response إذا جاء request أحدث
+      if (requestId != _routeRequestId) return;
+
+      if (response.statusCode != 200) return;
 
       final data = jsonDecode(response.body);
-      final route = data['routes'][0];
-      if (route.isNotEmpty) {
-        final coords = data['routes'][0]['geometry']['coordinates'] as List;
-        final double durationValue = (route['duration'] as num? ?? 0).toDouble();
-        final double distanceValue = (route['distance'] as num? ?? 0).toDouble();
-        final routePoints = coords
-            .map((c) => LatLng(c[1].toDouble(), c[0].toDouble()))
-            .toList();
-        state = state.copyWith(routePoints: routePoints, duration: durationValue, distance: distanceValue);
+      final routes = data['routes'];
+      if (routes is! List || routes.isEmpty) return;
+
+      final route = routes[0];
+      if (route is! Map) return;
+
+      final coords = route['geometry']?['coordinates'];
+      if (coords is! List || coords.isEmpty) return;
+
+      final routePoints = <LatLng>[];
+      for (final c in coords) {
+        if (c is List && c.length >= 2) {
+          final dLat = (c[1] as num).toDouble();
+          final dLng = (c[0] as num).toDouble();
+          if (dLat.isFinite && dLng.isFinite &&
+              dLat.abs() <= 90 && dLng.abs() <= 180) {
+            routePoints.add(LatLng(dLat, dLng));
+          }
+        }
       }
+
+      if (routePoints.length < 2) return; // ← لا تكتب فوق المسار الصحيح
+
+      final double durationValue = (route['duration'] as num? ?? 0).toDouble();
+      final double distanceValue = (route['distance'] as num? ?? 0).toDouble();
+
+      state = state.copyWith(
+        routePoints: routePoints,
+        duration: durationValue,
+        distance: distanceValue,
+      );
     } catch (_) {}
   }
 

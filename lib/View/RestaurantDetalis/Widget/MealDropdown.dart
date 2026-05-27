@@ -6,11 +6,12 @@ import '../../../Utils/Sizes.dart';
 import '../../../Utils/Them.dart';
 import '../RestaurantDetalis_riverpod.dart';
 class MealDropdown extends ConsumerWidget {
-  const MealDropdown({super.key});
+  final int branchId;
+  const MealDropdown({super.key, required this.branchId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-   // final state = ref.watch(RestaurantDetalis_riverpod);
+    ref.watch(RestaurantDetalis_riverpod); // ← لازم watch حتى يتحدث الـ UI
     final notifier = ref.read(RestaurantDetalis_riverpod.notifier);
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -48,7 +49,7 @@ class MealDropdown extends ConsumerWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: List.generate(notifier.mealCategoriesUi.length, (index) {
               return InkWell(
-                onTap: () => notifier.changeMenuIndex(index),
+                onTap: () => notifier.changeMenuIndex(index, context, branchId),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
                   child: Text(

@@ -133,11 +133,15 @@ class _MapsState extends ConsumerState<Maps> {
                           notifier.showCards();
                         }
                       },
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(25),
-                        child: Image.network(
-                          "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSf99BY0LkqMHNICONVbcb_Q6IJbqGFPSIkQg&s",
-                          fit: BoxFit.cover,
+                      child:Container(
+                        decoration: BoxDecoration(
+                          color: Themes().GetColor("primary"),
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        child: Icon(
+                          Icons.restaurant,
+                          color: Colors.white,
+                          size: 22,
                         ),
                       ),
                     ),

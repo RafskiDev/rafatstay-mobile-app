@@ -18,7 +18,6 @@ class Favorites extends ConsumerWidget {
     final sizes = Sizes(context);
     final textLanguage = TextLanguage();
     final theme = Themes();
-    //print(favorite);
     return  Visibility(
       visible: ref
           .read(Home_riverpod.notifier)
@@ -39,7 +38,6 @@ class Favorites extends ConsumerWidget {
                 favorites["item"]?["name"] ?? "").toString();
              */
             final String favImage = favorites["item"]["image"].toString();
-            //  print(favorites["item"]);
             final business_name=favorites["item"]?["business_name"]??"";
             return Padding(
               padding: EdgeInsets.only(

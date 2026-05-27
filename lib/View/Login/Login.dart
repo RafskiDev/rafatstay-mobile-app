@@ -13,15 +13,17 @@ import '../language/language.dart';
 import 'Login_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 class Login extends ConsumerWidget {
-  const Login({super.key});
+  final bool showBack;
+  const Login({super.key, this.showBack = false});
 
   @override
   Widget build(BuildContext context,WidgetRef ref) {
-    final currentPage = ref.watch(pageProvider);
+    ref.watch(pageProvider);
     final sizes=Sizes(context);
     Themes theme = Themes();
     TextLanguage textLanguage = TextLanguage();
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: theme.GetColor("background"),
       body:SafeArea(
         child: SingleChildScrollView(
@@ -33,24 +35,25 @@ class Login extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    InkWell(onTap:(){
-                      Navigator.push(
-                        context,
-                        PageRouteBuilder(
-                          pageBuilder: (context, animation1, animation2) =>
-                          const language(),
-                          transitionDuration: Duration.zero,
-                          reverseTransitionDuration: Duration.zero,
-                        ),
-                      );
-                    },
-                     child:SvgPicture.asset("assets/icon/language.svg", semanticsLabel: 'Dart Logo')),
+                    InkWell(
+                        onTap:(){
+                          Navigator.push(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder: (context, animation1, animation2) =>
+                              const language(),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
+                            ),
+                          );
+                        },
+                        child:SvgPicture.asset("assets/icon/language.svg", semanticsLabel: 'Dart Logo')),
                   ],
                 ),
                 Center(
                     child: SvgPicture.asset("assets/images/logoApps.svg"),
                 ),
-              Text(textLanguage.GetWord("مرحبًا بكم مرة أخرى في تجربة إقامة راقية"),style: TextStyle(fontWeight: FontWeight.bold)),
+                Text(textLanguage.GetWord("مرحبًا بكم مرة أخرى في تجربة إقامة راقية"),style: TextStyle(fontWeight: FontWeight.bold)),
                 Text(
                   textLanguage.GetWord("قم بتسجيل الدخول للوصول إلى حجوزاتك وامتيازاتك ورحلة مصممة خصيصًا لراحتك"),
                   textAlign: TextAlign.center, // يجعل كل السطور في الوسط

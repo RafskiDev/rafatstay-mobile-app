@@ -380,7 +380,7 @@ class MealCard extends StatelessWidget {
                   item["sold_count"]!=null?InfoRow(
                     color: theme.GetColor("primaryA"),
                     icon: "assets/icon/Badge.svg",
-                    text: "${textLanguage.GetWord("مباع")} ${item["sold_count"]}",
+                    text: "${textLanguage.GetWord("مباع")} ${item["sold_count"]??""}",
                     sizes: sizes,
                   ):Container(),
                   Expanded(

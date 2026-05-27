@@ -154,12 +154,20 @@ class PageNotifier extends Notifier<int> {
           : null,
     };
   }
-  List<dynamic> allMeals = [];   // كل الوجبات (backup للفلترة)
+  List<String> mealCategoriesBackend = ["Breakfast", "Lunch", "Dinner"];
+  List<dynamic> allMeals = [];
   Future<void> menus(BuildContext context, int branchId) async {
     ApiService api = ApiService();
+    final Map<String, dynamic> params = {};
+    if (selectedMealIndex >= 0) {
+      params["meal_period"] = mealCategoriesBackend[selectedMealIndex];
+    }
+
     final res = await api.get(
       "v1/$roles/branches/$branchId/menus",
-      {},
+      {
+        "meal_period": mealCategoriesBackend[selectedMealIndex]
+      },
       context,
     );
     if (res?["success"] == true) {
@@ -235,6 +243,7 @@ class PageNotifier extends Notifier<int> {
     }
     ref.notifyListeners();
   }
+
   List<dynamic> branches = [];
   bool isFetchingBranch = true;
   Future<void> branche(BuildContext context, int? branchId) async {
@@ -367,7 +376,7 @@ class PageNotifier extends Notifier<int> {
     TextLanguage().GetWord("عشاء")
   ];
 // القائمة التي تُرسل للباك اند (ثابتة بالإنجليزية)
-  List<String> mealCategoriesBackend = ["Breakfast", "Lunch", "Dinner"];
+
   int selectedMealIndex = 0;
   bool isMenuExpanded = false;
 
@@ -376,12 +385,11 @@ class PageNotifier extends Notifier<int> {
     ref.notifyListeners();
   }
 
-  void changeMenuIndex(int index) {
+  void changeMenuIndex(int index, BuildContext context, int branchId) {
     selectedMealIndex = index;
     isMenuExpanded = false;
-    String valueForApi = mealCategoriesBackend[index];
-    print("Sending to API: $valueForApi");
     ref.notifyListeners();
+    menus(context, branchId);
   }
 
 

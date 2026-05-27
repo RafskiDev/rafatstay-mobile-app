@@ -13,6 +13,10 @@ import 'package:google_sign_in/google_sign_in.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
+  FlutterError.onError = (FlutterErrorDetails details) {
+    if (details.toString().contains('NetworkImageLoadException')) return;
+    FlutterError.presentError(details);
+  };
   SystemChrome.setPreferredOrientations(
       [DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);

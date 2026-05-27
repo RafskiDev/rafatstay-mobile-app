@@ -98,19 +98,17 @@ class _ChatState extends ConsumerState<Chat> {
                             text: msg["text"]?.toString() ??
                                 msg["body"]?.toString() ?? "",
                             sentByMe: isMe,
+                            isRead: msg["is_read"] == true,
                           );
                           break;
                         case "image":
-                          String imageUrl = msg["attachment_url"]?.toString() ?? "";
-                          if (imageUrl.isEmpty) {
-                            imageUrl = msg["mediaUrl"]?.toString() ?? "";
-                          }
                           String? status = msg["status"]?.toString();
                           messageWidget = Images(
                             time: time,
-                            imageUrl:msg["attachment_url"],
+                            imageUrl: msg["attachment_url"]?.toString(),
                             sentByMe: isMe,
                             status: status,
+                            isRead: msg["is_read"] == true,
                           );
                           break;
                         case "voice":
@@ -157,8 +155,23 @@ class _ChatState extends ConsumerState<Chat> {
                       Input(conversationId: conversationId ?? 0),
                       SizedBox(height: sizes.GetHeight() * 3),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
+                          // ─── زر الصورة ───
+                          CircularButton(
+                            size: sizes.GetHeight() * 7,
+                            backgroundColor: theme.GetColor("backgroundLight"),
+                            borderColor: Colors.transparent,
+                            borderWidth: 0,
+                            onTap: ()async {
+                              await ref.read(Chat_riverpod.notifier).pickAndSendImage(context,conversationId!);
+                            },
+                            child: SvgPicture.asset(
+                              "assets/icon/photo.svg",
+                              height: sizes.GetHeight() * 3.3,
+                            ),
+                          ),
+                          /*
                           // ─── زر الاتصال ───
                           CircularButton(
                             size: sizes.GetHeight() * 7,
@@ -181,8 +194,11 @@ class _ChatState extends ConsumerState<Chat> {
                               height: sizes.GetHeight() * 3.3,
                             ),
                           ),
+
+                           */
                           Row(
                             children: [
+                              /*
                               VoiceRecordButton(
                                 onSend: (audioFile, duration) async {
                                   await ref.read(Chat_riverpod.notifier).sendVoice(
@@ -193,6 +209,7 @@ class _ChatState extends ConsumerState<Chat> {
                                   );
                                 },
                               ),
+                               */
                               /*
                               // ─── زر الصوت ───
                               CircularButton(
@@ -210,21 +227,7 @@ class _ChatState extends ConsumerState<Chat> {
                               ),
 
                                */
-                              SizedBox(width: sizes.GetWidth() * 2),
-                              // ─── زر الصورة ───
-                              CircularButton(
-                                size: sizes.GetHeight() * 7,
-                                backgroundColor: theme.GetColor("backgroundLight"),
-                                borderColor: Colors.transparent,
-                                borderWidth: 0,
-                                onTap: ()async {
-                                 await ref.read(Chat_riverpod.notifier).pickAndSendImage(context,conversationId!);
-                                },
-                                child: SvgPicture.asset(
-                                  "assets/icon/photo.svg",
-                                  height: sizes.GetHeight() * 3.3,
-                                ),
-                              ),
+
                             ],
                           ),
                         ],
@@ -284,7 +287,8 @@ class Message extends StatelessWidget {
   String text;
   bool sentByMe;
   String time;
-   Message({super.key, required this.text,this.sentByMe=false,this.time=""});
+  final bool isRead;
+   Message({super.key, required this.text,this.sentByMe=false,this.time="",this.isRead = false,});
 
   @override
   Widget build(BuildContext context) {
@@ -299,9 +303,17 @@ class Message extends StatelessWidget {
       child:Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          Align(
-            alignment: Alignment.centerRight,
-            child: Text(times, style: TextStyle(color: Themes().GetColor("white"))),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              if (sentByMe) Icon(
+                isRead ? Icons.done_all : Icons.done,
+                color: isRead ? Colors.green  : Colors.white70,
+                size: 16,
+              ),
+              SizedBox(width: Sizes(context).GetWidth()*1),
+              Text(times, style: TextStyle(color: Themes().GetColor("white"))),
+            ],
           ),
           SizedBox(height: Sizes(context).GetHeight()*1),
           Text(
@@ -320,13 +332,14 @@ class Images extends StatelessWidget {
   final bool sentByMe;
   final String time;
   final String? status;
-
+  final bool isRead;
   Images({
     super.key,
     required this.imageUrl,
     this.sentByMe = false,
     this.time = "",
     this.status,
+    this.isRead = false,
   });
 
   @override
@@ -483,6 +496,14 @@ class Images extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
+              if (sentByMe) ...[
+                Icon(
+                  isRead ? Icons.done_all : Icons.done,
+                  color: isRead ? Colors.green  : Colors.white70,
+                  size: 16,
+                ),
+                SizedBox(width: Sizes(context).GetWidth() * 1),
+              ],
               Text(
                 DateTimeHelper().formatDateTime(time),
                 style: TextStyle(color: Themes().GetColor("white")),

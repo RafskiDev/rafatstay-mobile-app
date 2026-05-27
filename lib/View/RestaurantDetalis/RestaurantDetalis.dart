@@ -516,7 +516,7 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                                           fontSize: sizes.GetHeight() * 2.5)),
                                 ],
                               ),
-                              //MealDropdown(),
+                              MealDropdown(branchId: widget.branchId),
                             ],
                           ),
                           SizedBox(height: sizes.GetHeight() * 2),
