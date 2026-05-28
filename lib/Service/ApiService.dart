@@ -177,7 +177,42 @@ class ApiService {
       throw Exception("Network error or invalid JSON");
     }
   }
+  Future<Map<String, dynamic>> postMultipart(
+      String endpoint,
+      Map<String, dynamic> data, {
+        required List<File> files,
+        required String fileField,
+        required BuildContext context,
+      }) async {
+    if (!_checkNotGuest(context)) return {"success": false};
+    final url = Uri.parse('$baseUrl$endpoint');
+    final myToken = await token;
 
+    try {
+      final request = http.MultipartRequest("POST", url);
+      request.headers['Authorization'] = 'Bearer $myToken';
+      request.headers['Accept'] = 'application/json';
+
+      // أضف الحقول النصية
+      data.forEach((key, value) {
+        if (value != null) {
+          request.fields[key] = value.toString();
+        }
+      });
+
+      // أضف الملفات
+      for (final file in files) {
+        request.files.add(await http.MultipartFile.fromPath(fileField, file.path));
+      }
+
+      final streamed = await request.send();
+      final response = await http.Response.fromStream(streamed);
+      return json.decode(response.body);
+    } catch (e) {
+      print("postMultipart error: $e");
+      throw Exception("Network error");
+    }
+  }
   Future<Map<String, dynamic>?> uploadFile(
       String endpoint,
       File file,

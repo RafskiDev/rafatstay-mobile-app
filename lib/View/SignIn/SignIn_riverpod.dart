@@ -98,7 +98,17 @@ class PageNotifier extends Notifier<int> {
             2, '0')}-${birthday.day.toString().padLeft(2, '0')}",
       };
       final response = await api.post("v1/auth/register", data, context);
-      return response;
+      if(response["success"]==true){
+        storage.write("token", response["data"]["token"]);
+        storage.write("user", response["data"]["user"]);
+        Navigator.pushAndRemoveUntil(
+          context,
+          MaterialPageRoute(builder: (context) => BottomBar()),
+              (route) => false,
+        );
+      }else{
+        ToastMessages(context,response["message"],Colors.red,Colors.white);
+      }
     }finally{
       ref.notifyListeners();
       isLoading=false;

@@ -13,6 +13,7 @@ import '../../../Widget/Ticket.dart';
 import '../../../Widget/WidgetButton.dart';
 import '../../BookingDetails/BookingDetails.dart';
 import '../../Chat/Chat.dart';
+import '../../RestaurantDetalis/RestaurantDetalis.dart';
 import '../Booking_riverpod.dart';
 import 'package:flutter/rendering.dart';
 import 'package:share_plus/share_plus.dart';
@@ -91,7 +92,7 @@ class _OnSiteState extends ConsumerState<OnSite> {
                       checkInDate: DateTimeHelper().formatDate(bookingsData[0]['booking_date']) ?? "",
                       checkInTime: DateTimeHelper().formatTime(bookingsData[0]['end_time']) ?? "",
                       childrenCount: booking['children_count'] ?? 0,
-                      tableNumber: booking['table']?['table_number'] ?? "N/A",
+                      tableNumber: booking['table']?['table_number'] ?? "0",
                       width: sizes.GetWidth() * 80,
                       height: sizes.GetHeight() * 25,
                       party_size:booking['party_size'] ?? 0,
@@ -209,7 +210,24 @@ class _OnSiteState extends ConsumerState<OnSite> {
           padding:EdgeInsets.symmetric(horizontal:sizes.GetHeight()*2),
           child: InkWell(
             onTap:(){
-              ref.read(Booking_riverpod.notifier).setRequestAssistance();
+              final itemData = booking["branch"];
+              final int branchId = itemData?["id"] ?? 0;
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context,
+                      animation1,
+                      animation2) =>
+                      RestaurantDetalis(
+                        title:itemData["name"],
+                        branchId: branchId,
+                      ),
+                  transitionDuration:
+                  Duration.zero,
+                  reverseTransitionDuration:
+                  Duration.zero,
+                ),
+              );
               /*
               ref.read(Booking_riverpod.notifier).createBooking(
                 context: context,
@@ -246,7 +264,19 @@ class _OnSiteState extends ConsumerState<OnSite> {
           buttonText:"Finish Experience",
           textColor:Themes().GetColor("textPrimary"),
           onPressed: () {
-            print("تم الضغط على الزر");
+            final bookingId = booking["id"] as int;
+            ref.read(Booking_riverpod.notifier).finishExperience(
+              context: context,
+              bookingId: bookingId,
+              onSuccess: () {
+                ToastMessages(
+                  context,
+                  TextLanguage().GetWord("شكراً لزيارتك! نتطلع لرؤيتك مجدداً"),
+                  Themes().GetColor("success"),
+                  Themes().GetColor("white"),
+                );
+              },
+            );
           },
           backgroundColor:ref.read(Booking_riverpod.notifier).bookingDetails[0]?Themes().GetColor("primaryS"): Themes().GetColor("primaryA"),
         ),
@@ -294,7 +324,6 @@ class _OnSiteState extends ConsumerState<OnSite> {
   }
   void showCustomBottomSheet(BuildContext context, WidgetRef ref) {
     TextLanguage textLanguage = TextLanguage();
-
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -322,6 +351,10 @@ class _OnSiteState extends ConsumerState<OnSite> {
             "icon": "assets/icon/RequestManager.svg",
             "text":textLanguage.GetWord('مدير الطلبات'),
           },
+          {
+            "icon": "assets/icon/Leftovers.svg",
+            "text":textLanguage.GetWord('بقايا الطعام في العبوة'),
+          },
         ];
 
         return Consumer(
@@ -330,7 +363,7 @@ class _OnSiteState extends ConsumerState<OnSite> {
             final selectedIndex = ref.watch(Booking_riverpod.notifier).selectedAssistanceIndex;
             return Container(
              padding:EdgeInsets.all(8.0),
-              height: sizes.GetHeight() * 65,
+              height: sizes.GetHeight() * 76,
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -394,9 +427,10 @@ class _OnSiteState extends ConsumerState<OnSite> {
                         if(ref.read(Booking_riverpod.notifier).selectedAssistanceIndex!=-1){
                           const typeMap = {
                             0: "table_cleaning",  // طلب تنظيف الطاولات
-                            1: "waiter",          // لا تخل
-                            2: "manager",         // لم يعجبني الطعام
-                            3: "manager",         // مدير الطلبات
+                            1: "do_not_disturb",          // لا تخل
+                            2: "meal_complaint",         // لم يعجبني الطعام
+                            3: "request_manager",         // مدير الطلبات
+                            4: "pack_leftovers",
                           };
                           final selectedIndex = ref.read(Booking_riverpod.notifier).selectedAssistanceIndex;
                           final bookings = ref.read(Booking_riverpod.notifier).bookingsData;
@@ -406,9 +440,24 @@ class _OnSiteState extends ConsumerState<OnSite> {
                               bookingId: bookings[0]["id"],
                               type: typeMap[selectedIndex] ?? "waiter",
                               notes: assistanceOptions[selectedIndex]["text"],
+                              onSuccess: () {
+                                if (!mounted) return;
+                                ToastMessages(
+                                  context,
+                                  "تم إرسال طلب المساعدة بنجاح",
+                                  Themes().GetColor("success"),
+                                  Themes().GetColor("white"),
+                                );
+                                Navigator.pop(context);
+                              },
+                              onError: () {
+                                if (!mounted) return;
+                                ToastMessages(context, "فشل إرسال الطلب",
+                                    Themes().GetColor("error"), Themes().GetColor("white"));
+                                Navigator.pop(context);
+                              },
                             );
                           }
-                          Navigator.pop(context);
                         }
                       },
                       backgroundColor: selectedIndex != -1
@@ -421,11 +470,13 @@ class _OnSiteState extends ConsumerState<OnSite> {
                       children: [
                         InkWell(
                           onTap: (){
+                            final bookings = ref.read(Booking_riverpod.notifier).bookingsData;
+                            final int branchId = bookings[0]["branch"]["id"];
                             Navigator.push(
                               context,
                               PageRouteBuilder(
                                 pageBuilder: (context, animation1, animation2) =>
-                                    Chat(branch_id: 1,),
+                                    Chat(branch_id:branchId),
                                 transitionDuration: Duration.zero,
                                 reverseTransitionDuration: Duration.zero,
                               ),
@@ -457,6 +508,7 @@ class _OnSiteState extends ConsumerState<OnSite> {
     ).whenComplete(() {
       ref.read(Booking_riverpod.notifier).setRequestAssistance();
       ref.read(Booking_riverpod.notifier).resetSelectedAssistance();
+      ref.read(Booking_riverpod.notifier).closeRequestAssistance();
     });
   }
 }

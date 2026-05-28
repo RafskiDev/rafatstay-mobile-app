@@ -58,6 +58,10 @@ class PageNotifier extends Notifier<int> {
     selectedAssistanceIndex = -1;
     ref.notifyListeners();
   }
+  void closeRequestAssistance() {
+    requestAssistance = false;
+    ref.notifyListeners();
+  }
 
   // ✅ دالة reset لإعادة تعيين كل الحالة
   void resetBookings() {
@@ -247,6 +251,8 @@ class PageNotifier extends Notifier<int> {
     required int bookingId,
     required String type,
     String? notes,
+    VoidCallback? onSuccess,
+    VoidCallback? onError,
   }) async {
     final response = await ApiService().post(
       "v1/$roles/bookings/$bookingId/assistance",
@@ -256,11 +262,37 @@ class PageNotifier extends Notifier<int> {
       },
       context,
     );
-    if (response?["success"] == true) {
+
+    if (response["success"] == true) {
+      onSuccess?.call();
       ref.notifyListeners();
+    } else {
+      onError?.call();
     }
   }
-
+  Future<void> finishExperience({
+    required BuildContext context,
+    required int bookingId,
+    VoidCallback? onSuccess,
+  }) async {
+    final response = await ApiService().patch(
+      "v1/$roles/bookings/$bookingId/finish",
+      {},
+      context,
+    );
+    if (response?["success"] == true) {
+      bookingsData.removeWhere((b) => b["id"] == bookingId);
+      ref.notifyListeners();
+      onSuccess?.call();
+    } else {
+      ToastMessages(
+        context,
+        response?["message"] ?? TextLanguage().GetWord("حدث خطأ"),
+        Themes().GetColor("error"),
+        Themes().GetColor("white"),
+      );
+    }
+  }
 
 }
 final Booking_riverpod = NotifierProvider<PageNotifier, int>(PageNotifier.new);

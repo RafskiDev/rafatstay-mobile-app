@@ -34,21 +34,18 @@ class PageNotifier extends Notifier<int> {
       reviews.clear();
       if (ref.mounted) state++;
     }
-
     final response = await ApiService().get(
       "v1/$roles/branches/$branchId/reviews",
       {
-        "sort_by": "helpful_count",
-        "sort_dir": "desc",
+       // "sort_by": "helpful_count",
+       // "sort_dir": "desc",
         "per_page": "5",
         "page": currentPage.toString(),
       },
       context,
     );
-
-    // 🔥 أهم سطر
+    print(response);
     if (!ref.mounted) return;
-
     if (response != null && response['data'] != null) {
       final data = response['data'];
       final List items = (data['data'] is List) ? data['data'] : [];

@@ -60,14 +60,31 @@ Widget celebrate(BuildContext context,WidgetRef ref,int selectedGender){
             ],
           ),
           SizedBox(height:Sizes(context).GetHeight()*2,),
-          WidgetTextField(
-            backgroundColor:Themes().GetColor("backgroundOffWhite"),
-            borderColor:Themes().GetColor("secondary"),
-            Controller: ref.read(RateYourExperience_riverpod.notifier).birthday,
-            focusNode: ref.read(RateYourExperience_riverpod.notifier).focusNodeBirthday,
-            HintText:TextLanguage().GetWord('اختر تاريخ ميلادك'),
-            keyboardType: TextInputType.number,
-            iconData: 'assets/icon/birthday.svg',
+          GestureDetector(
+            onTap: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: DateTime(1995),
+                firstDate: DateTime(1900),
+                lastDate: DateTime.now().subtract(const Duration(days: 1)), // ✅ قبل اليوم
+              );
+              if (picked != null) {
+                final formatted =
+                    "${picked.year}-${picked.month.toString().padLeft(2, '0')}-${picked.day.toString().padLeft(2, '0')}";
+                ref.read(RateYourExperience_riverpod.notifier).birthday.text = formatted;
+              }
+            },
+            child: AbsorbPointer( // ✅ يمنع الكيبورد
+              child: WidgetTextField(
+                backgroundColor: Themes().GetColor("backgroundOffWhite"),
+                borderColor: Themes().GetColor("secondary"),
+                Controller: ref.read(RateYourExperience_riverpod.notifier).birthday,
+                focusNode: ref.read(RateYourExperience_riverpod.notifier).focusNodeBirthday,
+                HintText: TextLanguage().GetWord('اختر تاريخ ميلادك'),
+                keyboardType: TextInputType.datetime,
+                iconData: 'assets/icon/birthday.svg',
+              ),
+            ),
           ),
           SizedBox(height:Sizes(context).GetHeight()*2,),
           Row(

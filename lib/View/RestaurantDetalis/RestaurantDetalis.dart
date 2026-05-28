@@ -839,7 +839,9 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                             comment: ref
                                 .read(RestaurantDetalis_riverpod.notifier)
                                 .review[0]["comment"],
-                            image: "assets/images/38a2a034cbe4ac063cad704f0bc1eb89da98ec7f.png",
+                            image: ref
+                                .read(RestaurantDetalis_riverpod.notifier)
+                                .review[0]["user"]["avatar_url"]??"",
                             sizes: sizes,
                             theme: theme,
                             onAvatarTap: () {},

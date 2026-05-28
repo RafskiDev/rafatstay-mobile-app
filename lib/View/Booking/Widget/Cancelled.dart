@@ -164,7 +164,7 @@ class BookingCard extends StatelessWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
       child: CachedNetworkImage(
-        imageUrl:"$showImage${mainImage??""}",
+        imageUrl:mainImage,
         width: Sizes(context).GetWidth() * 30,
         height: Sizes(context).GetHeight() * 14,
         fit: BoxFit.cover,

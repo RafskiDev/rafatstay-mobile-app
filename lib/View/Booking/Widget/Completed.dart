@@ -10,6 +10,7 @@ import '../../../Widget/WidgetButton.dart';
 import '../../BookingDetailsSummary/BookingDetailsSummary.dart';
 import '../../RateYourExperience/RateYourExperience.dart';
 import '../../SecondRateYourExperience/SecondRateYourExperience.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../Booking_riverpod.dart';
 class Completed extends ConsumerStatefulWidget {
   const Completed({super.key});
@@ -91,7 +92,8 @@ class _CompletedState extends ConsumerState<Completed> {
               restaurantLocation: "${branch["city"] ?? ""} ${branch["address"] ?? ""}".trim(),
               restaurantLogo: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
               date: booking["booking_date"] ?? "",
-              time: booking["start_time"] ?? "",
+              time:booking["time_remaining"]["formatted_compact"] ?? "",
+              booking:booking,
             ),
           );
         },
@@ -101,6 +103,7 @@ class _CompletedState extends ConsumerState<Completed> {
 }
 
 class BookingCard extends StatelessWidget {
+  final Map<String, dynamic> booking;
   final int id;
   final String mainImage;
   final String bookingNumber;
@@ -114,6 +117,7 @@ class BookingCard extends StatelessWidget {
   final bool footer;
   const BookingCard({
     super.key,
+    required this.booking,
     required this.id,
     required this.mainImage,
     required this.bookingNumber,
@@ -165,11 +169,29 @@ class BookingCard extends StatelessWidget {
   Widget _image(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
-      child: Image.asset(
-        mainImage,
-        width: Sizes(context).GetWidth()*30,
-        height: Sizes(context).GetHeight()*14,
+      child: CachedNetworkImage(
+        imageUrl:mainImage,
+        width: Sizes(context).GetWidth() * 30,
+        height: Sizes(context).GetHeight() * 14,
         fit: BoxFit.cover,
+        placeholder: (context, url) =>  Center(
+          child:showLoading(),
+        ),
+        //ضفت هذا حتى لا يطبع الخطا
+        errorListener: (dynamic exception) {
+        },
+        errorWidget: (context, url, error) {
+          return Container(
+            width: Sizes(context).GetWidth() * 30,
+            height: Sizes(context).GetHeight() * 14,
+            color: const Color(0xFFEEEEEE),
+            child: const Icon(
+              Icons.image_not_supported,
+              size: 40,
+              color: Colors.grey,
+            ),
+          );
+        },
       ),
     );
   }
@@ -203,11 +225,11 @@ class BookingCard extends StatelessWidget {
             children: [
               SvgPicture.asset("assets/icon/SiteData.svg",color:Themes().GetColor("textSecondary"),height:Sizes(context).GetHeight()*1.5,),
               SizedBox(width: Sizes(context).GetWidth()*1),
-              Text(date,style:TextStyle(color:Themes().GetColor("textSecondary"))),
+              Expanded(child: Text(date,style:TextStyle(color:Themes().GetColor("textSecondary"),fontSize:10))),
               SizedBox(width: Sizes(context).GetWidth()*5),
               SvgPicture.asset("assets/icon/time.svg",color:Themes().GetColor("textSecondary")),
               SizedBox(width: Sizes(context).GetWidth()*1),
-              Text(time,style:TextStyle(color:Themes().GetColor("textSecondary"))),
+              Expanded(child: Text(time,style:TextStyle(color:Themes().GetColor("textSecondary"),fontSize:10))),
             ],
           )
         ],
@@ -221,12 +243,21 @@ class BookingCard extends StatelessWidget {
       children: [
         Expanded(
           child: WidgetButton(
-            buttonSize:Sizes(context).GetHeight()*1.9,
+            buttonSize:Sizes(context).GetHeight()*1.8,
             context: context,
             isCircular: true,
             buttonText: TextLanguage().GetWord('تفاصيل الحجز'),
             onPressed: () {
 
+              Navigator.push(
+                context,
+                PageRouteBuilder(
+                  pageBuilder: (context, animation1, animation2) =>
+                      BookingDetailsSummary(bookingId: booking["id"], bookingDetails:booking,),
+                  transitionDuration: Duration.zero,
+                  reverseTransitionDuration: Duration.zero,
+                ),
+              );
             },
             textColor:Themes().GetColor("textPrimary"),
             borderColor:Themes().GetColor("textPrimary"),
@@ -236,11 +267,12 @@ class BookingCard extends StatelessWidget {
         SizedBox(width: Sizes(context).GetWidth()*2),
         Expanded(
           child: WidgetButton(
-            buttonSize:Sizes(context).GetHeight()*1.9,
+            buttonSize:Sizes(context).GetHeight()*1.8,
             isCircular: true,
             context: context,
             buttonText: TextLanguage().GetWord('قيّم تجربتك'),
             onPressed: () {
+              final id =booking["branch"]["id"];
               /*
               Navigator.push(
                 context,
@@ -251,13 +283,12 @@ class BookingCard extends StatelessWidget {
                   reverseTransitionDuration: Duration.zero,
                 ),
               );
-
                */
               Navigator.push(
                 context,
                 PageRouteBuilder(
                   pageBuilder: (context, animation1, animation2) =>
-                      RateYourExperience(),
+                      RateYourExperience(branchId:id),
                   transitionDuration: Duration.zero,
                   reverseTransitionDuration: Duration.zero,
                 ),

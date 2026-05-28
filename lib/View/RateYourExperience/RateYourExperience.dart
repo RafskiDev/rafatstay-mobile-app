@@ -6,23 +6,39 @@ import '../../Utils/Them.dart';
 import '../../Widget/WidgetAppBar.dart';
 import '../../Widget/WidgetButton.dart';
 import '../../Widget/WidgetTextField.dart';
+import '../RestaurantDetalis/RestaurantDetalis_riverpod.dart';
 import 'RateYourExperience_riverpod.dart';
 import 'Widget/Celebrate.dart';
 import 'Widget/FeedbackInput.dart';
 import 'Widget/evaluation.dart';
 import 'Widget/personCard.dart';
-
-class RateYourExperience extends ConsumerWidget {
-  RateYourExperience({super.key});
+import 'Widget/videoFeedbackCard.dart';
+class RateYourExperience extends ConsumerStatefulWidget {
+final int branchId;
+const RateYourExperience({super.key, required this.branchId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<RateYourExperience> createState() => _State();
+}
+
+class _State extends ConsumerState<RateYourExperience> {
+  @override
+  void initState() {
+    super.initState();
+    Future.microtask(() {
+      ref.read(RateYourExperience_riverpod.notifier)
+          .loadEmployees(context, widget.branchId);
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     ref.watch(RateYourExperience_riverpod);
     final selectedGender = ref.watch(RateYourExperience_riverpod);
     final sizes = Sizes(context);
     Themes theme = Themes();
     TextLanguage textLanguage = TextLanguage();
-
+    final notifier = ref.watch(RateYourExperience_riverpod.notifier);
     return Scaffold(
       appBar: buildCustomAppBar(context, textLanguage.GetWord('قيّم تجربتك')),
       backgroundColor: theme.GetColor("background"),
@@ -74,7 +90,6 @@ class RateYourExperience extends ConsumerWidget {
                 ),
               ),
               SizedBox(height: sizes.GetHeight() * 2),
-
               // ✅ food_rating + service_rating
               Row(
                 children: [Text(TextLanguage().GetWord("تقييم الخدمة"))],
@@ -104,76 +119,160 @@ class RateYourExperience extends ConsumerWidget {
               SizedBox(height: sizes.GetHeight() * 2),
 
               // ✅ comment
-              FeedbackInput(context, textLanguage.GetWord('اكتب ملاحظاتك هنا…')),
-              SizedBox(height: sizes.GetHeight() * 2),
-
-              // ❌ غير مدعوم - لا يوجد endpoint لرفع الصور والفيديو
-              // Row(
-              //   mainAxisAlignment: MainAxisAlignment.center,
-              //   children: [
-              //     Flexible(child: videoFeedbackCard(context, 'صورك مع الوجبة', "")),
-              //     SizedBox(width: sizes.GetWidth() * 2),
-              //     Flexible(child: videoFeedbackCard(context, 'أخبرنا برأيك في فيديو', "")),
-              //   ],
-              // ),
-
-              // ✅ best_employee_id — موظف واحد فقط
-              Row(
-                children: [Text(textLanguage.GetWord("تقييم الموظفين"))],
+              /*
+              FeedbackInput(
+                context,
+                textLanguage.GetWord('اكتب ملاحظاتك هنا…'),
+                controller: ref.read(RateYourExperience_riverpod.notifier).comment,
               ),
+
+               */
               SizedBox(height: sizes.GetHeight() * 2),
-              SizedBox(
-                height: sizes.GetWidth() * 60,
-                child: Consumer(
-                  builder: (context, ref, child) {
-                    final notifier = ref.watch(RateYourExperience_riverpod.notifier);
-                    final cards = notifier.personCard;
-                    return ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      itemCount: cards.length,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: EdgeInsets.only(right: sizes.GetWidth() * 2),
-                          child: personCard(
-                            context,
-                            cards[index]["image"].toString(),
-                            cards[index]["title"].toString(),
-                            isSelected: notifier.selectedPersonIndexes.contains(index),
-                            onTap: () => notifier.togglePersonSelection(index),
+              Consumer(
+                builder: (context, ref, child) {
+                  final notifier = ref.watch(RateYourExperience_riverpod.notifier);
+                  return Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Flexible(
+                            child: GestureDetector(
+                              onTap: () => notifier.pickMedia(context),
+                              child: videoFeedbackCard(context, 'صورك مع الوجبة', ""),
+                            ),
                           ),
-                        );
-                      },
-                    );
-                  },
+                          SizedBox(width: sizes.GetWidth() * 2),
+                          Flexible(
+                            child: GestureDetector(
+                              onTap: () => notifier.pickVideo(context),
+                              child: videoFeedbackCard(context, 'أخبرنا برأيك في فيديو', ""),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (notifier.selectedMedia.isNotEmpty) ...[
+                        SizedBox(height: sizes.GetHeight() * 2),
+                        SizedBox(
+                          height: sizes.GetWidth() * 20,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: notifier.selectedMedia.length,
+                            itemBuilder: (context, index) {              // ← هنا
+                              final file = notifier.selectedMedia[index];
+                              final isVideo = notifier.isVideo(file);
+                              return Stack(
+                                children: [
+                                  Padding(
+                                    padding: EdgeInsets.only(right: sizes.GetWidth() * 2),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: isVideo
+                                          ? Container(
+                                        width: sizes.GetWidth() * 18,
+                                        height: sizes.GetWidth() * 18,
+                                        color: Themes().GetColor("backgroundOffWhite"),
+                                        child: Center(
+                                          child: Icon(Icons.videocam,
+                                              size: 32, color: Themes().GetColor("primaryA")),
+                                        ),
+                                      )
+                                          : Image.file(
+                                        file,
+                                        width: sizes.GetWidth() * 18,
+                                        height: sizes.GetWidth() * 18,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 0,
+                                    right: sizes.GetWidth() * 2,
+                                    child: GestureDetector(
+                                      onTap: () => notifier.removeMedia(index),
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          color: Themes().GetColor("error"),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(Icons.close, size: 16,
+                                            color: Themes().GetColor("white")),
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ],
+                  );
+                },
+              ),
+              // ✅ best_employee_id — موظف واحد فقط
+              if (notifier.employeeList.isNotEmpty)...[
+                Row(
+                  children: [Text(textLanguage.GetWord("تقييم الموظفين"))],
                 ),
+                SizedBox(height: sizes.GetHeight() * 2),
+              ],
+              Consumer(
+                builder: (context, ref, child) {
+                  final cards = notifier.employeeList;
+                  if (cards.isEmpty) return const SizedBox.shrink();
+                  return Column(
+                    children: [
+                      ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: cards.length,
+                        itemBuilder: (context, index) {
+                          return Padding(
+                            padding: EdgeInsets.only(right: sizes.GetWidth() * 2),
+                            child: personCard(
+                              context,
+                              cards[index]["avatar_url"]??"",
+                              cards[index]["name"]?.toString() ?? "",
+                              isSelected: notifier.selectedPersonIndexes.contains(index),
+                              onTap: () => notifier.togglePersonSelection(index),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  );
+                },
               ),
               SizedBox(height: sizes.GetHeight() * 2),
 
-              // ❌ غير مدعوم - API لا يقبل sub-ratings للموظفين (attitude, attention to detail)
-              // SizedBox(
-              //   height: sizes.GetWidth() * 28,
-              //   child: ListView.builder(
-              //     scrollDirection: Axis.horizontal,
-              //     itemCount: ref.read(RateYourExperience_riverpod.notifier).reviews.length,
-              //     itemBuilder: (context, index) {
-              //       final notifier = ref.read(RateYourExperience_riverpod.notifier);
-              //       final review = notifier.reviews;
-              //       return Padding(
-              //         padding: EdgeInsets.only(right: sizes.GetWidth() * 2),
-              //         child: evaluation(
-              //           context,
-              //           review[index]["title"] as String,
-              //           review[index]["icon"] as String,
-              //           review[index]["rate"] as int,
-              //           (value) => notifier.updateReviewRating(index, value),
-              //         ),
-              //       );
-              //     },
-              //   ),
-              // ),
-
+               SizedBox(
+                 height: sizes.GetWidth() * 28,
+                 child: ListView.builder(
+                   scrollDirection: Axis.horizontal,
+                   itemCount: ref.read(RateYourExperience_riverpod.notifier).reviews.length,
+                   itemBuilder: (context, index) {
+                     final notifier = ref.read(RateYourExperience_riverpod.notifier);
+                     final review = notifier.reviews;
+                     return Padding(
+                       padding: EdgeInsets.only(right: sizes.GetWidth() * 2),
+                       child: evaluation(
+                         context,
+                         review[index]["title"] as String,
+                         review[index]["icon"] as String,
+                         review[index]["rate"] as int,
+                         (value) => notifier.updateReviewRating(index, value),
+                       ),
+                     );
+                   },
+                 ),
+               ),
+              SizedBox(height: sizes.GetHeight() * 2),
               // ✅ comment للموظف
-              FeedbackInput(context, textLanguage.GetWord("شاركنا رأيك…")),
+              FeedbackInput(
+                context,
+                textLanguage.GetWord("شاركنا رأيك…"),
+                controller: ref.read(RateYourExperience_riverpod.notifier).comment,
+              ),
               SizedBox(height: sizes.GetHeight() * 2),
 
               // ✅ tip_amount
@@ -221,7 +320,7 @@ class RateYourExperience extends ConsumerWidget {
                 onPressed: () {
                   // ✅ إرسال البيانات للـ API
                   ref.read(RateYourExperience_riverpod.notifier)
-                      .submitReview(branchId: 1, context: context);
+                      .submitReview(branchId: widget.branchId, context: context);
                 },
                 backgroundColor: Themes().GetColor("primaryA"),
               ),
@@ -233,3 +332,5 @@ class RateYourExperience extends ConsumerWidget {
     );
   }
 }
+
+

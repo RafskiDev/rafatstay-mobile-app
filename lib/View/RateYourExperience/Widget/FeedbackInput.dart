@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../../../Utils/Sizes.dart';
 import '../../../Utils/Them.dart';
-Widget FeedbackInput(BuildContext context, String text) {
+Widget FeedbackInput(BuildContext context, String text, {TextEditingController? controller}) {
   return Container(
     height: Sizes(context).GetHeight() * 12,
     decoration: BoxDecoration(
@@ -27,6 +27,7 @@ Widget FeedbackInput(BuildContext context, String text) {
         borderRadius: BorderRadius.circular(18),
       ),
       child: TextField(
+        controller: controller,
         maxLines: null,
         expands: true,
         decoration: InputDecoration(

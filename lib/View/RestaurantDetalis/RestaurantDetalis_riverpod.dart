@@ -167,7 +167,6 @@ class PageNotifier extends Notifier<int> {
       },
       context,
     );
-    print(res);
     if (res?["success"] == true) {
       menu = List<Map<String, dynamic>>.from(res["data"] ?? []);
       supportsTakeaway =

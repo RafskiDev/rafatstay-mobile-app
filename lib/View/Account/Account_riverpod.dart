@@ -27,15 +27,15 @@ class PageNotifier extends Notifier<int> {
       {},
       context,
     );
-    Navigator.pushAndRemoveUntil(
-      context,
-      MaterialPageRoute(builder: (context) => Login()),
-          (route) => false,
-    );
     if(response["success"]==true){
       storage.remove("token");
       storage.remove("user");
       storage.remove("password");
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(builder: (context) => Login()),
+            (route) => false,
+      );
     }else{
       ToastMessages(context,textLanguage.GetWord("خطأ في المصداقية"),Themes().GetColor("error"),Themes().GetColor("white"));
     }

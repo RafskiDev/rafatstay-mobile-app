@@ -7,7 +7,9 @@ import '../../Utils/Them.dart';
 import '../../Widget/WidgetAppBar.dart';
 import '../../Widget/WidgetButton.dart';
 import '../../Widget/WidgetTextField.dart';
+import '../language/language.dart';
 import 'SignIn_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 class SignIn extends ConsumerWidget {
   const SignIn({super.key});
 
@@ -29,7 +31,20 @@ class SignIn extends ConsumerWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    InkWell(child: Image.asset("assets/images/img_1.png",height:sizes.GetHeight()*3,)),
+                    InkWell(
+                        onTap:(){
+                          Navigator.push(
+                            context,
+                            PageRouteBuilder(
+                              pageBuilder: (context, animation1, animation2) =>
+                              const language(),
+                              transitionDuration: Duration.zero,
+                              reverseTransitionDuration: Duration.zero,
+                            ),
+                          );
+                        },
+                        child:SvgPicture.asset("assets/icon/language.svg"),
+                     ),
                   ],
                 ),
                 SizedBox(height: sizes.GetHeight()*5),
@@ -91,9 +106,8 @@ class SignIn extends ConsumerWidget {
                   isLoading:ref.read(signInRiverpod.notifier).isLoading,
                   context: context,
                   buttonText:textLanguage.GetWord("اشتراك"),
-                  onPressed: () {
-                    ref.read(signInRiverpod.notifier).createUser(context);
-                    Navigator.pop(context);
+                  onPressed: ()async {
+                    await ref.read(signInRiverpod.notifier).createUser(context);
                   },
                   backgroundColor:theme.GetColor("primary"),
                   textColor:theme.GetColor("textPrimary"),

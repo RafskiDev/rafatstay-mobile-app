@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:rafatstay/Utils/TextLanguage.dart';
 import '../../../Utils/Sizes.dart';
 import '../../../Utils/Them.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+
+import '../../../Widget/ShowLoading.dart';
 Widget personCard(
     BuildContext context,
     String image,
@@ -28,14 +31,33 @@ Widget personCard(
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             ClipRRect(
               borderRadius: BorderRadius.circular(18),
-              child: Image.asset(
-                image,
+              child:  CachedNetworkImage(
+                imageUrl:image,
                 fit: BoxFit.cover,
                 width: Sizes(context).GetWidth() * 30,
-                height: Sizes(context).GetHeight() * 15,
+                height: Sizes(context).GetHeight() * 13,
+                placeholder: (context, url) =>  Center(
+                  child:showLoading(),
+                ),
+                //ضفت هذا حتى لا يطبع الخطا
+                errorListener: (dynamic exception) {
+                },
+                errorWidget: (context, url, error) {
+                  return Container(
+                    width: double.infinity,
+                    height: Sizes(context).GetHeight() * 13,
+                    color: const Color(0xFFEEEEEE),
+                    child: const Icon(
+                      Icons.image_not_supported,
+                      size: 40,
+                      color: Colors.grey,
+                    ),
+                  );
+                },
               ),
             ),
             SizedBox(height: Sizes(context).GetHeight() * 2),
@@ -47,7 +69,7 @@ Widget personCard(
               ),
               textAlign: TextAlign.center,
             ),
-            SizedBox(height: Sizes(context).GetHeight() * 2),
+            SizedBox(height: Sizes(context).GetHeight() * 1),
             Text(
               TextLanguage().GetWord('يتعلم أكثر'),
               style: TextStyle(

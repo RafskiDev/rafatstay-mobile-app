@@ -328,5 +328,7 @@ final EnLanguag = {
   "تقييم الموظفين":"Employee evaluation",
   "تقييم المطعم":"Restaurant review",
   "تم إرسال التقييم بنجاح!":"Review submitted successfully!",
-  "الكل":"All"
+  "الكل":"All",
+  "بقايا الطعام في العبوة":"Pack Leftovers",
+  "شكراً لزيارتك! نتطلع لرؤيتك مجدداً":"Thank you for your visit! We look forward to seeing you again."
 };

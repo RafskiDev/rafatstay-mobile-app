@@ -6,6 +6,7 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import '../../Utils/Sizes.dart';
 import '../../Widget/WidgetButton.dart';
 import '../Login/Login.dart';
+import '../language/language.dart';
 import 'AppOverview_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 class AppOverview extends ConsumerWidget {
@@ -30,7 +31,19 @@ class AppOverview extends ConsumerWidget {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  InkWell(child: SvgPicture.asset("assets/icon/language.svg", semanticsLabel: 'Dart Logo')),
+                  InkWell(
+                      onTap:(){
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (context, animation1, animation2) =>
+                            const language(),
+                            transitionDuration: Duration.zero,
+                            reverseTransitionDuration: Duration.zero,
+                          ),
+                        );
+                      },
+                      child:SvgPicture.asset("assets/icon/language.svg", semanticsLabel: 'Dart Logo')),
                 ],
               ),
               Container(

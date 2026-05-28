@@ -189,7 +189,12 @@ class _HomeState extends ConsumerState<Home> {
                   valueListenable: LoadingService.isLoading,
                   builder: (context, isLoading, child) {
                     return isLoading
-                        ? showLoading()
+                        ? SizedBox(
+                      height: sizes.GetHeight() * 60,
+                      child: Center(
+                        child: showLoading(),
+                         ),
+                        )
                         : Column(
                       children: [
                         SizedBox(height: sizes.GetHeight() * 2),
@@ -253,9 +258,7 @@ class _HomeState extends ConsumerState<Home> {
                             ),
                           ),
                         ),
-
-                        SizedBox(height: sizes.GetHeight() * 2),
-
+                        homes.isNotEmpty && homes[0]["sections"]?["filters"] != null? SizedBox(height: sizes.GetHeight() * 2):SizedBox.shrink(),
                         // ─── Search ───────────────────────────────────
                         Row(
                           children: [
@@ -296,10 +299,9 @@ class _HomeState extends ConsumerState<Home> {
                             ),
                           ],
                         ),
-
                         // ─── Events (مطاعم فقط) ───────────────────────
                         if (selectedIndex == 0) ...[
-                          if (homes.isNotEmpty) SizedBox(height: sizes.GetHeight() * 2),
+                          if (event.isNotEmpty) SizedBox(height: sizes.GetHeight() * 2),
                           Events(events: event),
                         ],
 

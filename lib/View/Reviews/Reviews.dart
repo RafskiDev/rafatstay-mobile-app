@@ -109,12 +109,10 @@ class _ReviewsState extends ConsumerState<Reviews> {
                         padding: EdgeInsets.only(bottom: sizes.GetHeight() * 2),
                         child: ReviewCard(
                           name: item["user"]?["full_name"]?.toString() ?? "غير معروف",
-                          date: item["created_at"]?.toString() ?? "",        // ✅
-                          comment: item["comment"]?.toString() ?? "",         // ✅
+                          date: item["created_at"]?.toString() ?? "",
+                          comment: item["comment"]?.toString() ?? "",
                           rating: item["overall_rating"] ?? 0,
-                          image: (item["media"] is List && item["media"].isNotEmpty)
-                              ? (item["media"][0]["url"] ?? "").toString()  // ✅
-                              : "assets/images/38a2a034cbe4ac063cad704f0bc1eb89da98ec7f.png",
+                          image: item["user"]["avatar_url"]??"",
                           video: null,
                           imageOnly: null,
                           sizes: sizes,
