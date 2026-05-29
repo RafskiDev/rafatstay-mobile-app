@@ -16,6 +16,29 @@ class PageNotifier extends Notifier<int> {
   TextLanguage textLanguage = TextLanguage();
 
 
+  Future<void> fetchAllBranchData(BuildContext context, int branchId) async {
+    isFetchingBranch = true;
+    ref.notifyListeners();
+
+    try {
+      // استخدم Future.wait لتنفيذ كل الطلبات بشكل متوازٍ وانتظارها معاً
+      await Future.wait([
+        offers(context, branchId),
+        employees(context, branchId),
+        reviews(context, branchId),
+        branche(context, branchId),
+        menus(context, branchId),
+        branchPolicies(context, branchId),
+        garages(context, branchId),
+        superGuests_(context, branchId),
+      ]);
+    } catch (e) {
+      print("Error fetching branch data: $e");
+    } finally {
+      isFetchingBranch = false;
+      ref.notifyListeners();
+    }
+  }
 
   final List<dynamic> carouselItems = [
     // Item 1: Gradient بلونين
@@ -90,13 +113,6 @@ class PageNotifier extends Notifier<int> {
     if (res?["success"] == true) {
       offer = List<Map<String, dynamic>>.from(res["data"] ?? []);
       ref.notifyListeners();
-    } else {
-      ToastMessages(
-        context,
-        res?["message"] ?? "خطأ في جلب العروض",
-        Themes().GetColor("error"),
-        Themes().GetColor("white"),
-      );
     }
   }
 
@@ -113,14 +129,6 @@ class PageNotifier extends Notifier<int> {
     if (res?["success"] == true) {
       employee = List<Map<String, dynamic>>.from(res["data"] ?? []);
       ref.notifyListeners();
-    } else {
-
-      ToastMessages(
-        context,
-        res?["message"] ?? "خطأ في جلب العروض",
-        Themes().GetColor("error"),
-        Themes().GetColor("white"),
-      );
     }
   }
 

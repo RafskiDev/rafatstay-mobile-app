@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../Service/ApiService.dart';
 import '../Utils/Sizes.dart';
 import '../Utils/Them.dart';
+import 'ShowLoading.dart';
 import 'VideoImageCard.dart';
 import 'WidgetButton.dart';
 import 'package:cached_network_image/cached_network_image.dart';
@@ -16,7 +17,7 @@ class ReviewCard extends StatelessWidget {
   final Sizes sizes;
   final Themes theme;
   final VoidCallback? onAvatarTap;
-
+  final List<dynamic> mediaItems;
   const ReviewCard({
     super.key,
     required this.name,
@@ -29,6 +30,7 @@ class ReviewCard extends StatelessWidget {
     required this.sizes,
     required this.theme,
     this.onAvatarTap,
+    this.mediaItems = const [],
   });
 
   @override
@@ -133,14 +135,33 @@ class ReviewCard extends StatelessWidget {
               padding: EdgeInsets.only(top: sizes.GetHeight() * 2),
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(Sizes(context).GetWidth() * 14),
-                child: Image.asset(
-                  imageOnly!,
+                child: CachedNetworkImage(
+                  imageUrl:imageOnly!,
                   width: double.infinity,
                   height: Sizes(context).GetHeight() * 25,
                   fit: BoxFit.cover,
+                  placeholder: (context, url) =>  Center(
+                    child:showLoading(),
+                  ),
+                  //ضفت هذا حتى لا يطبع الخطا
+                  errorListener: (dynamic exception) {
+                  },
+                  errorWidget: (context, url, error) {
+                    return Container(
+                      width: double.infinity,
+                      height: Sizes(context).GetHeight() * 25,
+                      color: const Color(0xFFEEEEEE),
+                      child: const Icon(
+                        Icons.image_not_supported,
+                        size: 40,
+                        color: Colors.grey,
+                      ),
+                    );
+                  },
                 ),
               ),
             ),
+
         ],
       ),
     );

@@ -108,22 +108,39 @@ class PageNotifier extends Notifier<int> {
   Map<String, dynamic> buildReviewBody({required int branchId}) {
     final genderMap = {1: "male", 2: "female"};
 
-    final overallRating = (ratings[0]["rate"] as int?) ?? 0;
+    final overallRating    = (ratings[0]["rate"] as int?) ?? 0;
     final atmosphereRating = (ratings[1]["rate"] as int?) ?? 0;
-    final foodRating = (services[0]["rate"] as int?) ?? 0;
-    final serviceRating = (services[1]["rate"] as int?) ?? 0;
+    final layoutRating     = (ratings[2]["rate"] as int?) ?? 0;
+    final valueRating      = (ratings[3]["rate"] as int?) ?? 0;
+
+    final foodRating          = (services[0]["rate"] as int?) ?? 0;
+    final serviceRating       = (services[1]["rate"] as int?) ?? 0;
+    final staffBehaviorRating = (services[2]["rate"] as int?) ?? 0;
+    final cleanlinessRating   = (services[3]["rate"] as int?) ?? 0;
+
+    final attitudeRating      = (reviews[0]["rate"] as int?) ?? 0;
+    final attentionRating     = (reviews[1]["rate"] as int?) ?? 0;
+    final professionalismRating = (reviews[2]["rate"] as int?) ?? 0;
+
+    final hasEmployee = selectedPersonIndexes.isNotEmpty && employeeList.isNotEmpty;
 
     return {
       "branch_id": branchId,
-      if (overallRating > 0) "overall_rating": overallRating,
-      if (atmosphereRating > 0) "atmosphere_rating": atmosphereRating,
-      if (foodRating > 0) "food_rating": foodRating,
-      if (serviceRating > 0) "service_rating": serviceRating,
+      if (overallRating > 0)       "overall_rating": overallRating,
+      if (atmosphereRating > 0)    "atmosphere_rating": atmosphereRating,
+      if (layoutRating > 0)        "layout_rating": layoutRating,
+      if (valueRating > 0)         "value_rating": valueRating,
+      if (foodRating > 0)          "food_rating": foodRating,
+      if (serviceRating > 0)       "service_rating": serviceRating,
+      if (staffBehaviorRating > 0) "staff_behavior_rating": staffBehaviorRating,
+      if (cleanlinessRating > 0)   "cleanliness_rating": cleanlinessRating,
       if (comment.text.isNotEmpty) "comment": comment.text.trim(),
       if (controller.text.isNotEmpty) "tip_amount": double.tryParse(controller.text),
-      if (birthday.text.isNotEmpty) "birthday": _formatBirthday(birthday.text),
-      if (selectedPersonIndexes.isNotEmpty && employeeList.isNotEmpty)
-        "best_employee_id": employeeList[selectedPersonIndexes.first]["id"],
+      if (birthday.text.isNotEmpty)   "birthday": _formatBirthday(birthday.text),
+      if (hasEmployee) "best_employee_id": employeeList[selectedPersonIndexes.first]["id"],
+      if (hasEmployee && attitudeRating > 0)       "attitude_rating": attitudeRating,
+      if (hasEmployee && attentionRating > 0)      "attention_rating": attentionRating,
+      if (hasEmployee && professionalismRating > 0) "professionalism_rating": professionalismRating,
       if (selectedGender != null) "gender": genderMap[selectedGender],
     };
   }
@@ -133,13 +150,13 @@ class PageNotifier extends Notifier<int> {
     final response = await ApiService().postMultipart(
       "v1/guest/reviews",
       body,
-      files: selectedMedia,
+      files: selectedImage != null ? [selectedImage!] : [],
       fileField: "media[]",
       context: context,
     );
-    resetForm();
     if (!context.mounted) return;
     if (response['success'] == true) {
+      resetForm();
       ToastMessages(
         context,
         TextLanguage().GetWord("تم إرسال التقييم بنجاح!"),
@@ -168,40 +185,23 @@ class PageNotifier extends Notifier<int> {
       return text;
     }
   }
-  List<File> selectedMedia = []; // الملفات المختارة
+  File? selectedImage; // ← بدل List<File> selectedMedia
 
   Future<void> pickMedia(BuildContext context) async {
-    if (selectedMedia.length >= 5) {
-      ToastMessages(context, TextLanguage().GetWord("الحد الأقصى 5 ملفات"),
-          Themes().GetColor("error"), Themes().GetColor("white"));
-      return;
-    }
     final picker = ImagePicker();
     final picked = await picker.pickImage(source: ImageSource.gallery);
     if (picked != null) {
-      selectedMedia.add(File(picked.path));
-      state++;
-    }
-  }
-
-  Future<void> pickVideo(BuildContext context) async {
-    if (selectedMedia.length >= 5) {
-      ToastMessages(context, TextLanguage().GetWord("الحد الأقصى 5 ملفات"),
-          Themes().GetColor("error"), Themes().GetColor("white"));
-      return;
-    }
-    final picker = ImagePicker();
-    final picked = await picker.pickVideo(source: ImageSource.gallery);
-    if (picked != null) {
-      selectedMedia.add(File(picked.path));
+      selectedImage = File(picked.path);
       state++;
     }
   }
 
   void removeMedia(int index) {
-    selectedMedia.removeAt(index);
+    selectedImage = null;
     state++;
   }
+
+
   bool isVideo(File file) {
     final ext = file.path.split('.').last.toLowerCase();
     return ['mp4', 'mov', 'avi', 'mkv'].contains(ext);
@@ -220,7 +220,7 @@ class PageNotifier extends Notifier<int> {
     // selections
     selectedPersonIndexes.clear();
     selectedGender = null;
-    selectedMedia.clear();
+    selectedImage = null;
 
     state++;
   }

@@ -33,8 +33,25 @@ class Login extends ConsumerWidget {
             child: Column(
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
+                    showBack
+                        ? InkWell(
+                      onTap: () {
+                        Navigator.pop(context);
+                      },
+                      borderRadius: BorderRadius.circular(50),
+                      child:Align(
+                        alignment: Alignment.centerLeft,
+                        widthFactor: 1.0,
+                        child: Icon(
+                          Icons.arrow_back_ios_new,
+                          color: theme.GetColor("textPrimary"),
+                          size: 22,
+                        ),
+                      ),
+                    )
+                        : const SizedBox.shrink(),
                     InkWell(
                         onTap:(){
                           Navigator.push(
@@ -158,6 +175,7 @@ class Login extends ConsumerWidget {
                         await ref.read(pageProvider.notifier).signIn(context);
                       },
                     ),
+                    /*
                     if (Theme.of(context).platform == TargetPlatform.iOS)
                     ImageButton(
                       context: context,
@@ -167,6 +185,8 @@ class Login extends ConsumerWidget {
                         await ref.read(pageProvider.notifier).signInWithApple(context);
                       },
                     ),
+
+                     */
                   ],
                 ),
                 Row(

@@ -13,7 +13,6 @@ final box = GetStorage();
 String baseUrl="https://api.rafatstay.com/api/";
 final showImage = "https://api.rafatstay.com/storage/";
 String roles=box.read("user")["roles"][0]["name"];//guest
-
 Future<String?> get token async {
   final storage = GetStorage();
   return storage.read("token");
@@ -25,11 +24,21 @@ bool isGuest() {
 }
 bool _checkNotGuest(BuildContext context) {
   if (isGuest()) {
-    ToastMessages(
+    bool isLoginAlreadyOpen = false;
+    Navigator.popUntil(context, (route) {
+      if (route.settings.name == '/login') {
+        isLoginAlreadyOpen = true;
+      }
+      return true; // لا تحذف أي واجهة، فقط فحص
+    });
+
+    if (isLoginAlreadyOpen) return false;
+    Navigator.push(
       context,
-      "سجّل حساباً كاملاً للوصول لهذه الميزة",
-      Colors.orange,
-      Colors.white,
+      MaterialPageRoute(
+        settings: const RouteSettings(name: '/login'),
+        builder: (context) => const Login(showBack: true),
+      ),
     );
     return false;
   }

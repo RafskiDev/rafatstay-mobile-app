@@ -72,7 +72,6 @@ class PageNotifier extends Notifier<int> {
           ),
         );
       }
-     // print(offerData);
       ref.notifyListeners();
     } else {
       ToastMessages(

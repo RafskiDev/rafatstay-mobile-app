@@ -132,80 +132,48 @@ class _State extends ConsumerState<RateYourExperience> {
                 builder: (context, ref, child) {
                   final notifier = ref.watch(RateYourExperience_riverpod.notifier);
                   return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Flexible(
-                            child: GestureDetector(
+                      if (notifier.selectedImage == null)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            GestureDetector(
                               onTap: () => notifier.pickMedia(context),
                               child: videoFeedbackCard(context, 'صورك مع الوجبة', ""),
                             ),
-                          ),
-                          SizedBox(width: sizes.GetWidth() * 2),
-                          Flexible(
-                            child: GestureDetector(
-                              onTap: () => notifier.pickVideo(context),
-                              child: videoFeedbackCard(context, 'أخبرنا برأيك في فيديو', ""),
+                          ],
+                        )
+                      else
+                        Stack(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.file(
+                                notifier.selectedImage!,
+                                width: sizes.GetWidth() * 96,
+                                height: sizes.GetHeight() * 20,
+                                fit: BoxFit.cover,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                      if (notifier.selectedMedia.isNotEmpty) ...[
-                        SizedBox(height: sizes.GetHeight() * 2),
-                        SizedBox(
-                          height: sizes.GetWidth() * 20,
-                          child: ListView.builder(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: notifier.selectedMedia.length,
-                            itemBuilder: (context, index) {              // ← هنا
-                              final file = notifier.selectedMedia[index];
-                              final isVideo = notifier.isVideo(file);
-                              return Stack(
-                                children: [
-                                  Padding(
-                                    padding: EdgeInsets.only(right: sizes.GetWidth() * 2),
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(10),
-                                      child: isVideo
-                                          ? Container(
-                                        width: sizes.GetWidth() * 18,
-                                        height: sizes.GetWidth() * 18,
-                                        color: Themes().GetColor("backgroundOffWhite"),
-                                        child: Center(
-                                          child: Icon(Icons.videocam,
-                                              size: 32, color: Themes().GetColor("primaryA")),
-                                        ),
-                                      )
-                                          : Image.file(
-                                        file,
-                                        width: sizes.GetWidth() * 18,
-                                        height: sizes.GetWidth() * 18,
-                                        fit: BoxFit.cover,
-                                      ),
-                                    ),
+                            Positioned(
+                              top: 8,
+                              right: 8,
+                              child: GestureDetector(
+                                onTap: () => notifier.removeMedia(0),
+                                child: Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    color: Themes().GetColor("error"),
+                                    shape: BoxShape.circle,
                                   ),
-                                  Positioned(
-                                    top: 0,
-                                    right: sizes.GetWidth() * 2,
-                                    child: GestureDetector(
-                                      onTap: () => notifier.removeMedia(index),
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          color: Themes().GetColor("error"),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: Icon(Icons.close, size: 16,
-                                            color: Themes().GetColor("white")),
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
+                                  child: Icon(Icons.close, size: 20,
+                                      color: Themes().GetColor("white")),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
                     ],
                   );
                 },
@@ -223,21 +191,24 @@ class _State extends ConsumerState<RateYourExperience> {
                   if (cards.isEmpty) return const SizedBox.shrink();
                   return Column(
                     children: [
-                      ListView.builder(
-                        scrollDirection: Axis.horizontal,
-                        itemCount: cards.length,
-                        itemBuilder: (context, index) {
-                          return Padding(
-                            padding: EdgeInsets.only(right: sizes.GetWidth() * 2),
-                            child: personCard(
-                              context,
-                              cards[index]["avatar_url"]??"",
-                              cards[index]["name"]?.toString() ?? "",
-                              isSelected: notifier.selectedPersonIndexes.contains(index),
-                              onTap: () => notifier.togglePersonSelection(index),
-                            ),
-                          );
-                        },
+                      SizedBox(
+                        height: sizes.GetWidth() * 60,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          itemCount: cards.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: EdgeInsets.only(right: sizes.GetWidth() * 2),
+                              child: personCard(
+                                context,
+                                cards[index]["avatar_url"]??"",
+                                cards[index]["name"]?.toString() ?? "",
+                                isSelected: notifier.selectedPersonIndexes.contains(index),
+                                onTap: () => notifier.togglePersonSelection(index),
+                              ),
+                            );
+                          },
+                        ),
                       ),
                     ],
                   );
@@ -318,7 +289,6 @@ class _State extends ConsumerState<RateYourExperience> {
                 buttonText: textLanguage.GetWord('إرسال التقييم'),
                 textColor: Themes().GetColor("textPrimary"),
                 onPressed: () {
-                  // ✅ إرسال البيانات للـ API
                   ref.read(RateYourExperience_riverpod.notifier)
                       .submitReview(branchId: widget.branchId, context: context);
                 },

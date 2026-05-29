@@ -81,291 +81,293 @@ class _MealDetailsState extends ConsumerState<MealDetails> {
           builder: (context, isLoading, child) {
             return isLoading
                 ? showLoading(): SingleChildScrollView(
-              child: Column(
-                children: [
-                  Stack(
-                    children: [
-                      ClipRRect(
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(sizes.GetHeight() * 3),
-                          bottomRight:Radius.circular(sizes.GetHeight() * 3),
-                        ),
-                        child: photos.isNotEmpty ? CarouselSlider(
-                          items: photos.map((photoUrl) {
-                            return CachedNetworkImage(
-                              imageUrl: photoUrl.toString(),
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              placeholder: (context, url) =>  Center(
-                                child:showLoading(),
-                              ),
-                              //ضفت هذا حتى لا يطبع الخطا
-                              errorListener: (dynamic exception) {
+              child: SafeArea(
+                child: Column(
+                  children: [
+                    Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.only(
+                            bottomLeft: Radius.circular(sizes.GetHeight() * 3),
+                            bottomRight:Radius.circular(sizes.GetHeight() * 3),
+                          ),
+                          child: photos.isNotEmpty ? CarouselSlider(
+                            items: photos.map((photoUrl) {
+                              return CachedNetworkImage(
+                                imageUrl: photoUrl.toString(),
+                                fit: BoxFit.cover,
+                                width: double.infinity,
+                                placeholder: (context, url) =>  Center(
+                                  child:showLoading(),
+                                ),
+                                //ضفت هذا حتى لا يطبع الخطا
+                                errorListener: (dynamic exception) {
+                                },
+                                errorWidget: (context, url, error) {
+                                  return Container(
+                                    width: double.infinity,
+                                    height: sizes.GetHeight() * 14,
+                                    color: const Color(0xFFEEEEEE),
+                                    child: const Icon(
+                                      Icons.image_not_supported,
+                                      size: 40,
+                                      color: Colors.grey,
+                                    ),
+                                  );
+                                },
+                              );
+                            }).toList(),
+                            options: CarouselOptions(
+                              height: sizes.GetHeight() * 35,
+                              viewportFraction: 1.0,
+                              autoPlay: true,
+                              enlargeCenterPage: false,
+                              onPageChanged: (index, reason) {
+                                ref
+                                    .read(MealDetails_riverpod.notifier)
+                                    .changePage(index);
                               },
-                              errorWidget: (context, url, error) {
-                                return Container(
-                                  width: double.infinity,
-                                  height: sizes.GetHeight() * 14,
-                                  color: const Color(0xFFEEEEEE),
-                                  child: const Icon(
-                                    Icons.image_not_supported,
-                                    size: 40,
-                                    color: Colors.grey,
-                                  ),
-                                );
-                              },
-                            );
-                          }).toList(),
-                          options: CarouselOptions(
-                            height: sizes.GetHeight() * 35,
-                            viewportFraction: 1.0,
-                            autoPlay: true,
-                            enlargeCenterPage: false,
-                            onPageChanged: (index, reason) {
-                              ref
-                                  .read(MealDetails_riverpod.notifier)
-                                  .changePage(index);
-                            },
-                          ),
-                        ):Container(
-                          height: sizes.GetHeight() * 35,
-                          width: double.infinity,
-                          color:theme.GetColor("background"),
-                          child: const Icon(Icons.fastfood, size: 50, color: Colors.grey),
-                        ),
-                      ),
-                      Positioned(
-                        top: sizes.GetHeight() * 4,
-                        left: 0,
-                        right: 0,
-                        child: Padding(
-                          padding: EdgeInsets.symmetric(
-                            horizontal: sizes.GetWidth() * 4,
-                          ),
-                          child: GlassAppBar(
-                            onBack: () => Navigator.pop(context),
-                            onNotification: () {
-
-                            },
-                            titel:widget.title,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  SizedBox(height: sizes.GetHeight() * 2),
-                  CarouselIndicator(
-                    itemCount:photos.length,
-                    currentIndex: currentIndex,
-                    activeColor:theme.GetColor("secondary500"),
-                    inactiveColor:theme.GetColor("primaryS"),
-                  ),
-                  SizedBox(height: sizes.GetHeight() * 2),
-                  Container(
-                      padding: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 2),
-                      child: Column(
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              SquareButton(
-                                  width: sizes.GetWidth()*25,
-                                  height: Sizes(context).GetHeight()*5.5,
-                                  backgroundColor:Themes().GetColor("secondary"),
-                                  borderRadius:sizes.GetWidth()*10,
-                                  onTap: () {
-                                    print('تم الضغط على الزر');
-                                  },
-                                  child:Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SvgPicture.asset("assets/icon/Kcal.svg"),
-                                      SizedBox(width: Sizes(context).GetWidth()*1),
-                                      Text(
-                                        '${mealData["calories"]??0} ${textLanguage.GetWord("سعرات حرارية")}',
-                                        style: TextStyle(
-                                          color:Themes().GetColor("textPrimary"),
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                              ),
-                              SquareButton(
-                                  width: sizes.GetWidth()*30,
-                                  height: Sizes(context).GetHeight()*5.5,
-                                  backgroundColor:Themes().GetColor("secondary"),
-                                  borderRadius: Sizes(context).GetWidth()*10,
-                                  onTap: () {
-                                    print('تم الضغط على الزر');
-                                  },
-                                  child:Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SvgPicture.asset("assets/icon/MealTime.svg"),
-                                      SizedBox(width: Sizes(context).GetWidth()*1),
-                                      Text(
-                                        mealTimeText(mealData, textLanguage),
-                                        style: TextStyle(
-                                          color:Themes().GetColor("textPrimary"),
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                              ),
-                              SquareButton(
-                                  width: sizes.GetWidth()*30,
-                                  height: Sizes(context).GetHeight()*5.5,
-                                  backgroundColor:Themes().GetColor("secondary"),
-                                  borderRadius: Sizes(context).GetWidth()*10,
-                                  onTap: () {
-                                    print('تم الضغط على الزر');
-                                  },
-                                  child:Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SvgPicture.asset("assets/icon/serves.svg"),
-                                      SizedBox(width: Sizes(context).GetWidth()*1),
-                                      Text(
-                                        mealData?["serves"]?.toString() ??textLanguage.GetWord("الخدمات"),
-                                        style: TextStyle(
-                                          color:Themes().GetColor("textPrimary"),
-                                        ),
-                                      ),
-                                    ],
-                                  )
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: sizes.GetHeight() * 2),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              NutrientCard(
-                                label:textLanguage.GetWord('البروتينات'),
-                                percentage:proteinPercent.clamp(0.0, 1.0),
-                                weight: '${protein.toInt()} g',
-                                primaryColor: Themes().GetColor('secondaryPrimary'),
-                              ),
-                              SizedBox(width: sizes.GetWidth() * 2),
-                              NutrientCard(
-                                label:textLanguage.GetWord('الكربوهيدرات'),
-                                percentage: carbsPercent.clamp(0.0, 1.0), // ستظهر 0% لأن الوزن 0g
-                                weight: '${carbs.toInt()} g',
-                                primaryColor: Themes().GetColor('secondaryPrimary'),
-                              ),
-                              SizedBox(width: sizes.GetWidth() * 2),
-                              NutrientCard(
-                                label:textLanguage.GetWord('الدهون'),
-                                percentage: fatsPercent.clamp(0.0, 1.0), // ستظهر 0% لأن الوزن 0g
-                                weight: '${fats.toInt()} g',
-                                primaryColor: Themes().GetColor('secondaryPrimary'),
-                              ),
-                              SizedBox(width: sizes.GetWidth() * 2),
-                              NutrientCard(
-                                label:textLanguage.GetWord("مسببات الحساسية"),
-                                percentage: allergenPercentage(allergens),
-                                weight: allergenText(allergens, textLanguage),
-                                primaryColor: Themes().GetColor('secondaryPrimary'),
-                              ),
-                            ],
-                          ),
-                          SizedBox(height: sizes.GetHeight() * 2),
-                          Container(
-                            width:double.infinity,
-                            height:sizes.GetHeight()*6,
-                            decoration:BoxDecoration(
-                              color:Themes().GetColor("secondary"),
-                              borderRadius: BorderRadius.circular(35),
                             ),
-                            child:Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          ):Container(
+                            height: sizes.GetHeight() * 35,
+                            width: double.infinity,
+                            color:theme.GetColor("background"),
+                            child: const Icon(Icons.fastfood, size: 50, color: Colors.grey),
+                          ),
+                        ),
+                        Positioned(
+                          top: sizes.GetHeight() * 0,
+                          left: 0,
+                          right: 0,
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(
+                              horizontal: sizes.GetWidth() * 4,
+                            ),
+                            child: GlassAppBar(
+                              onBack: () => Navigator.pop(context),
+                              onNotification: () {
+
+                              },
+                              titel:widget.title,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: sizes.GetHeight() * 2),
+                    CarouselIndicator(
+                      itemCount:photos.length,
+                      currentIndex: currentIndex,
+                      activeColor:theme.GetColor("secondary500"),
+                      inactiveColor:theme.GetColor("primaryS"),
+                    ),
+                    SizedBox(height: sizes.GetHeight() * 2),
+                    Container(
+                        padding: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 2),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                GestureDetector(
-                                  onTap: () {
-                                    ref.read(MealDetails_riverpod.notifier).changeSelected(0);
-                                  },
-                                  child: Text(
-                                    textLanguage.GetWord("وصف"),
-                                    style: TextStyle(
-                                      color: slecteds == 0
-                                          ? Themes().GetColor("textPrimary")
-                                          : Themes().GetColor("secondaryPrimary"),
-                                    ),
-                                  ),
+                                SquareButton(
+                                    width: sizes.GetWidth()*25,
+                                    height: Sizes(context).GetHeight()*5.5,
+                                    backgroundColor:Themes().GetColor("secondary"),
+                                    borderRadius:sizes.GetWidth()*10,
+                                    onTap: () {
+                                      print('تم الضغط على الزر');
+                                    },
+                                    child:Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        SvgPicture.asset("assets/icon/Kcal.svg"),
+                                        SizedBox(width: Sizes(context).GetWidth()*1),
+                                        Text(
+                                          '${mealData["calories"]??0} ${textLanguage.GetWord("سعرات حرارية")}',
+                                          style: TextStyle(
+                                            color:Themes().GetColor("textPrimary"),
+                                          ),
+                                        ),
+                                      ],
+                                    )
                                 ),
-
-                                GestureDetector(
-                                  onTap: () {
-                                    ref.read(MealDetails_riverpod.notifier).changeSelected(1);
-                                  },
-                                  child: Text(
-                                    textLanguage.GetWord("مكونات"),
-                                    style: TextStyle(
-                                      color: slecteds == 1
-                                          ? Themes().GetColor("textPrimary")
-                                          : Themes().GetColor("secondaryPrimary"),
-                                    ),
-                                  ),
+                                SquareButton(
+                                    width: sizes.GetWidth()*30,
+                                    height: Sizes(context).GetHeight()*5.5,
+                                    backgroundColor:Themes().GetColor("secondary"),
+                                    borderRadius: Sizes(context).GetWidth()*10,
+                                    onTap: () {
+                                      print('تم الضغط على الزر');
+                                    },
+                                    child:Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        SvgPicture.asset("assets/icon/MealTime.svg"),
+                                        SizedBox(width: Sizes(context).GetWidth()*1),
+                                        Text(
+                                          mealTimeText(mealData, textLanguage),
+                                          style: TextStyle(
+                                            color:Themes().GetColor("textPrimary"),
+                                          ),
+                                        ),
+                                      ],
+                                    )
                                 ),
-
-                                GestureDetector(
-                                  onTap: () {
-                                    ref.read(MealDetails_riverpod.notifier).changeSelected(2);
-                                  },
-                                  child: Text(
-                                    textLanguage.GetWord('تعليمات'),
-                                    style: TextStyle(
-                                      color: slecteds == 2
-                                          ? Themes().GetColor("textPrimary")
-                                          : Themes().GetColor("secondaryPrimary"),
-                                    ),
-                                  ),
+                                SquareButton(
+                                    width: sizes.GetWidth()*30,
+                                    height: Sizes(context).GetHeight()*5.5,
+                                    backgroundColor:Themes().GetColor("secondary"),
+                                    borderRadius: Sizes(context).GetWidth()*10,
+                                    onTap: () {
+                                      print('تم الضغط على الزر');
+                                    },
+                                    child:Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        SvgPicture.asset("assets/icon/serves.svg"),
+                                        SizedBox(width: Sizes(context).GetWidth()*1),
+                                        Text(
+                                          mealData?["serves"]?.toString() ??textLanguage.GetWord("الخدمات"),
+                                          style: TextStyle(
+                                            color:Themes().GetColor("textPrimary"),
+                                          ),
+                                        ),
+                                      ],
+                                    )
                                 ),
                               ],
                             ),
-                          ),
-                          SizedBox(height: sizes.GetHeight() * 2),
-                          ref.watch(MealDetails_riverpod.notifier).slected == 0?Description(ref:ref,):Container(),
-                          ref.watch(MealDetails_riverpod.notifier).slected == 1?Ingredients(ref:ref,):Container(),
-                          ref.watch(MealDetails_riverpod.notifier).slected == 2?Instructions():Container(),
-                          SizedBox(height: sizes.GetHeight() * 2),
-                          SquareButton(
-                              width: sizes.GetWidth()*50,
-                              height: Sizes(context).GetHeight()*5.5,
-                              backgroundColor:Themes().GetColor("primaryA"),
-                              borderRadius:sizes.GetWidth()*10,
-                              onTap: () {
-                                final branchId = branches[0]["id"];
-                                final branchName = branches[0]["name"]??"";
-                                Navigator.push(
-                                  context,
-                                  PageRouteBuilder(
-                                    pageBuilder: (context, animation1, animation2) =>
-                                        RestaurantDetalis(title:branchName, branchId:branchId,),
-                                    transitionDuration: Duration.zero,
-                                    reverseTransitionDuration: Duration.zero,
-                                  ),
-                                );
-                                print('تم الضغط على الزر');
-                              },
+                            SizedBox(height: sizes.GetHeight() * 2),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                NutrientCard(
+                                  label:textLanguage.GetWord('البروتينات'),
+                                  percentage:proteinPercent.clamp(0.0, 1.0),
+                                  weight: '${protein.toInt()} g',
+                                  primaryColor: Themes().GetColor('secondaryPrimary'),
+                                ),
+                                SizedBox(width: sizes.GetWidth() * 2),
+                                NutrientCard(
+                                  label:textLanguage.GetWord('الكربوهيدرات'),
+                                  percentage: carbsPercent.clamp(0.0, 1.0), // ستظهر 0% لأن الوزن 0g
+                                  weight: '${carbs.toInt()} g',
+                                  primaryColor: Themes().GetColor('secondaryPrimary'),
+                                ),
+                                SizedBox(width: sizes.GetWidth() * 2),
+                                NutrientCard(
+                                  label:textLanguage.GetWord('الدهون'),
+                                  percentage: fatsPercent.clamp(0.0, 1.0), // ستظهر 0% لأن الوزن 0g
+                                  weight: '${fats.toInt()} g',
+                                  primaryColor: Themes().GetColor('secondaryPrimary'),
+                                ),
+                                SizedBox(width: sizes.GetWidth() * 2),
+                                NutrientCard(
+                                  label:textLanguage.GetWord("مسببات الحساسية"),
+                                  percentage: allergenPercentage(allergens),
+                                  weight: allergenText(allergens, textLanguage),
+                                  primaryColor: Themes().GetColor('secondaryPrimary'),
+                                ),
+                              ],
+                            ),
+                            SizedBox(height: sizes.GetHeight() * 2),
+                            Container(
+                              width:double.infinity,
+                              height:sizes.GetHeight()*6,
+                              decoration:BoxDecoration(
+                                color:Themes().GetColor("secondary"),
+                                borderRadius: BorderRadius.circular(35),
+                              ),
                               child:Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
+                                mainAxisAlignment: MainAxisAlignment.spaceAround,
                                 children: [
-                                  Text(
-                                    textLanguage.GetWord("اطلب الآن"),
-                                    style: TextStyle(
-                                      color:Themes().GetColor("textPrimary"),
+                                  GestureDetector(
+                                    onTap: () {
+                                      ref.read(MealDetails_riverpod.notifier).changeSelected(0);
+                                    },
+                                    child: Text(
+                                      textLanguage.GetWord("وصف"),
+                                      style: TextStyle(
+                                        color: slecteds == 0
+                                            ? Themes().GetColor("textPrimary")
+                                            : Themes().GetColor("secondaryPrimary"),
+                                      ),
                                     ),
                                   ),
-                                  SizedBox(width: Sizes(context).GetWidth()*1),
-                                  SvgPicture.asset("assets/icon/arrow.svg"),
+
+                                  GestureDetector(
+                                    onTap: () {
+                                      ref.read(MealDetails_riverpod.notifier).changeSelected(1);
+                                    },
+                                    child: Text(
+                                      textLanguage.GetWord("مكونات"),
+                                      style: TextStyle(
+                                        color: slecteds == 1
+                                            ? Themes().GetColor("textPrimary")
+                                            : Themes().GetColor("secondaryPrimary"),
+                                      ),
+                                    ),
+                                  ),
+
+                                  GestureDetector(
+                                    onTap: () {
+                                      ref.read(MealDetails_riverpod.notifier).changeSelected(2);
+                                    },
+                                    child: Text(
+                                      textLanguage.GetWord('تعليمات'),
+                                      style: TextStyle(
+                                        color: slecteds == 2
+                                            ? Themes().GetColor("textPrimary")
+                                            : Themes().GetColor("secondaryPrimary"),
+                                      ),
+                                    ),
+                                  ),
                                 ],
-                              )
-                          ),
-                        ],
-                      )
-                  ),
-                ],
+                              ),
+                            ),
+                            SizedBox(height: sizes.GetHeight() * 2),
+                            ref.watch(MealDetails_riverpod.notifier).slected == 0?Description(ref:ref,):Container(),
+                            ref.watch(MealDetails_riverpod.notifier).slected == 1?Ingredients(ref:ref,):Container(),
+                            ref.watch(MealDetails_riverpod.notifier).slected == 2?Instructions():Container(),
+                            SizedBox(height: sizes.GetHeight() * 2),
+                            SquareButton(
+                                width: sizes.GetWidth()*50,
+                                height: Sizes(context).GetHeight()*5.5,
+                                backgroundColor:Themes().GetColor("primaryA"),
+                                borderRadius:sizes.GetWidth()*10,
+                                onTap: () {
+                                  final branchId = branches[0]["id"];
+                                  final branchName = branches[0]["name"]??"";
+                                  Navigator.push(
+                                    context,
+                                    PageRouteBuilder(
+                                      pageBuilder: (context, animation1, animation2) =>
+                                          RestaurantDetalis(title:branchName, branchId:branchId,),
+                                      transitionDuration: Duration.zero,
+                                      reverseTransitionDuration: Duration.zero,
+                                    ),
+                                  );
+                                  print('تم الضغط على الزر');
+                                },
+                                child:Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      textLanguage.GetWord("اطلب الآن"),
+                                      style: TextStyle(
+                                        color:Themes().GetColor("textPrimary"),
+                                      ),
+                                    ),
+                                    SizedBox(width: Sizes(context).GetWidth()*1),
+                                    SvgPicture.asset("assets/icon/arrow.svg"),
+                                  ],
+                                )
+                            ),
+                          ],
+                        )
+                    ),
+                  ],
+                ),
               ),
             );
           }

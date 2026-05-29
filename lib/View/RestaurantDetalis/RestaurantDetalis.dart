@@ -60,6 +60,13 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
 
+      // استدعاء دالة واحدة نظيفة تقوم بجلب كل شيء بالتوازي
+      ref.read(RestaurantDetalis_riverpod.notifier).fetchAllBranchData(context, widget.branchId);
+    });
+    /*
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
       // اجلب العروض أولاً
       Future.microtask(() async {
         await ref.read(RestaurantDetalis_riverpod.notifier).offers(context, widget.branchId);
@@ -91,8 +98,9 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
       Future.microtask(() async {
         await ref.read(RestaurantDetalis_riverpod.notifier).superGuests_(context, widget.branchId);
       });
-
     });
+
+     */
   }
 
 
@@ -103,38 +111,13 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
     final branches = notifier.branches;
     final sizes = Sizes(context);
     final theme = Themes();
-    if (notifier.isFetchingBranch) {
+    if (notifier.isFetchingBranch ) {
       return Scaffold(
         backgroundColor: theme.GetColor("background"),
         body: Center(child: showLoading()),
       );
     }
 
-    if (branches.isEmpty) {
-      return Scaffold(
-        backgroundColor: theme.GetColor("background"),
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.store_outlined, size: 64, color: theme.GetColor("textSecondary")),
-              SizedBox(height: sizes.GetHeight() * 2),
-              Text(
-                TextLanguage().GetWord("الفرع غير متوفر"),
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: theme.GetColor("textSecondary"),
-                ),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    // 🛑 3. تعريف المتغير الآمن الآن بعد ضمان امتلاء المصفوفة
-    final List<dynamic> branchPhotos = branches[0]['photos'] as List? ?? [];
     final textLanguage = TextLanguage();
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
@@ -142,7 +125,11 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
         child: ValueListenableBuilder<bool>(
           valueListenable: LoadingService.isLoading,
           builder: (context, isLoading, child) {
-            if (branches.isEmpty) return showLoading();
+            if (branches.isEmpty) {
+              return Center(child: showLoading());
+            }
+            final List<dynamic> branchPhotos = branches[0]['photos'] as List? ?? [];
+            final hasSelectedMeals = notifier.allMeals.any((meal) => (meal['count'] ?? 0) > 0);
             return SingleChildScrollView(
               child: Column(
                 children: [
@@ -156,7 +143,6 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                         child:branchPhotos.isNotEmpty? CarouselSlider(
                           items: (branches[0]['photos'] as List? ?? []).map((item) {
                             final url = item['url'] ?? "";
-
                             return CachedNetworkImage(
                               width: double.infinity,
                               imageUrl:url,
@@ -542,7 +528,6 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                                 final isSelected = isAll
                                     ? ref.watch(RestaurantDetalis_riverpod.notifier).isSelectedMenu == -1
                                     : ref.watch(RestaurantDetalis_riverpod.notifier).isSelectedMenu == index - 1;
-
                                 return GestureDetector(
                                   onTap: () {
                                     if (isAll) {
@@ -598,8 +583,13 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                                   sizes: sizes,
                                   theme: theme,
                                   onTap: () {
+                                    if (meal["potsEmpty"] == false) {
+                                      showCustomDialog(context);
+                                      return;
+                                    }
                                     ref
-                                        .read(RestaurantDetalis_riverpod.notifier)
+                                        .read(
+                                        RestaurantDetalis_riverpod.notifier)
                                         .increaseCount(
                                       meal, context,
                                       widget.branchId,
@@ -615,7 +605,7 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              SquareButton(
+                              hasSelectedMeals?SquareButton(
                                 width: sizes.GetWidth() * 45,
                                 height: sizes.GetHeight() * 5,
                                 backgroundColor: theme.GetColor("primary"),
@@ -627,16 +617,6 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                                   final selectedMeals = notifier.allMeals
                                       .where((meal) => (meal['count'] ?? 0) > 0)
                                       .toList();
-                                  if (selectedMeals.isEmpty) {
-                                    ToastMessages(
-                                      context,
-                                      "اختر وجبة واحدة على الأقل",
-                                      Themes().GetColor("error"),
-                                      Themes().GetColor("white"),
-                                    );
-                                    return;
-                                  }
-
 
                                   final minOrderRaw = branches.isNotEmpty ? branches[0]["min_order_amount"] : null;
                                   final double? minOrder = minOrderRaw != null ? double.tryParse(minOrderRaw.toString()) : null;
@@ -650,7 +630,7 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                                      if (totalPrice < minOrder) {
                                        ToastMessages(
                                          context,
-                                         "الحد الأدنى للطلب 200 SAR",
+                                         "${TextLanguage().GetWord("الحد الأدنى للطلب هو")} $minOrderRaw SAR",
                                          Themes().GetColor("error"),
                                          Themes().GetColor("white"),
                                        );
@@ -663,7 +643,7 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                                     PageRouteBuilder(
                                       pageBuilder: (context, animation1, animation2) =>
                                           MakeItYourWay(
-                                            title: "Make It Your Way",
+                                            title:textLanguage.GetWord('اصنعها على طريقتك'),
                                             branchId: widget.branchId,
                                             selectedMeals: selectedMeals,
                                             businessName: widget.title,
@@ -691,8 +671,8 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                                 child: Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    const Text(
-                                      'Make It Your Way',
+                                     Text(
+                                      textLanguage.GetWord('اصنعها على طريقتك'),
                                     ),
                                     SizedBox(width: sizes.GetWidth() * 1),
                                     SvgPicture.asset(
@@ -702,11 +682,11 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                                     ),
                                   ],
                                 ),
-                              ),
+                              ):SizedBox.shrink(),
                             ],
                           ),
                         ],
-                        SizedBox(height: sizes.GetHeight() * 2),
+                        hasSelectedMeals?SizedBox(height: sizes.GetHeight() * 2):SizedBox.shrink(),
                         if (ref
                             .read(RestaurantDetalis_riverpod.notifier)
                             .offer

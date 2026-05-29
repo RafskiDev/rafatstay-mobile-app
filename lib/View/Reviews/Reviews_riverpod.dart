@@ -44,7 +44,6 @@ class PageNotifier extends Notifier<int> {
       },
       context,
     );
-    print(response);
     if (!ref.mounted) return;
     if (response != null && response['data'] != null) {
       final data = response['data'];

@@ -26,7 +26,6 @@ class _CompletedState extends ConsumerState<Completed> {
     super.initState();
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
-
     Future.microtask(() async {
       ref.read(Booking_riverpod.notifier).resetBookings();
       await ref.read(Booking_riverpod.notifier).bookings(
@@ -84,7 +83,7 @@ class _CompletedState extends ConsumerState<Completed> {
             padding: EdgeInsets.only(bottom: Sizes(context).GetHeight() * 2),
             child: BookingCard(
               id: booking["id"],
-              mainImage: 'assets/images/a2a245e83857039e9ace75bf15fe92271da37762.png',
+              mainImage:branch["image"]??"",
               bookingNumber: booking["id"]?.toString() ?? "",
               price: booking["total_amount"]?.toString() ?? '0',
               paymentMethod: booking["payment_method"]?.toString() ?? '',

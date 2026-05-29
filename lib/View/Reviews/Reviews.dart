@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../Service/LoadingService.dart';
+import '../../Utils/DateTimeHelper.dart';
 import '../../Utils/Sizes.dart';
 import '../../Utils/TextLanguage.dart';
 import '../../Utils/Them.dart';
@@ -105,18 +106,25 @@ class _ReviewsState extends ConsumerState<Reviews> {
                         }
                       }
                       final item = reviews[index];
+                      final imageUrl = () {
+                        final media = item["media"] as List? ?? [];
+                        final images = media.where((m) => m["media_type"] == "image").toList();
+                        if (images.isEmpty) return null;
+                        return "https://api.rafatstay.com${images[0]["media_url"]}";
+                      }();
                       return Padding(
                         padding: EdgeInsets.only(bottom: sizes.GetHeight() * 2),
                         child: ReviewCard(
                           name: item["user"]?["full_name"]?.toString() ?? "غير معروف",
-                          date: item["created_at"]?.toString() ?? "",
+                          date:DateTimeHelper.extractTime(item["created_at"]),
                           comment: item["comment"]?.toString() ?? "",
                           rating: item["overall_rating"] ?? 0,
                           image: item["user"]["avatar_url"]??"",
                           video: null,
-                          imageOnly: null,
+                          imageOnly: imageUrl,
                           sizes: sizes,
                           theme: theme,
+                          mediaItems: List<dynamic>.from(item["media"] ?? []),
                           onAvatarTap: ()async {
 
                           },

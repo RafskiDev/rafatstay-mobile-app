@@ -330,5 +330,7 @@ final EnLanguag = {
   "تم إرسال التقييم بنجاح!":"Review submitted successfully!",
   "الكل":"All",
   "بقايا الطعام في العبوة":"Pack Leftovers",
-  "شكراً لزيارتك! نتطلع لرؤيتك مجدداً":"Thank you for your visit! We look forward to seeing you again."
+  "شكراً لزيارتك! نتطلع لرؤيتك مجدداً":"Thank you for your visit! We look forward to seeing you again.",
+  "اصنعها على طريقتك":"Make It Your Way",
+  "الحد الأدنى للطلب هو":"The minimum order is"
 };

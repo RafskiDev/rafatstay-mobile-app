@@ -88,14 +88,14 @@ class _CancelledState extends ConsumerState<Cancelled> {
             padding: EdgeInsets.only(bottom: Sizes(context).GetHeight() * 2),
             child: BookingCard(
               booking: booking,
-              mainImage: 'assets/images/a2a245e83857039e9ace75bf15fe92271da37762.png',
+              mainImage:booking["branch"]["image"]??"",
               bookingNumber: booking["id"]?.toString() ?? "",
-              paymentMethod: 'by credit card',
+              paymentMethod: '',
               restaurantName: booking["business"]?["name"] ?? "",
               restaurantLocation: "${booking["branch"]?["city"] ?? ""} ${booking["branch"]?["address"] ?? ""}".trim(),
               restaurantLogo: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
               date: booking["booking_date"] ?? "",
-              time: booking["start_time"] ?? "",
+              time: booking["start_time"] ?? "dd",
             ),
           );
         },
@@ -231,7 +231,7 @@ class BookingCard extends StatelessWidget {
           SizedBox(height: Sizes(context).GetHeight() * 1),
           _InfoRow(
             icon1: "assets/icon/SandGlass.svg",
-            text: getCancelledTime(booking),
+            text: (booking["screen"]?["time_remaining"]?["formatted_compact"] ?? "--:--:--").toString(),
           ),
         ],
       ),
