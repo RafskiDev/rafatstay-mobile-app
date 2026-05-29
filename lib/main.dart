@@ -81,6 +81,7 @@ class _MyHomePageState extends State<MyHomePage> {
       statusBarIconBrightness: Brightness.dark,
       systemNavigationBarIconBrightness: Brightness.dark,
     ));
+    ///
     LanguageInit();
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
