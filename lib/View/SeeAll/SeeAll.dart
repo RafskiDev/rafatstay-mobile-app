@@ -526,11 +526,15 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                 itemCount: currentList.length,
                 itemBuilder: (context, index) {
                   final item = currentList[index];
+                  final String logo = (item["logo_url"] ?? "").toString();
+
                   return CategoryItemCard(
                     imagePath: item["latest_status"]?["media_url"] ?? "",
                     width: sizes.GetWidth() * 25,
                     height: sizes.GetWidth() * 25,
-                    name: item["name"] ?? "",
+                    name: item["business_name"] ?? "",
+                    nameImagePath: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
+                    circularNameImage: true,
                     onTap: () {
                       Navigator.push(
                         context,

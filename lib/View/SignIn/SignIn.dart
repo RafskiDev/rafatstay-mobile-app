@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../Utils/Sizes.dart';
 import '../../Utils/TextLanguage.dart';
 import '../../Utils/Them.dart';
+import '../../Widget/CheckBox.dart';
 import '../../Widget/WidgetAppBar.dart';
 import '../../Widget/WidgetButton.dart';
 import '../../Widget/WidgetTextField.dart';
@@ -102,6 +103,112 @@ class SignIn extends ConsumerWidget {
                   focusNode: ref.read(signInRiverpod.notifier).confirmPasswordNode,
                 ),
                 SizedBox(height: sizes.GetHeight()*2),
+                Row(
+                  children: [
+                    SvgPicture.asset("assets/icon/Gender.svg"),
+                    SizedBox(width: sizes.GetWidth()*2),
+                    Text(TextLanguage().GetWord("جنس")),
+                  ],
+                ),
+                SizedBox(height: sizes.GetHeight()*2),
+
+                  // ─── Gender Selector ───
+                Row(
+                  children: [
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => ref.read(signInRiverpod.notifier).selectGender("male"),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: sizes.GetWidth() * 3,
+                            vertical: sizes.GetHeight() * 1.5,
+                          ),
+
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CheckBox<String>(
+                                value: "male",
+                                groupValue: ref.watch(signInRiverpod.notifier).gender,
+                                onChanged: (v) => ref.read(signInRiverpod.notifier).selectGender(v),
+                                width: sizes.GetHeight() * 2.4,
+                                height: sizes.GetHeight() * 2.4,
+                                borderColor: ref.watch(signInRiverpod.notifier).gender == "male"
+                                    ? theme.GetColor("textPrimary")
+                                    : theme.GetColor("textSecondary"),
+                                borderWidth: 1.5,
+                              ),
+                              SizedBox(width: sizes.GetWidth() * 1),
+                              SvgPicture.asset(
+                                  "assets/icon/Male.svg",
+                                color: ref.watch(signInRiverpod.notifier).gender == "male"
+                                    ? theme.GetColor("textPrimary")
+                                    : theme.GetColor("textSecondary"),
+                              ),
+                              SizedBox(width: sizes.GetWidth() * 1),
+                              Text(
+                                textLanguage.GetWord("ذكر"),
+                                style: TextStyle(
+                                  color: ref.watch(signInRiverpod.notifier).gender == "male"
+                                      ? theme.GetColor("textPrimary")
+                                      : theme.GetColor("textSecondary"),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                    SizedBox(width: sizes.GetWidth() * 3),
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () => ref.read(signInRiverpod.notifier).selectGender("female"),
+                        child: Container(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: sizes.GetWidth() * 3,
+                            vertical: sizes.GetHeight() * 1.5,
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CheckBox<String>(
+                                value: "female",
+                                groupValue: ref.watch(signInRiverpod.notifier).gender,
+                                onChanged: (v) => ref.read(signInRiverpod.notifier).selectGender(v),
+                                width: sizes.GetHeight() * 2.4,
+                                height: sizes.GetHeight() * 2.4,
+                                borderColor: ref.watch(signInRiverpod.notifier).gender == "female"
+                                    ? theme.GetColor("textPrimary")
+                                    : theme.GetColor("textSecondary"),
+                                borderWidth: 1.5,
+                              ),
+                              SizedBox(width: sizes.GetWidth() * 1),
+                              SvgPicture.asset(
+                                "assets/icon/Female.svg",
+                                color: ref.watch(signInRiverpod.notifier).gender == "male"
+                                    ? theme.GetColor("textPrimary")
+                                    : theme.GetColor("textSecondary"),
+                              ),
+                              SizedBox(width: sizes.GetWidth() * 1),
+                              Text(
+                                textLanguage.GetWord("أنثى"),
+                                style: TextStyle(
+                                  color: ref.watch(signInRiverpod.notifier).gender == "female"
+                                      ? theme.GetColor("textPrimary")
+                                      : theme.GetColor("textSecondary"),
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+
+                SizedBox(height: sizes.GetHeight() * 2),
                 WidgetButton(
                   isLoading:ref.read(signInRiverpod.notifier).isLoading,
                   context: context,

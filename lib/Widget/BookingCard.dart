@@ -3,8 +3,9 @@ import 'package:flutter_svg/flutter_svg.dart';
 import '../Utils/Sizes.dart';
 import '../Utils/TextLanguage.dart';
 import '../Utils/Them.dart';
+import 'ShowLoading.dart';
 import 'WidgetButton.dart';
-
+import 'package:cached_network_image/cached_network_image.dart';
 class BookingCard extends StatelessWidget {
   final int? id;
   final String mainImage;
@@ -75,12 +76,30 @@ class BookingCard extends StatelessWidget {
   Widget _image(BuildContext context) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(16),
-      child: Image.asset(
-        mainImage,
+      child:  CachedNetworkImage(
+        imageUrl:mainImage,
         width: Sizes(context).GetWidth()*30,
         height: Sizes(context).GetHeight()*14,
         fit: BoxFit.cover,
+        placeholder: (context, url) =>  Center(
+          child:showLoading(),
+        ),
+        errorListener: (dynamic exception) {
+        },
+        errorWidget: (context, url, error) {
+          return Container(
+            width: Sizes(context).GetWidth()*30,
+            height: Sizes(context).GetHeight()*14,
+            color: const Color(0xFFEEEEEE),
+            child: const Icon(
+              Icons.image_not_supported,
+              size: 40,
+              color: Colors.grey,
+            ),
+          );
+        },
       ),
+
     );
   }
 
@@ -184,41 +203,91 @@ class _InfoRow extends StatelessWidget {
   final String icon3;
   final String text;
   final String subText;
-  const _InfoRow({this.icon1='',this.icon2='',this.icon3='', required this.text, this.subText = ''});
+
+  const _InfoRow({
+    this.icon1 = '',
+    this.icon2 = '',
+    this.icon3 = '',
+    required this.text,
+    this.subText = '',
+  });
 
   @override
   Widget build(BuildContext context) {
+    final sizes = Sizes(context);
+    final theme = Themes();
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        icon1.toString().isNotEmpty?SvgPicture.asset(icon1,color:Themes().GetColor("textPrimary")):const SizedBox(),
-        icon2.toString().isNotEmpty?CircularButton(
-          size:Sizes(context).GetHeight()*3,
-          onTap: () {
-            print("تم الضغط على الزر");
-          },
-          backgroundColor: Themes().GetColor("secondary500"),
-          borderColor: Themes().GetColor("primary"),
-          borderWidth:0.5,
-          child: Image.asset(icon2),
-        ):const SizedBox(),
-        SizedBox(width: Sizes(context).GetWidth()*2),
+        // ─── Icon 1 (SVG) ───
+        if (icon1.isNotEmpty)
+          SvgPicture.asset(
+            icon1,
+            width: sizes.GetHeight() * 2,
+            height: sizes.GetHeight() * 2,
+            color: theme.GetColor("textPrimary"),
+          ),
+
+        // ─── Icon 2 (Logo دائري) ───
+        if (icon2.isNotEmpty)
+          CircularButton(
+            size: sizes.GetHeight() * 3,
+            onTap: () {},
+            backgroundColor: theme.GetColor("secondary500"),
+            borderColor: theme.GetColor("primary"),
+            borderWidth: 0.5,
+            child: Image.asset(icon2),
+          ),
+
+        SizedBox(width: sizes.GetWidth() * 2),
+
+        // ─── النصوص ───
         Expanded(
-          child: Row(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                text,
-                style: const TextStyle(fontSize: 12),
+              // ─── text + icon3 في نفس السطر ───
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Expanded(
+                    child: Text(
+                      text,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w500,
+                        color: theme.GetColor("textPrimary"),
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                      maxLines: 1,
+                    ),
+                  ),
+                  if (icon3.isNotEmpty) ...[
+                    SizedBox(width: sizes.GetWidth() * 1),
+                    SvgPicture.asset(
+                      icon3,
+                      height: sizes.GetHeight() * 1.5,
+                      color: theme.GetColor("textPrimary"),
+                    ),
+                  ],
+                ],
               ),
-              SizedBox(width: Sizes(context).GetWidth()*0.5),
-              icon3.isNotEmpty? SvgPicture.asset(icon3,height: Sizes(context).GetHeight()*1.5,color:Themes().GetColor("textPrimary")):const SizedBox(),
-              SizedBox(width: Sizes(context).GetWidth()*1),
-              Expanded(
-                child:subText.isEmpty?const SizedBox():Text(
+
+              // ─── subText في سطر منفصل ───
+              if (subText.isNotEmpty) ...[
+                Text(
                   subText,
-                  style: const TextStyle(fontSize: 9),
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: theme.GetColor("textSecondary"),
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                  maxLines: 1,
                 ),
-              ),
+              ],
             ],
           ),
         ),

@@ -12,9 +12,7 @@ class NotificationsNotifier extends Notifier<Map<String, List<Map<String, String
   final List<Map<String, dynamic>> notifications = [];
   Future<void> notification(BuildContext context) async {
     final response = await ApiService().get("v1/${roles}/notifications", {}, context);
-
     if (response == null) return;
-
     final rawData = response['data'];
     notifications.clear();
     if (rawData is List) {

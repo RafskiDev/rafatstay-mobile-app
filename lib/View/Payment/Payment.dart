@@ -38,8 +38,7 @@ class Payment extends ConsumerWidget {
     print("bookingId:$bookingId");
     TextLanguage textLanguage = TextLanguage();
     final selected = ref.watch(Payment_riverpod);
-    final url =  ref.read(Payment_riverpod.notifier)
-        .initiatePayment(context, 1,0);
+   // final url =  ref.read(Payment_riverpod.notifier).initiatePayment(context, 1,0);
     return  Scaffold(
       appBar:buildCustomAppBar(context,"Payment"),
       backgroundColor:theme.GetColor("background"),
@@ -48,7 +47,7 @@ class Payment extends ConsumerWidget {
         child:SingleChildScrollView(
           child:Column(
             children: [
-              StepsWidget(),
+             // StepsWidget(),
               SizedBox(height:sizes.GetHeight()*2,),
               Row(
                 children: [

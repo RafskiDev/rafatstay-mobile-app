@@ -145,7 +145,12 @@ class PageNotifier extends Notifier<int> {
       print("❌ Apple SignIn Error: $e");
     }
   }
+  bool rememberMe = false;
 
+  void toggleRememberMe() {
+    rememberMe = !rememberMe;
+    ref.notifyListeners();
+  }
 }
 
 final pageProvider = NotifierProvider<PageNotifier, int>(PageNotifier.new);

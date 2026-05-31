@@ -7,6 +7,7 @@ import '../../Utils/Them.dart';
 import '../../Utils/ToastMessage.dart';
 import '../AvailableTables/AvailableTables_riverpod.dart';
 import '../BookingDetails/BookingDetails_riverpod.dart';
+import '../RestaurantDetalis/RestaurantDetalis_riverpod.dart' show RestaurantDetalis_riverpod;
 class PageNotifier extends Notifier<int> {
   int? lastInstallmentChoice;
 
@@ -15,53 +16,39 @@ class PageNotifier extends Notifier<int> {
     return -1;
   }
   void selectIndex(int index) {
-    if (state == index) {
-      state = -1;
-    } else {
-      state = index;
-    }
+    state = (state == index) ? -1 : index;
   }
-
-  Future<String?> initiatePayment(BuildContext context, int subscriptionId, int paymentMethod) async {
-
-    // تحويل رقم الاختيار لـ string يفهمه Tap
-    String? tapPaymentMethod;
-    switch (paymentMethod) {
-      case 0:
-        tapPaymentMethod = "MADA";      // مدى
-        break;
-      case 1:
-        tapPaymentMethod = "CREDIT";    // بطاقة ائتمان
-        break;
-      case 2:
-        tapPaymentMethod = "STC_PAY";   // STC Pay
-        break;
-      case 3:
-        tapPaymentMethod = null;        // نقدي - ما يمر عبر Tap
-        break;
-    }
-
+  /*
+  Future<String?> initiatePayment(
+      BuildContext context,
+      int subscriptionId,
+      ) async {
     final response = await ApiService().post(
       "v1/payments/subscription/initiate",
       {
         "subscription_id": subscriptionId,
         "redirect_url": "https://rafatstay.com/success",
-        if (tapPaymentMethod != null) "payment_method": tapPaymentMethod,
       },
       context,
     );
     return response?['data']?['redirect_url'];
   }
 
+   */
+
   // ─── حالة الدفع ───
-  Future<void> checkPaymentStatus(BuildContext context, String reference) async {
+  Future<Map<String, dynamic>?> checkPaymentStatus(
+      BuildContext context,
+      String reference,
+      ) async {
     final response = await ApiService().get(
       "v1/payments/$reference/status",
       {},
       context,
     );
-    print("paymentStatus: $response");
+    return response?['data'];
   }
+
 
   Future<Map<String, dynamic>?> createBooking({
     required BuildContext context,
@@ -70,6 +57,11 @@ class PageNotifier extends Notifier<int> {
     final carPlate = ref.read(BookingDetails_riverpod.notifier).CarPlate.text; // ← صحح
     final carColor = ref.read(BookingDetails_riverpod.notifier).CarColor.text; // ← صحح
     final needsParking = ref.read(BookingDetails_riverpod.notifier).isFirstSelected();
+    final garage = ref.read(RestaurantDetalis_riverpod.notifier).garage;
+  //  final parking_spot_number = garage.isNotEmpty ? garage[0]["parking_spot_number"].toString() : "0";
+    final rawDuration = garage.isNotEmpty ? garage[0]["duration"].toString() : "1";
+    final String digitsOnly = RegExp(r'\d+').stringMatch(rawDuration) ?? "1";
+    final int duration = int.tryParse(digitsOnly) ?? 1;
     final body = <String, dynamic>{
       'branch_id': bookingData['branch_id'],
       'booking_date': bookingData['booking_date'],
@@ -103,10 +95,11 @@ class PageNotifier extends Notifier<int> {
         }).toList(),
       if (needsParking) ...{
         'needs_parking': true,
-        'parking_hours':"1",
+        'parking_hours':duration.toString(),
         'parking_location': bookingData['location_type'] ?? '',
         if (carPlate.isNotEmpty) 'car_plate': carPlate,
         if (carColor.isNotEmpty) 'car_color': carColor,
+        //نضيف هنا موقف السيار يعني مكانها "floor": "P5",
       },
     };
     final response = await ApiService().post(
@@ -123,44 +116,40 @@ class PageNotifier extends Notifier<int> {
     required String paymentMethod,
     String? redirectUrl,
   }) async {
-    final body = {
+    final body = <String, dynamic>{
       "payment_method": paymentMethod,
-      if (paymentMethod != "cash") "redirect_url": redirectUrl ?? "https://rafatstay.com/payment/callback",
+      if (paymentMethod != "cash")
+        "redirect_url": redirectUrl ?? "https://rafatstay.com/payment/callback",
     };
+
+
 
     final response = await ApiService().post(
       "v1/guest/bookings/$bookingId/pay",
       body,
       context,
     );
-
     if (response?["success"] == true) {
       final data = response["data"];
-
       if (data["type"] == "cash") {
-        // كاش → عرض نجاح
-        ToastMessages(
-          context,
-          TextLanguage().GetWord("تم الحجز بنجاح"),
-          Themes().GetColor("success"),
-          Themes().GetColor("white"),
-        );
+        return true;
       } else if (data["type"] == "digital") {
         return data["redirect_url"];
       }
-      return true; // ✅ نجاح
+      return true;
     } else {
-      ToastMessages(
-        context,
-        response?["message"] ?? "فشل الدفع",
-        Themes().GetColor("error"),
-        Themes().GetColor("white"),
-      );
+      if (context.mounted) {
+        ToastMessages(
+          context,
+          response?["message"] ?? TextLanguage().GetWord("فشل الدفع"),
+          Themes().GetColor("error"),
+          Themes().GetColor("white"),
+        );
+      }
+      return false;
     }
-    return false; // ❌ فشل
   }
 
-  // يحسب وقت الانتهاء تلقائياً = وقت البداية + ساعة واحدة
   String _addOneHour(String startTime) {
     final parts = startTime.split(':');
     final hour = (int.parse(parts[0]) + 1) % 24;

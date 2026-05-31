@@ -70,7 +70,6 @@ class ApiService {
           'Authorization':'Bearer $myToken',
         },
       );
-
       final responseData = json.decode(response.body);
       if (response.statusCode == 200) {
         return responseData;

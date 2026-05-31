@@ -161,7 +161,7 @@ class _OnSiteState extends ConsumerState<OnSite> {
         Visibility(visible:ref.read(Booking_riverpod.notifier).bookingTicketStates[0],child:Column(
           children: [
             SizedBox(height: sizes.GetHeight() * 2),
-            BookingDetail(ref:ref),
+            BookingDetail(ref:ref,booking:booking),
           ],
         )),
         ref.read(Booking_riverpod.notifier).bookingTicketStates[0]?SizedBox(height: sizes.GetHeight() * 2):Container(),

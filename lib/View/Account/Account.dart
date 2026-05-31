@@ -10,6 +10,7 @@ import '../../Utils/Sizes.dart';
 import '../../Widget/WidgetAppBar.dart';
 import '../../Widget/WidgetButton.dart';
 import '../../Widget/WidgetCustomDialog.dart';
+import '../AboutUsScreen/AboutUsScreen.dart';
 import '../AccountDetails/AccountDetails.dart';
 import '../AllConversations/AllConversations.dart';
 import '../History/History.dart';
@@ -32,7 +33,6 @@ class Account extends ConsumerWidget {
      final avatarUrl = avatarPath != null
          ? "$showImage$avatarPath"
          : null;
-     print(avatarUrl);
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
       appBar:buildCustomAppBar(showBackButton:false,context,""),
@@ -174,7 +174,7 @@ class Account extends ConsumerWidget {
               SizedBox(height: Sizes(context).GetHeight() * 1),
               RowInfo(
                 imagePath:"assets/icon/language.svg",
-                text: "${textLanguage.GetWord('اللغة')} (${ref.read(Account_riverpod.notifier).storage.read("user")["preferred_language"]??" English "})",
+                text: "${textLanguage.GetWord('اللغة')} (${ref.read(Account_riverpod.notifier).storage.read("Language")==1?"عربي":"English"})",
                 onTap:(){
                   Navigator.push(
                     context,
@@ -225,9 +225,27 @@ class Account extends ConsumerWidget {
                 },
               ),
               SizedBox(height: Sizes(context).GetHeight() * 1),
+              /*
               RowInfo(
                 imagePath:"assets/icon/ContactCustomerService.svg",
                 text: textLanguage.GetWord('اتصل بخدمة العملاء'),
+              ),
+
+               */
+              RowInfo(
+                imagePath:"assets/icon/Light_Bulb.svg",
+                text: textLanguage.GetWord('تعرف علينا'),
+                onTap:(){
+                  Navigator.push(
+                    context,
+                    PageRouteBuilder(
+                      pageBuilder: (context, animation1, animation2) =>
+                          AboutUsScreen(),
+                      transitionDuration: Duration.zero,
+                      reverseTransitionDuration: Duration.zero,
+                    ),
+                  );
+                }
               ),
               SizedBox(height: Sizes(context).GetHeight() * 1),
               RowInfo(

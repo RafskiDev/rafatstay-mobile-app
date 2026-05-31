@@ -17,7 +17,7 @@ class TermsAndConditions extends ConsumerWidget {
       backgroundColor: theme.GetColor("background"),
       appBar:buildCustomAppBar(showBackButton:false,context,textLanguage.GetWord('الشروط والأحكام')),
       body: Container(
-        padding: EdgeInsets.symmetric(horizontal: sizes.GetWidth()*5),
+      padding: EdgeInsets.symmetric(horizontal: Sizes(context).GetHeight()*2),
         child:SingleChildScrollView(
           child:Column(
             children: [
@@ -78,7 +78,7 @@ class InfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.all(5.0),
       child: Column(
         mainAxisSize: MainAxisSize.min, // "Hug contents" تعني
         crossAxisAlignment: CrossAxisAlignment.start,

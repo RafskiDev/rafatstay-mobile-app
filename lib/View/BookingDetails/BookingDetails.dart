@@ -361,21 +361,23 @@ class _BookingDetailsState extends ConsumerState<BookingDetails> {
               ref.watch(BookingDetails_riverpod)==1?SizedBox(height: sizes.GetHeight() * 1):SizedBox.shrink(),
               ref.watch(BookingDetails_riverpod)==1 && garage.isNotEmpty ?Row(
                 children: [
-                  Row(
-                    children: [
-                      SvgPicture.asset("assets/icon/dollar.svg",height:sizes.GetHeight()*2),
-                      SizedBox(width: sizes.GetWidth() * 1),
-                      SvgPicture.asset("assets/icon/SAR.svg",color:theme.GetColor("textPrimary"),height:sizes.GetHeight()*1.5),
-                      SizedBox(width: sizes.GetWidth() * 1),
-                      Text(garage[0]["price"]??"0"),
-                    ],
+                  GradientText(
+                    widget: Row(
+                      children: [
+                        SvgPicture.asset("assets/icon/dollar.svg",height:sizes.GetHeight()*2),
+                        SizedBox(width: sizes.GetWidth() * 1),
+                        SvgPicture.asset("assets/icon/SAR.svg",color:theme.GetColor("textPrimary"),height:sizes.GetHeight()*1.5),
+                        SizedBox(width: sizes.GetWidth() * 1),
+                        Text(garage[0]["price"]?.toString() ?? "0"),
+                      ],
+                    ),
                   ),
                   SizedBox(width: sizes.GetWidth() * 10),
                   Row(
                     children: [
                       SvgPicture.asset("assets/icon/time.svg",height:sizes.GetHeight()*2),
                       SizedBox(width: sizes.GetWidth() * 1),
-                      Text("${ref.read(BookingDetails_riverpod.notifier).extractHour(widget.bookingData["end_time"])} hours"),
+                      Text(garage[0]["duration"]?.toString()??""),
                     ],
                   ),
                   SizedBox(width: sizes.GetWidth() * 10),
@@ -383,7 +385,9 @@ class _BookingDetailsState extends ConsumerState<BookingDetails> {
                     children: [
                       SvgPicture.asset("assets/icon/LocationTable.svg",height:sizes.GetHeight()*2),
                       SizedBox(width: sizes.GetWidth() * 1),
-                      Text(garage[0]['location_type']?.toString() ?? "null"),
+                      Text(garage[0]['parking_type']?.toString() ?? "null"),
+                    //  SizedBox(width: sizes.GetWidth() * 2),
+                    //  Text("(${garage[0]['parking_type']?.toString() ?? "null"})",style: TextStyle(color:theme.GetColor("primary")),),
                     ],
                   ),
                 ],

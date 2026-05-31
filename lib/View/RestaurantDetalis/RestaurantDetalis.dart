@@ -268,7 +268,8 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                             ),
                             InkWell(
                               onTap: () {
-                                notifier.interest(context, widget.branchId);
+                                //حاليا معلف
+                                //notifier.interest(context, widget.branchId);
                               },
                               child: Row(
                                 children: [
@@ -508,7 +509,8 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                                           fontSize: sizes.GetHeight() * 2.5)),
                                 ],
                               ),
-                              MealDropdown(branchId: widget.branchId),
+                             //قريبا
+                             // MealDropdown(branchId: widget.branchId),
                             ],
                           ),
                           SizedBox(height: sizes.GetHeight() * 2),

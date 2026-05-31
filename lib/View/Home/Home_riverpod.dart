@@ -138,8 +138,131 @@ class PageNotifier extends Notifier<int> {
   String getStatusKey() => _getStatusKey();
 
   List<dynamic> get displayItems => filters.isNotEmpty ? filters : topPicks;
+  final List<String> categorySlug = [
+    "restaurants",
+    "lounges",
+    "cafes",
+    "order-to-go"
+  ];
+  Future<void> restaurants(BuildContext context, {bool showLoader = true}) async {
+    final results = await Future.wait([
+      ApiService().get("v1/${_getApiPath()}", {}, context),
+      ApiService().get(
+        "v1/$roles/statuses",
+        {
+          "category_slug": categorySlug[selectedIndex],
+          "per_page": "4",
+        },
+        context,
+      ),
+      ApiService().get(
+        "v1/${_getOffersPath()}",
+        {"per_page": "4"},
+        context,
+      ),
+      ApiService().get(
+        "v1/${_getTopPicksPath()}",
+        {"per_page": "4"},
+        context,
+      ),
+      ApiService().get(
+        "v1/$roles/favorites",
+        {},
+        context,
+      ),
+      ApiService().get(
+        "v1/${_getDishOfDayPath()}",
+        {"per_page": "4"},
+        context,
+      ),
+      if (selectedIndex == 0)
+        ApiService().get("v1/${_getEventsPath()}", {"per_page": "4"}, context)
+      else
+        Future.value(null),
+    ]);
 
-  // ─── 1️⃣ الدالة الرئيسية - تجيب كل شي ────────────────────────────────────
+    final homeResponse   = results[0];
+    final statusResponse = results[1];
+    final offersResponse = results[2];
+    final topResponse    = results[3];
+    final favResponse    = results[4];
+    final dishResponse   = results[5];
+    final eventResponse = results[6];
+    // ─── تنظيف البيانات ───
+    home.clear();
+    statuses.clear();
+    offers.clear();
+    topPicks.clear();
+    favorite.clear();
+    dish.clear();
+    event.clear();
+
+    if (selectedIndex == 0 && eventResponse?['data']?['items'] is List) {
+      for (var item in eventResponse['data']['items']) {
+        if (item is Map<String, dynamic>) event.add(item);
+      }
+    }
+    // ─── Home ───
+    if (homeResponse?['data'] != null) {
+      final data = homeResponse['data'];
+      if (data is Map<String, dynamic>) {
+        home.add(data);
+      }
+    }
+
+    // ─── Status ───
+    final statusItems = statusResponse?['data'];
+    if (statusItems is List) statuses = List<Map<String, dynamic>>.from(statusItems);
+
+
+    // ─── Offers ───
+    final offerItems = offersResponse?['data']?['items'];
+    if (offerItems is List) {
+      offers = List<Map<String, dynamic>>.from(offerItems);
+    }
+
+    // ─── Top Picks ───
+    final topItems = topResponse?['data']?['items'];
+    if (topItems is List) {
+      for (var item in topItems) {
+        if (item is Map) {
+          topPicks.add(Map<String, dynamic>.from(item));
+        }
+      }
+    }
+    // ─── Favorites ───
+    favoriteStatus.clear();
+    if (favResponse?['success'] == true &&
+        favResponse?['data']?['items'] is List) {
+
+      for (var item in favResponse['data']['items']) {
+        favorite.add({...item, "liked": true});
+
+        final id = int.tryParse(item["item_id"]?.toString() ?? "0") ?? 0;
+        if (id != 0) favoriteStatus[id] = true;
+      }
+    }
+    // ─── Dish of the Day ───
+    final dishItems = dishResponse?['data']?['items'];
+    if (dishItems is List) {
+      dish.clear();
+
+      for (var item in dishItems) {
+        if (item is Map) {
+          final id = int.tryParse(item["id"]?.toString() ?? "0") ?? 0;
+
+          dish.add({
+            ...Map<String, dynamic>.from(item),
+            "liked": favoriteStatus[id] ?? false,
+          });
+        }
+      }
+    }
+
+    ref.notifyListeners();
+  }
+
+  /*
   Future<void> restaurants(BuildContext context,{bool showLoader = true}) async {
     home.clear();
     statuses.clear();
@@ -265,7 +388,7 @@ class PageNotifier extends Notifier<int> {
     ref.notifyListeners();
 
   }
-
+  */
   // ─── 2️⃣ دالة الفلترة ──────────────────────────────────────────────────────
   Future<void> filter(BuildContext context, {String filter = "all"}) async {
     final String safeFilter = filter.trim().isEmpty
@@ -286,6 +409,8 @@ class PageNotifier extends Notifier<int> {
     mainCarouselIndex = 0;
     ref.notifyListeners();
   }
+
+
 
   // ─── تغيير Sort في Closest & Cheapest ────────────────────────────────────
   void changeClosestCheapestSort(BuildContext context, String sortBy) async {
@@ -474,66 +599,6 @@ class PageNotifier extends Notifier<int> {
         Themes().GetColor("error"),
         Themes().GetColor("white"),
       );
-    }
-  }
-  Future<Map<String, dynamic>?> createBooking({
-    required BuildContext context,
-    required Map<String, dynamic> bookingData,
-  }) async {
-    final menuItems = (bookingData["menuItems"] as List? ?? []);
-    final items = menuItems.map((m) => {
-      "menu_item_id": m["id"],
-      "item_name": m["title"],
-      "quantity": m["count"] ?? 1,
-      if (m["cooking_method"] != null) "cooking_method": m["cooking_method"],
-      if (m["doneness_level"] != null) "doneness_level": m["doneness_level"],
-      if (m["notes"] != null) "notes": m["notes"],
-    }).toList();
-
-    final body = {
-      "branch_id": bookingData["branch_id"],
-      "booking_date": bookingData["booking_date"],
-      "start_time": bookingData["start_time"],
-      "end_time": bookingData["end_time"],
-      "party_size": bookingData["party_size"] ?? 1,
-      "children_count": bookingData["children_count"] ?? 0,
-      "service_mode": bookingData["service_mode"] ?? "dine_in",
-      if (bookingData["table_id"] != null) "table_id": bookingData["table_id"],
-      if (bookingData["special_requests"] != null) "special_requests": bookingData["special_requests"],
-      if (items.isNotEmpty) "items": items,
-      if (bookingData["needs_parking"] == true) ...{
-        "needs_parking": true,
-        "parking_hours": bookingData["parking_hours"],
-        "parking_location": bookingData["parking_location"],
-        "car_plate": bookingData["car_plate"],
-        if (bookingData["car_color"] != null) "car_color": bookingData["car_color"],
-      },
-    };
-
-    final response = await ApiService().post(
-      "v1/$roles/bookings",
-      body,
-      context,
-    );
-
-    print(response);
-
-    if (response?["success"] == true) {
-      ToastMessages(
-        context,
-        "تم إنشاء الحجز بنجاح",
-        Themes().GetColor("success"),
-        Themes().GetColor("white"),
-      );
-      return response["data"];
-    } else {
-      ToastMessages(
-        context,
-        response?["message"] ?? "فشل إنشاء الحجز",
-        Themes().GetColor("error"),
-        Themes().GetColor("white"),
-      );
-      return null;
     }
   }
 

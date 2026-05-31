@@ -33,20 +33,23 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
   }
 
   void _initData() {
-    // قراءة مصفوفة الستوريات الكاملة أو الـ latest_status بناءً على الاستجابة
     if (widget.branchData["latest_status"] != null) {
       statuses = [Map<String, dynamic>.from(widget.branchData["latest_status"])];
     } else {
       statuses = [];
     }
 
-    for (final status in statuses) {
-      final id = int.tryParse(status["id"]?.toString() ?? "0") ?? 0;
-      final userReaction = status["reactions"]?["user_reaction"];
-      if (id != 0) {
-        reactions[id] = userReaction?.toString();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      for (final status in statuses) {
+        final id = int.tryParse(status["id"]?.toString() ?? "0") ?? 0;
+        final userReaction = status["reactions"]?["user_reaction"]?.toString();
+        if (id != 0) {
+          // ← سجل في الـ notifier مباشرة
+          ref.read(Story_riverpod.notifier).userReactions[id] = userReaction;
+        }
       }
-    }
+      ref.read(Story_riverpod.notifier).ref.notifyListeners();
+    });
   }
 
   @override
@@ -148,6 +151,10 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
 
     final int dislikesCountVal = ref.read(Story_riverpod.notifier).dislikesCount[statusId]
         ?? int.tryParse(item["reactions"]?["dislikes_count"]?.toString() ?? "0") ?? 0;
+
+
+    final String? currentReaction = ref.watch(Story_riverpod.notifier).userReactions[statusId];
+
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
@@ -279,7 +286,7 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
               ),
             ),
           ),
-
+           /*
           // 6. عمود الأزرار الجانبية (المفضلة واللايك والديسلايك)
           Positioned(
             left: Sizes(context).GetWidth() * 3,
@@ -301,17 +308,14 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
                 // زر الـ Likes
                 _statChip(
                   icon: "assets/icon/likes.svg",
-                  value: item["reactions"]?["total_count"]?.toString() ?? "0",
-                  isActive: reactions[statusId] == "like",
+                  value: likesCountVal.toString(), // ← هنا التغيير
+                  isActive: currentReaction == "like", // ← من الـ notifier
                   onTap: () {
-                    setState(() {
-                      reactions[statusId] = reactions[statusId] == "like" ? null : "like";
-                    });
                     ref.read(Story_riverpod.notifier).toggleReaction(
                       context,
                       statusId,
                       "like",
-                      reactions[statusId] == "like", // الحالة قبل التغيير — لازم تحسبها قبل setState
+                      currentReaction == "like", // ← الحالة الصحيحة
                       likesCountVal,
                     );
                   },
@@ -379,6 +383,8 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
               ),
             ),
           ),
+
+            */
         ],
       ),
     );

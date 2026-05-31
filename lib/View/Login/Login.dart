@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../Utils/Sizes.dart';
 import '../../Utils/TextLanguage.dart';
 import '../../Utils/Them.dart';
+import '../../Widget/CheckBox.dart';
 import '../../Widget/WidgetButton.dart';
 import '../../Widget/WidgetTextField.dart';
 import '../BottomBar/BottomBar.dart';
 import '../ForgotPassword/ForgotPassword.dart';
 import '../LocationPrompt/LocationPrompt.dart';
 import '../SignIn/SignIn.dart';
+import '../SignIn/SignIn_riverpod.dart';
 import '../language/language.dart';
 import 'Login_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -22,6 +24,7 @@ class Login extends ConsumerWidget {
     final sizes=Sizes(context);
     Themes theme = Themes();
     TextLanguage textLanguage = TextLanguage();
+    final rememberMe = ref.watch(pageProvider);
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: theme.GetColor("background"),
@@ -93,6 +96,7 @@ class Login extends ConsumerWidget {
                 ),
                 SizedBox(height: sizes.GetHeight()*2),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     TextButton(
                       onPressed: () {
@@ -130,9 +134,22 @@ class Login extends ConsumerWidget {
                   buttonText:textLanguage.GetWord("تسجيل الدخول"),
                   onPressed: () {
                     ref.read(pageProvider.notifier).login(context);
-                   // print("تم الضغط على الزر");
                   },
                   backgroundColor:theme.GetColor("primary"),
+                  textColor:theme.GetColor("textPrimary"),
+                  isCircular: true,
+                ),
+                SizedBox(height: sizes.GetHeight()*1),
+                if (Theme.of(context).platform == TargetPlatform.iOS)
+                WidgetButton(
+                  isLoading:ref.read(signInRiverpod.notifier).isLoading_,
+                  context: context,
+                  buttonText:textLanguage.GetWord("جرب كضيف"),
+                  borderColor:theme.GetColor("textPrimary"),
+                  onPressed: () {
+                    ref.read(signInRiverpod.notifier).loginAsGuest(context);
+                  },
+                  backgroundColor:theme.GetColor("background"),
                   textColor:theme.GetColor("textPrimary"),
                   isCircular: true,
                 ),

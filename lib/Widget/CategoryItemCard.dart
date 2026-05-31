@@ -71,8 +71,8 @@ class CategoryItemCard extends StatelessWidget {
                 children: [
                   if (nameImagePath != null) ...[
                     Container(
-                      width: 25,
-                      height:25,
+                      width: Sizes(context).GetWidth()*7,
+                      height:Sizes(context).GetWidth()*7,
                       padding: EdgeInsets.all(paddings?.toDouble() ?? 0),
                       decoration: BoxDecoration(
                         color:theme.GetColor("secondaryPrimary"),

@@ -108,15 +108,22 @@ class Favorites extends ConsumerWidget {
                 buttonText: textLanguage.GetWord("يكتشف"),
 
                 onButtonTap: () {
-                  final int branchId =
-                      item["branch_id"] ?? item["business_id"] ?? 0;
+                  final String type = (raw["type"] ?? "branch").toString();
 
+                  int branchId = 0;
+                  if (type == "branch") {
+                    branchId = int.tryParse(item["id"]?.toString() ?? "0") ?? 0;
+                  } else if (type == "menu_item") {
+                    branchId = int.tryParse(item["branch_id"]?.toString() ?? "0") ?? 0;
+                  }
+
+                  if (branchId == 0) return;
                   Navigator.push(
                     context,
                     PageRouteBuilder(
                       pageBuilder: (context, a1, a2) => RestaurantDetalis(
                         title: businessName,
-                        branchId: branchId,
+                        branchId:branchId,
                       ),
                       transitionDuration: Duration.zero,
                       reverseTransitionDuration: Duration.zero,

@@ -37,7 +37,7 @@ class _HistoryState extends ConsumerState<History> {
     final reviews = notifier.statusForRestaurants;
     final TextLanguage textL = TextLanguage();
     return Scaffold(
-      appBar:buildCustomAppBar(context,"History"),
+      appBar:buildCustomAppBar(context,TextLanguage().GetWord('السجل')),
       backgroundColor: Themes().GetColor("background"),
       body:ValueListenableBuilder<bool>(
         valueListenable: LoadingService.isLoading,
@@ -48,11 +48,13 @@ class _HistoryState extends ConsumerState<History> {
               padding:EdgeInsets.symmetric(horizontal:Sizes(context).GetWidth()*5),
               child: Column(
                 children: [
-                 Row(
-                   children: [
-                     Text(textL.GetWord("جميع الحجوزات"),style:TextStyle(fontWeight:FontWeight.bold,color:Themes().GetColor("textPrimary"))),
-                   ],
-                 ),
+                  if(bookings.isNotEmpty)...[
+                    Row(
+                      children: [
+                        Text(textL.GetWord("جميع الحجوزات"),style:TextStyle(fontWeight:FontWeight.bold,color:Themes().GetColor("textPrimary"))),
+                      ],
+                    ),
+                  ],
                  SizedBox(height:Sizes(context).GetHeight()*2),
                   ListView.builder(
                     itemCount: bookings.length,
@@ -68,6 +70,7 @@ class _HistoryState extends ConsumerState<History> {
                       final branchName = branchInfo['label'] ?? '';
                       final dateLabel = schedule['date_label'] ?? '';
                       final timeLabel = schedule['time_label'] ?? '';
+                      final coverImage = bookingObj['cover_image'] ?? '';
                       String bookingNumber = '';
                       final regExp = RegExp(r'Booking Number (\d+)');
                       final match = regExp.firstMatch(headline);
@@ -76,7 +79,7 @@ class _HistoryState extends ConsumerState<History> {
                         padding: EdgeInsets.only(bottom: Sizes(context).GetHeight() * 1),
                         child: BookingCard(
                           id: bookingId,
-                          mainImage: 'assets/images/a2a245e83857039e9ace75bf15fe92271da37762.png',
+                          mainImage:coverImage??"",
                           bookingNumber: bookingNumber,
                           price: '0',
                           paymentMethod: '',
@@ -86,7 +89,7 @@ class _HistoryState extends ConsumerState<History> {
                           date: dateLabel,
                           time: timeLabel,
                           footer: false,
-                          textOnTap: "Rebooking",
+                          textOnTap:TextLanguage().GetWord("إعادة الحجز"),
                           onTap: () {
                             // إعادة الحجز - سننفذه لاحقاً
                           },
@@ -109,7 +112,7 @@ class _HistoryState extends ConsumerState<History> {
                 if(reviews.isNotEmpty) ...[
                   Row(
                     children: [
-                      Text("Status for Restaurants",style:TextStyle(fontWeight:FontWeight.bold,color:Themes().GetColor("textPrimary"))),
+                      Text(TextLanguage().GetWord("حالة المطاعم"),style:TextStyle(fontWeight:FontWeight.bold,color:Themes().GetColor("textPrimary"))),
                     ],
                   ),
                   SizedBox(height:Sizes(context).GetHeight()*2),

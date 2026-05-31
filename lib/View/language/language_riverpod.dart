@@ -21,14 +21,13 @@ class PageNotifier extends Notifier<int> {
 
   @override
   int build() {
-    // قراءة اللغة المخزنة، 0 للعربية، 1 للإنجليزية
-    return storage.read("Language") ?? 0;
+    final saved = storage.read("Language");
+    return (saved is int) ? saved : 0;
   }
 
   void selectIndex(int index) {
-   // storage.write("Language", index);
     textLanguage.ChangeLanguge(index);
-    state = index; // هذا يكفي لإعادة بناء كل المستمعين
+    state = index;
   }
 
   Future<dynamic> updatePreferences(BuildContext context,String language) async {

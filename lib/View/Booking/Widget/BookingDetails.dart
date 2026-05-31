@@ -203,9 +203,9 @@ class BookingDetail extends StatelessWidget {
             textColor: Themes().GetColor("textPrimary"),
             onPressed: () {
 
-             final restaurantLat = booking!["branch"]['latitude'];
-             final restaurantLng = booking?['branch']['longitude'];
-            if(restaurantLat!=null && restaurantLng!=null){
+              final restaurantLat = booking?["branch"]?['latitude'];
+              final restaurantLng = booking?['branch']?['longitude'];
+              if (restaurantLat != null && restaurantLng != null) {
               Navigator.push(
                 context,
                 PageRouteBuilder(

@@ -79,6 +79,12 @@ class PageNotifier extends Notifier<int> {
     confirmPasswordNode.unfocus();
   }
 
+  String gender = "male";
+
+  void selectGender(String value) {
+    gender = value;
+    ref.notifyListeners();
+  }
   // create user
   Future<dynamic> createUser(BuildContext context) async {
     ref.notifyListeners();
@@ -92,7 +98,7 @@ class PageNotifier extends Notifier<int> {
         "email": email.text.trim(),
         "password": password.text,
         "password_confirmation": confirmPassword.text,
-        "geneder": "male",
+        "geneder":gender,
         "birthday":
         "${birthday.year}-${birthday.month.toString().padLeft(
             2, '0')}-${birthday.day.toString().padLeft(2, '0')}",
@@ -114,6 +120,7 @@ class PageNotifier extends Notifier<int> {
       isLoading=false;
     }
   }
+
 
   Future<void> loginAsGuest(BuildContext context) async {
     ref.notifyListeners();

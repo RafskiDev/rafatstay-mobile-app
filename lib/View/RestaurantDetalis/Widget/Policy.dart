@@ -5,19 +5,29 @@ import '../../../Utils/Sizes.dart';
 import '../../../Utils/Them.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../RestaurantDetalis_riverpod.dart';
-
 Widget Policy(BuildContext context, WidgetRef ref) {
-  final policies = ref.read(RestaurantDetalis_riverpod.notifier).policies;
+  final rawPolicies = ref.read(RestaurantDetalis_riverpod.notifier).policies;
+
+  final policies = rawPolicies
+      .whereType<Map<String, dynamic>>()
+      .toList();
+
   if (policies.isEmpty) return const SizedBox.shrink();
 
   final policy = policies[0];
-  final cancellation = policy["cancellation"];
-  final booking = policy["booking"];
-  final general = policy["general"];
+  final cancellation = policy["cancellation"] is Map
+      ? Map<String, dynamic>.from(policy["cancellation"])
+      : null;
+  final booking = policy["booking"] is Map
+      ? Map<String, dynamic>.from(policy["booking"])
+      : null;
+  final general = policy["general"] is List
+      ? policy["general"] as List
+      : [];
 
   final List<Widget> items = [];
 
-  // Cancellation
+  // ─── Cancellation ───
   if (cancellation != null) {
     final desc = cancellation["description"]?.toString() ?? "";
     if (desc.isNotEmpty) {
@@ -29,16 +39,16 @@ Widget Policy(BuildContext context, WidgetRef ref) {
     }
   }
 
-  // Booking
+  // ─── Booking ───
   if (booking != null) {
     final minHours = booking["min_advance_hours"];
-    final maxDays  = booking["max_advance_days"];
+    final maxDays = booking["max_advance_days"];
     final hasDeposit = booking["requires_deposit"] == true;
     final depositPct = booking["deposit_percentage"];
 
     String bookingDesc = "";
     if (minHours != null) bookingDesc += "الحجز المسبق: $minHours ساعة على الأقل\n";
-    if (maxDays  != null) bookingDesc += "الحد الأقصى: $maxDays يوم مقدماً\n";
+    if (maxDays != null)  bookingDesc += "الحد الأقصى: $maxDays يوم مقدماً\n";
     if (hasDeposit)       bookingDesc += "عربون: $depositPct%";
 
     if (bookingDesc.isNotEmpty) {
@@ -50,18 +60,17 @@ Widget Policy(BuildContext context, WidgetRef ref) {
     }
   }
 
-  // General
-  if (general is List) {
-    for (final item in general) {
-      final title = item["title"]?.toString() ?? "";
-      final desc  = item["description"]?.toString() ?? "";
-      if (title.isNotEmpty || desc.isNotEmpty) {
-        items.add(infow(
-          icon: _getIcon(item["key"]?.toString()),
-          text: title,
-          subtext: desc,
-        ));
-      }
+  // ─── General ───
+  for (final item in general) {
+    if (item is! Map) continue; // ✅ تجاهل أي شي مو Map
+    final title = item["title"]?.toString() ?? "";
+    final desc  = item["description"]?.toString() ?? "";
+    if (title.isNotEmpty || desc.isNotEmpty) {
+      items.add(infow(
+        icon: _getIcon(item["key"]?.toString()),
+        text: title,
+        subtext: desc,
+      ));
     }
   }
 

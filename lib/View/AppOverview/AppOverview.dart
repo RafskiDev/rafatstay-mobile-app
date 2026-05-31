@@ -7,6 +7,7 @@ import '../../Utils/Sizes.dart';
 import '../../Widget/WidgetButton.dart';
 import '../Login/Login.dart';
 import '../language/language.dart';
+import '../language/language_riverpod.dart';
 import 'AppOverview_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 class AppOverview extends ConsumerWidget {
@@ -17,6 +18,7 @@ class AppOverview extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(language_riverpod); // ✅ يستمع لتغيير اللغة
     final currentPage = ref.watch(pageProvider);
     final sizes=Sizes(context);
     Themes theme = Themes();
@@ -55,7 +57,7 @@ class AppOverview extends ConsumerWidget {
                     ref.read(pageProvider.notifier).setPage(index);
                   },
                   itemBuilder: (context, index) => Center(
-                    child:Image.asset(
+                    child:SvgPicture.asset(
                       ref.read(pageProvider.notifier).image[currentPage],
                       fit: BoxFit.cover, // لتغطية المساحة بالكامل
                       width:sizes.GetWidth()*60,

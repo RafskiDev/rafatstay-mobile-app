@@ -332,5 +332,9 @@ final EnLanguag = {
   "بقايا الطعام في العبوة":"Pack Leftovers",
   "شكراً لزيارتك! نتطلع لرؤيتك مجدداً":"Thank you for your visit! We look forward to seeing you again.",
   "اصنعها على طريقتك":"Make It Your Way",
-  "الحد الأدنى للطلب هو":"The minimum order is"
+  "الحد الأدنى للطلب هو":"The minimum order is",
+  "فنادق قريباً":"Hotels Coming Soon",
+  "نحن بصدد إعداد تجربة حجز فنادق مميزة لكم. ترقبوا المزيد.":"We are preparing a premium hotel booking experience for you. Stay tuned.",
+  "لا توجد مفضلات حالياً":"No favorites yet",
+  "تعرف علينا":"Get To Know Us"
 };

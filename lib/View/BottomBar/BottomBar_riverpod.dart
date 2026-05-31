@@ -5,12 +5,13 @@ import '../Account/Account.dart';
 import '../Booking/Booking.dart';
 import '../Favorite/Favorite.dart';
 import '../Home/Home.dart';
+import '../Services/Services.dart';
 class PageNotifier extends Notifier<int> {
   @override
   int build() => 0;
   final List<Widget> pages = [
     Home(),
-    Center(child: Text(TextLanguage().GetWord('قريباً'))),
+    Services(),
     Favorite(),
     Booking(),
     Account(),

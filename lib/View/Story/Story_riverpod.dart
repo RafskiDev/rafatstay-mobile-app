@@ -43,26 +43,43 @@ class PageNotifier extends Notifier<int> {
   final Map<int, bool> favoriteStatus = {};
   final Map<int, int> likesCount = {};
   final Map<int, int> dislikesCount = {};
+  final Map<int, String?> userReactions = {}; // أضف هذا
+
   Future<void> toggleReaction(BuildContext context, int statusId, String type, bool isCurrentlyActive, int currentCount) async {
+    // Optimistic update
     if (type == "like") {
       likesCount[statusId] = isCurrentlyActive ? currentCount - 1 : currentCount + 1;
     } else {
       dislikesCount[statusId] = isCurrentlyActive ? currentCount - 1 : currentCount + 1;
     }
+    userReactions[statusId] = isCurrentlyActive ? null : type; // optimistic
     state++;
-    ref.notifyListeners();
 
     final res = await ApiService().post(
       "v1/guest/statuses/$statusId/react",
       {"reaction_type": type},
       context,
     );
-    if (res?['success'] != true) {
+
+    if (res?['success'] == true) {
+      final action = res?['data']?['action'];
+      final reaction = res?['data']?['reaction'];
+
+      // الحالة الحقيقية من السيرفر
+      userReactions[statusId] = action == "created" ? reaction : null;
+
+      if (type == "like") {
+        likesCount[statusId] = action == "created" ? currentCount + 1 : currentCount - 1;
+      } else {
+        dislikesCount[statusId] = action == "created" ? currentCount + 1 : currentCount - 1;
+      }
+      state++;
+    } else {
       // تراجع
+      userReactions[statusId] = isCurrentlyActive ? type : null;
       if (type == "like") likesCount[statusId] = currentCount;
       else dislikesCount[statusId] = currentCount;
       state--;
-      ref.notifyListeners();
     }
   }
   // 1. تبديل حالة المفضلة (مع تحديث لحظي للواجهة)
@@ -79,10 +96,10 @@ class PageNotifier extends Notifier<int> {
     // 3. إرسال الطلب في الخلفية
     final res = await ApiService().post(
         "v1/$roles/favorites/toggle",
-        {"item_id": itemId, "type": type},
+        {"item_id": itemId, "type": "status"},
         context
     );
-
+    print(res);
     // 4. التراجع الذكي في حال فشل الـ API لـ أي سبب
     if (res?['success'] != true) {
       favoriteStatus[itemId] = isLiked; // إرجاع الحالة السابقة

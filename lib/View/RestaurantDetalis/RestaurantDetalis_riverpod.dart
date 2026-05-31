@@ -281,13 +281,16 @@ class PageNotifier extends Notifier<int> {
       {},
       context,
     );
-
     if (response?["success"] == true) {
       final data = response?["data"];
+
       if (data is List) {
-        policies = List<dynamic>.from(data);
+        policies = data
+            .where((e) => e is Map)
+            .map((e) => Map<String, dynamic>.from(e as Map))
+            .toList();
       } else if (data is Map) {
-        policies = [data];
+        policies = [Map<String, dynamic>.from(data)];
       } else {
         policies = [];
       }

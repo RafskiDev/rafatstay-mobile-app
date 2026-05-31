@@ -55,6 +55,7 @@ class _CompletedState extends ConsumerState<Completed> {
 
   @override
   Widget build(BuildContext context) {
+    ref.watch(completedBookingProvider);
     final notifier = ref.watch(completedBookingProvider.notifier);
     final bookCompleted = notifier.bookingsData;
 

@@ -64,7 +64,7 @@ class _HomeState extends ConsumerState<Home> {
     final closestCheapest = ref.watch(Home_riverpod.notifier).closestCheapest;
     final mostOrdered     = ref.watch(Home_riverpod.notifier).mostOrdered;
     final statuses        = ref.watch(Home_riverpod.notifier).statuses;
-    final String statusKey = ref.read(Home_riverpod.notifier).getStatusKey();
+  //  final String statusKey = ref.read(Home_riverpod.notifier).getStatusKey();
     final user = ref.read(Home_riverpod.notifier).box.read("user");
     final avatarPath = user?["avatar"];
     final avatarUrl = avatarPath != null
@@ -350,8 +350,15 @@ class _HomeState extends ConsumerState<Home> {
                             items: offers,
                             currentIndex: ref.watch(Home_riverpod.notifier).mainCarouselIndex,
                             onTap: () {
+                              final currentIndex = ref.watch(Home_riverpod.notifier).mainCarouselIndex;
+                              final selectedOffer = offers[currentIndex];
+                              final int offerId = int.tryParse(selectedOffer["id"]?.toString() ?? "0") ?? 0;
+
                               Navigator.push(context, PageRouteBuilder(
-                                pageBuilder: (_, __, ___) => OffersDetails(title: textLanguage.w("تفاصيل العروض"), offerId: 3,),
+                                pageBuilder: (_, __, ___) => OffersDetails(
+                                  title: textLanguage.w("تفاصيل العروض"),
+                                  offerId: offerId,
+                                ),
                                 transitionDuration: Duration.zero,
                                 reverseTransitionDuration: Duration.zero,
                               ));

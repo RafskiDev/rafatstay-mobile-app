@@ -388,7 +388,7 @@ class _FavoriteState extends ConsumerState<Favorite> {
                     padding: EdgeInsets.only(top: sizes.GetHeight() * 35),
                     child: Center(
                       child: Text(
-                        textLanguage.GetWord("لا توجد مفضلات حالياً") ?? "No favorites yet",
+                        textLanguage.GetWord("لا توجد مفضلات حالياً"),
                         style: TextStyle(color: Colors.grey, fontSize: 16),
                       ),
                     ),
