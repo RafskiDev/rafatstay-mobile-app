@@ -65,7 +65,7 @@ class _OnSiteState extends ConsumerState<OnSite> {
           children: [
             Row(
               children: [
-                SvgPicture.asset("assets/icon/BookingTicket.svg",color:Themes().GetColor("textPrimary"),),
+                SvgPicture.asset("assets/icon/BookingTicket.svg"),
                 SizedBox(width: sizes.GetWidth() * 1),
                 Text(textLanguage.GetWord('حجز تذكرة')),
               ],
@@ -90,7 +90,7 @@ class _OnSiteState extends ConsumerState<OnSite> {
                       bookingNumber: booking['id'] ?? 0,
                       payAmount: double.tryParse(bookingsData[0]['total_amount']?.toString() ?? "0") ?? 0.0,
                       checkInDate: DateTimeHelper().formatDate(bookingsData[0]['booking_date']) ?? "",
-                      checkInTime: DateTimeHelper().formatTime(bookingsData[0]['end_time']) ?? "",
+                      checkInTime: DateTimeHelper().formatTime(bookingsData[0]['start_time']) ?? "",
                       childrenCount: booking['children_count'] ?? 0,
                       tableNumber: booking['table']?['table_number'] ?? "0",
                       width: sizes.GetWidth() * 80,
@@ -144,7 +144,7 @@ class _OnSiteState extends ConsumerState<OnSite> {
           children: [
             Row(
               children: [
-                SvgPicture.asset("assets/icon/BookingTicket.svg",color:Themes().GetColor("textPrimary"),),
+                SvgPicture.asset("assets/icon/BookingDetails.svg"),
                 SizedBox(width: sizes.GetWidth() * 1),
                 Text(textLanguage.GetWord("تفاصيل الحجز")),
               ],
@@ -165,44 +165,52 @@ class _OnSiteState extends ConsumerState<OnSite> {
           ],
         )),
         ref.read(Booking_riverpod.notifier).bookingTicketStates[0]?SizedBox(height: sizes.GetHeight() * 2):Container(),
-        Container(
-          padding: EdgeInsets.symmetric(horizontal: sizes.GetHeight() * 2),
-          child: Row(
-            children: [
-              Container(
-                padding: EdgeInsets.all(sizes.GetHeight() * 0.5),
-                decoration: ref.read(Booking_riverpod.notifier).requestAssistance
-                    ? BoxDecoration(
-                  border: Border.all(color: Themes().GetColor("textPrimary")),
-                  borderRadius: BorderRadius.circular(30),
-                )
-                    : null, // ⬅️ فقط البوردر يظهر/يختفي
-                child: InkWell(
-                  onTap: () {
-                    ref.read(Booking_riverpod.notifier).setRequestAssistance();
-                    showCustomBottomSheet(context, ref);
-                  },
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SvgPicture.asset(
-                        height: sizes.GetHeight() * 2.5,
-                        "assets/icon/HeartInHand.svg",
-                      ),
-                      SizedBox(width: sizes.GetWidth() * 1),
-                      Text(textLanguage.GetWord('طلب المساعدة')),
-                      SizedBox(width: sizes.GetWidth() * 3),
-                      SvgPicture.asset(
-                        height: sizes.GetHeight() * 2.5,
-                        ref.read(Booking_riverpod.notifier).requestAssistance
-                            ? "assets/icon/DownArrow.svg"
-                            : "assets/icon/Arrow_one.svg",
-                      ),
-                    ],
+        InkWell(
+          onTap: () {
+            ref.read(Booking_riverpod.notifier).setRequestAssistance();
+            showCustomBottomSheet(context, ref);
+          },
+          child: Container(
+            padding: EdgeInsets.symmetric(horizontal: sizes.GetHeight() * 2),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(sizes.GetHeight() * 0.5),
+                  decoration: ref.read(Booking_riverpod.notifier).requestAssistance
+                      ? BoxDecoration(
+                    border: Border.all(color: Themes().GetColor("textPrimary")),
+                    borderRadius: BorderRadius.circular(30),
+                  )
+                      : null, // ⬅️ فقط البوردر يظهر/يختفي
+                  child: InkWell(
+                    onTap: () {
+                      ref.read(Booking_riverpod.notifier).setRequestAssistance();
+                      showCustomBottomSheet(context, ref);
+                    },
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        SvgPicture.asset(
+                          height: sizes.GetHeight() * 2.5,
+                          "assets/icon/HeartInHand.svg",
+                        ),
+                        SizedBox(width: sizes.GetWidth() * 1),
+                        Text(textLanguage.GetWord('طلب المساعدة')),
+                        SizedBox(width: sizes.GetWidth() * 3),
+                        SvgPicture.asset(
+                          height: sizes.GetHeight() * 2.5,
+                          ref.read(Booking_riverpod.notifier).requestAssistance
+                              ? "assets/icon/DownArrow.svg"
+                              : "assets/icon/Arrow_one.svg",
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
+                SvgPicture.asset("assets/icon/bell.svg"),
+              ],
+            ),
           ),
         ),
         SizedBox(height: sizes.GetHeight() * 2),
@@ -228,19 +236,6 @@ class _OnSiteState extends ConsumerState<OnSite> {
                   Duration.zero,
                 ),
               );
-              /*
-              ref.read(Booking_riverpod.notifier).createBooking(
-                context: context,
-                branchId: 1,
-                bookingDate: "2026-03-01",
-                startTime: "19:00",
-                endTime: "21:00",   // ← ساعتين مثلاً
-                partySize: 4,
-                notes: "طاولة بعيدة عن الضوضاء",
-              );
-
-               */
-             // showCustomBottomSheet(context, ref);
             },
             child: Container(
               padding: EdgeInsets.all(sizes.GetHeight() * 0.5),
@@ -547,7 +542,7 @@ class ImageTextBox extends StatelessWidget {
                 ? Themes().GetColor("secondary500")
                 : Themes().GetColor("textSecondary"),
           ),
-          color:isSelected? Themes().GetColor("primaryA"):Colors.transparent,
+          color:Colors.transparent,
           borderRadius: BorderRadius.circular(20),
 
         ),
@@ -560,7 +555,7 @@ class ImageTextBox extends StatelessWidget {
               width: sizes.GetHeight() * 6,
               height: sizes.GetHeight() * 6,
               decoration: BoxDecoration(
-                color:isSelected? Themes().GetColor("secondary500"):Color(0xFF87CEEB),
+                color:isSelected? Themes().GetColor("primaryS"):Color(0xFF87CEEB),
                 shape: BoxShape.circle,
               ),
               child: Center(
@@ -569,9 +564,6 @@ class ImageTextBox extends StatelessWidget {
                   height: sizes.GetHeight() * 4,
                   width: sizes.GetHeight() * 4,
                   fit: BoxFit.contain,
-                  color: isSelected
-                      ? Themes().GetColor("white")
-                      : Themes().GetColor("textPrimary"),
                 ),
               ),
             ),

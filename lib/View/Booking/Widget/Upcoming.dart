@@ -41,7 +41,7 @@ class _UpcomingState extends ConsumerState<Upcoming> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await ref.read(Booking_riverpod.notifier).bookings(context: context,status: "pending");
+      await ref.read(upcomingBookingProvider.notifier).bookings(context: context,status: "pending");
     });
   }
 
@@ -51,7 +51,7 @@ class _UpcomingState extends ConsumerState<Upcoming> {
     final sizes = Sizes(context);
     final theme = Themes();
     TextLanguage textLanguage = TextLanguage();
-    final bookingsData = ref.watch(Booking_riverpod.notifier).bookingsData;
+    final bookingsData = ref.watch(upcomingBookingProvider.notifier).bookingsData;
     final hasData = bookingsData.isNotEmpty;
     final eventsList = hasData ? (bookingsData[0]['events']?['items'] as List?) ?? [] : [];
     return ValueListenableBuilder<bool>(
@@ -97,7 +97,7 @@ class _UpcomingState extends ConsumerState<Upcoming> {
                         color: Themes().GetColor("textPrimary"),),
                       SizedBox(width: sizes.GetWidth() * 1),
                       CountdownText(
-                        bookingData: ref.read(Booking_riverpod.notifier).bookingsData[0] as Map<String, dynamic>?
+                        bookingData: ref.read(upcomingBookingProvider.notifier).bookingsData[0] as Map<String, dynamic>?
                             ?? {},
                       ),
                     ],
@@ -118,11 +118,11 @@ class _UpcomingState extends ConsumerState<Upcoming> {
                   ),
                   InkWell(
                     onTap: () {
-                      ref.read(Booking_riverpod.notifier).setBookingTicketState(
+                      ref.read(upcomingBookingProvider.notifier).setBookingTicketState(
                           0);
                     },
                     child: SvgPicture.asset(ref
-                        .read(Booking_riverpod.notifier)
+                        .read(upcomingBookingProvider.notifier)
                         .bookingTicketStates[0]
                         ? "assets/icon/ArrowAbove.svg"
                         : "assets/icon/DownArrow.svg"),
@@ -131,7 +131,7 @@ class _UpcomingState extends ConsumerState<Upcoming> {
               ),
               SizedBox(height: sizes.GetHeight() * 2),
               Visibility(visible: ref
-                  .read(Booking_riverpod.notifier)
+                  .read(upcomingBookingProvider.notifier)
                   .bookingTicketStates[0], child: Column(
                 children: [
                   Row(
@@ -143,7 +143,7 @@ class _UpcomingState extends ConsumerState<Upcoming> {
                             bookingNumber: bookingsData[0]['booking_number'] ?? 0,
                             payAmount: double.tryParse(bookingsData[0]['total_amount']?.toString() ?? "0") ?? 0.0,
                             checkInDate: DateTimeHelper().formatDate(bookingsData[0]['booking_date']) ?? "",
-                            checkInTime: DateTimeHelper().formatTime(bookingsData[0]['end_time']) ?? "",
+                            checkInTime: DateTimeHelper().formatTime(bookingsData[0]['start_time']) ?? "",
                             childrenCount: bookingsData[0]['children_count'] ?? 0,
                             tableNumber: bookingsData[0]['table']?['table_number'] ?? "0",
                             party_size: bookingsData[0]["party_size"] ?? 0,
@@ -208,10 +208,10 @@ class _UpcomingState extends ConsumerState<Upcoming> {
                   InkWell(
 
                     onTap: () {
-                      ref.read(Booking_riverpod.notifier).setBookingDetails(0);
+                      ref.read(upcomingBookingProvider.notifier).setBookingDetails(0);
                     },
                     child: SvgPicture.asset(ref
-                        .read(Booking_riverpod.notifier)
+                        .read(upcomingBookingProvider.notifier)
                         .bookingDetails[0]
                         ? "assets/icon/ArrowAbove.svg"
                         : "assets/icon/DownArrow.svg"),
@@ -219,11 +219,11 @@ class _UpcomingState extends ConsumerState<Upcoming> {
                 ],
               ),
               Visibility(visible: ref
-                  .read(Booking_riverpod.notifier).bookingDetails[0], child: Column(
+                  .read(upcomingBookingProvider.notifier).bookingDetails[0], child: Column(
 
                 children: [
                   SizedBox(height: sizes.GetHeight() * 2),
-                  if (ref.read(Booking_riverpod.notifier).bookingsData.isNotEmpty)...[
+                  if (ref.read(upcomingBookingProvider.notifier).bookingsData.isNotEmpty)...[
                     Row(
                       children: [
                         GradientText(
@@ -242,7 +242,7 @@ class _UpcomingState extends ConsumerState<Upcoming> {
                                 SizedBox(width: sizes.GetWidth() * 1),
                                 SvgPicture.asset("assets/icon/dollar.svg"),
                                 SizedBox(width: sizes.GetWidth() * 1),
-                                Text(ref.read(Booking_riverpod.notifier).bookingsData[0]['detail_sections']?['booking_details']?['items_summary']?['amount']?.toString() ?? "0"),
+                                Text(ref.read(upcomingBookingProvider.notifier).bookingsData[0]['detail_sections']?['booking_details']?['items_summary']?['amount']?.toString() ?? "0"),
                                 SizedBox(width: sizes.GetWidth() * 1),
                                 SvgPicture.asset("assets/icon/SAR.svg",height: Sizes(context).GetHeight()*1.1),
                               ],
@@ -252,13 +252,13 @@ class _UpcomingState extends ConsumerState<Upcoming> {
                     ),
                     SizedBox(height: sizes.GetHeight() * 2),
                     BookingDetail(booking: ref
-                        .read(Booking_riverpod.notifier)
+                        .read(upcomingBookingProvider.notifier)
                         .bookingsData[0], ref: ref),
                   ],
                 ],
               )),
               SizedBox(height: sizes.GetHeight() * 2),
-              if (!ref.read(Booking_riverpod.notifier).bookingDetails[0])
+              if (!ref.read(upcomingBookingProvider.notifier).bookingDetails[0])
               WidgetButton(
                 width: sizes.GetWidth() * 45,
                 isCircular: true,
@@ -266,12 +266,13 @@ class _UpcomingState extends ConsumerState<Upcoming> {
                 buttonText: textLanguage.GetWord('تحقق في'),
                 textColor: Themes().GetColor("textPrimary"),
                 onPressed: () {
-                  final bookings = ref.read(Booking_riverpod.notifier).bookingsData;
+                  final bookings = ref.read(upcomingBookingProvider.notifier).bookingsData;
                   if (bookings.isEmpty) return;
-                  ref.read(Booking_riverpod.notifier).checkIn(
+                  ref.read(upcomingBookingProvider.notifier).checkIn(
                     context: context,
                     bookingId: bookings[0]['id'] as int,
                   );
+                  bookings.clear();
                 },
                 backgroundColor: Themes().GetColor("primaryS"),
               ),

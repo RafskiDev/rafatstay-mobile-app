@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rafatstay/Utils/TextLanguage.dart';
 import '../../../Service/LoadingService.dart' show LoadingService;
+import '../../../Utils/DateTimeHelper.dart';
 import '../../../Utils/Sizes.dart';
 import '../../../Utils/Them.dart';
 import '../../../Widget/ShowLoading.dart';
@@ -27,8 +28,8 @@ class _CompletedState extends ConsumerState<Completed> {
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
     Future.microtask(() async {
-      ref.read(Booking_riverpod.notifier).resetBookings();
-      await ref.read(Booking_riverpod.notifier).bookings(
+      ref.read(completedBookingProvider.notifier).resetBookings();
+      await ref.read(completedBookingProvider.notifier).bookings(
         context: context,
         status: "completed",
       );
@@ -36,7 +37,7 @@ class _CompletedState extends ConsumerState<Completed> {
   }
 
   void _onScroll() {
-    final notifier = ref.read(Booking_riverpod.notifier);
+    final notifier = ref.read(completedBookingProvider.notifier);
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       if (!notifier.isFetchingMore && notifier.hasMore) {
@@ -54,7 +55,7 @@ class _CompletedState extends ConsumerState<Completed> {
 
   @override
   Widget build(BuildContext context) {
-    final notifier = ref.watch(Booking_riverpod.notifier);
+    final notifier = ref.watch(completedBookingProvider.notifier);
     final bookCompleted = notifier.bookingsData;
 
     if (notifier.isLoading && bookCompleted.isEmpty) {
@@ -66,7 +67,7 @@ class _CompletedState extends ConsumerState<Completed> {
     }
 
     return SizedBox(
-      height: Sizes(context).GetHeight() * 77,
+      height: Sizes(context).GetHeight() * 70,
       child: ListView.builder(
         controller: _scrollController,
         itemCount: bookCompleted.length + (notifier.isFetchingMore ? 1 : 0),
@@ -80,7 +81,7 @@ class _CompletedState extends ConsumerState<Completed> {
           final booking = bookCompleted[index];
           final branch = booking["branch"] ?? {};
           return Padding(
-            padding: EdgeInsets.only(bottom: Sizes(context).GetHeight() * 2),
+            padding: EdgeInsets.only(bottom: Sizes(context).GetHeight() * 1),
             child: BookingCard(
               id: booking["id"],
               mainImage:branch["image"]??"",
@@ -88,10 +89,10 @@ class _CompletedState extends ConsumerState<Completed> {
               price: booking["total_amount"]?.toString() ?? '0',
               paymentMethod: booking["payment_method"]?.toString() ?? '',
               restaurantName: branch["name"] ?? "",
-              restaurantLocation: "${branch["city"] ?? ""} ${branch["address"] ?? ""}".trim(),
+              restaurantLocation:"",//هنا نضع طريقه الدفع ان كان كاش او غيرها
               restaurantLogo: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
               date: booking["booking_date"] ?? "",
-              time:booking["time_remaining"]["formatted_compact"] ?? "",
+              time:booking["display_time"] ?? booking["start_time"],
               booking:booking,
             ),
           );
@@ -224,11 +225,11 @@ class BookingCard extends StatelessWidget {
             children: [
               SvgPicture.asset("assets/icon/SiteData.svg",color:Themes().GetColor("textSecondary"),height:Sizes(context).GetHeight()*1.5,),
               SizedBox(width: Sizes(context).GetWidth()*1),
-              Expanded(child: Text(date,style:TextStyle(color:Themes().GetColor("textSecondary"),fontSize:10))),
+              Expanded(child: Text(DateTimeHelper().formatDateOnly(date),style:TextStyle(color:Themes().GetColor("textSecondary")))),
               SizedBox(width: Sizes(context).GetWidth()*5),
               SvgPicture.asset("assets/icon/time.svg",color:Themes().GetColor("textSecondary")),
               SizedBox(width: Sizes(context).GetWidth()*1),
-              Expanded(child: Text(time,style:TextStyle(color:Themes().GetColor("textSecondary"),fontSize:10))),
+              Expanded(child: Text(time,style:TextStyle(color:Themes().GetColor("textSecondary")))),
             ],
           )
         ],

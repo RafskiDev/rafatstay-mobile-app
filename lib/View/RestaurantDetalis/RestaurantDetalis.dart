@@ -117,7 +117,8 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
         body: Center(child: showLoading()),
       );
     }
-
+    final bool isInterested = notifier.favoriteStatus[widget.branchId] ?? (notifier.branches.isNotEmpty && notifier.branches[0]["is_favorited"] == true);
+    final int interestCount = notifier.branches.isNotEmpty ? (int.tryParse(notifier.branches[0]["interest_count"]?.toString() ?? "0") ?? 0) : 0;
     final textLanguage = TextLanguage();
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
@@ -265,15 +266,20 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                                         color: theme.GetColor("textSecondary"))),
                               ],
                             ),
-                            Row(
-                              children: [
-                                SvgPicture.asset(
-                                  "assets/icon/interest.svg",
-                                  height: sizes.GetHeight() * 2,
-                                ),
-                                SizedBox(width: sizes.GetWidth() * 1),
-                                Text("${textLanguage.GetWord("اهتمام")} ${branches[0]["interest_count"] ?? 0}"),
-                              ],
+                            InkWell(
+                              onTap: () {
+                                notifier.interest(context, widget.branchId);
+                              },
+                              child: Row(
+                                children: [
+                                  SvgPicture.asset(
+                                    "assets/icon/interest.svg",
+                                    height: sizes.GetHeight() * 2,
+                                  ),
+                                  SizedBox(width: sizes.GetWidth() * 1),
+                                  Text("${textLanguage.GetWord("اهتمام")} $interestCount",),
+                                ],
+                              ),
                             ),
                           ],
                         ),
@@ -583,7 +589,7 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                                   sizes: sizes,
                                   theme: theme,
                                   onTap: () {
-                                    if (meal["potsEmpty"] == false) {
+                                    if (meal["potsEmpty"] == true) {
                                       showCustomDialog(context);
                                       return;
                                     }

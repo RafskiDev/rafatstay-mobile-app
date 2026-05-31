@@ -306,7 +306,7 @@ class _HomeState extends ConsumerState<Home> {
                         ],
 
                         // ─── Status ───────────────────────────────────
-                        if (statuses.isNotEmpty && (statuses[0]["sections"]?[statusKey]?["has_content"] ?? false)) ...[
+                        if(statuses.isNotEmpty) ...[
                           SizedBox(height: sizes.GetHeight() * 2),
                           _sectionHeader(
                             title: _getStatusTitle(homes),
@@ -705,7 +705,9 @@ class _HomeState extends ConsumerState<Home> {
   }
 
   String _getStatusTitle(List homes) {
+    if (homes.isEmpty) return "";
     final sections = homes[0]["sections"];
+    if (sections == null) return "";
     if (sections?["restaurants_status"]?["has_content"] ?? false) return TextLanguage().w("حالة المطاعم");
     if (sections?["lounges_status"]?["has_content"] ?? false)     return TextLanguage().w("حالة لاونجات");
     if (sections?["cafes_status"]?["has_content"] ?? false)       return TextLanguage().w("حالة المقاهي");

@@ -2,89 +2,106 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rafatstay/Utils/Sizes.dart';
 import 'package:rafatstay/Utils/Them.dart';
-import 'package:video_player/video_player.dart';
 import 'package:flutter_svg/svg.dart';
-import '../../Service/ApiService.dart';
 import '../../Widget/WidgetButton.dart';
 import 'Story_riverpod.dart';
+import 'Widget/StoryCommentsSheet.dart';
 
 class Story extends ConsumerStatefulWidget {
-  final String image;
-  final String icon;
-  final String text;
-  final List<Map<String, dynamic>> statuses;
+  final Map<String, dynamic> branchData;
 
   const Story({
     super.key,
-    required this.image,
-    required this.icon,
-    required this.text,
-    required this.statuses,
+    required this.branchData,
   });
 
   @override
   ConsumerState<Story> createState() => _StoryState();
 }
 
-class _StoryState extends ConsumerState<Story> {
+class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMixin {
   int currentIndex = 0;
-  VideoPlayerController? _controller;
+  AnimationController? _progressController;
+
+  Map<int, String?> reactions = {};
+  List<Map<String, dynamic>> statuses = [];
+
+  // دالة ذكية لاستخراج الـ branch_id ديناميكياً حسب التصميمين
+  int _getBranchId() {
+    final id = widget.branchData["branch_id"] ?? widget.branchData["id"];
+    return int.tryParse(id?.toString() ?? "0") ?? 0;
+  }
+
+  void _initData() {
+    // قراءة مصفوفة الستوريات الكاملة أو الـ latest_status بناءً على الاستجابة
+    if (widget.branchData["latest_status"] != null) {
+      statuses = [Map<String, dynamic>.from(widget.branchData["latest_status"])];
+    } else {
+      statuses = [];
+    }
+
+    for (final status in statuses) {
+      final id = int.tryParse(status["id"]?.toString() ?? "0") ?? 0;
+      final userReaction = status["reactions"]?["user_reaction"];
+      if (id != 0) {
+        reactions[id] = userReaction?.toString();
+      }
+    }
+  }
 
   @override
   void initState() {
     super.initState();
+    _initData();
+
+    _progressController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 5),
+    );
+
+    // ✅ جلب الـ ID بشكل ديناميكي آمن
+    final int branchId = _getBranchId();
+    final bool isBranchFavorited = widget.branchData["is_favorited"] == true;
+
+    if (branchId != 0) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        // تحديث حالة الـ Riverpod بالحالة الحقيقية
+        ref.read(Story_riverpod.notifier).favoriteStatus[branchId] = isBranchFavorited;
+        ref.read(Story_riverpod.notifier).ref.notifyListeners();
+      });
+    }
+
     _loadCurrent();
   }
 
   void _loadCurrent() {
-    _controller?.dispose();
-    _controller = null;
-   // ref.read(Story_riverpod.notifier).isLiked = false;
-  //  ref.read(Story_riverpod.notifier).isDisliked = false;
-  //  print(widget.statuses);
+    _progressController?.stop();
+    _progressController?.reset();
+    _progressController?.removeStatusListener(_onProgressComplete);
+
     ref.read(Story_riverpod.notifier).startWatching();
-    final item = widget.statuses[currentIndex];
-    final isVideo = item["media_type"] == "video";
 
-    if (isVideo) {
-      final url = "$baseUrl/storage/${item["media_path"]}";
-      _controller = VideoPlayerController.networkUrl(Uri.parse(url))
-        ..initialize().then((_) {
-          if (mounted) {
-            setState(() {});
-            _controller!.play();
-          }
-        });
+    setState(() {});
+    _progressController?.duration = const Duration(seconds: 5);
+    _progressController?.forward();
+    _progressController?.addStatusListener(_onProgressComplete);
+  }
 
-      _controller!.addListener(() {
-        if (!mounted) return;
-        setState(() {});
-        final pos = _controller!.value.position;
-        final dur = _controller!.value.duration;
-        if (dur.inSeconds > 0 && pos >= dur) {
-          _nextStory();
-        }
-      });
-    } else {
-      setState(() {});
-      Future.delayed(const Duration(seconds: 5), () {
-        if (mounted) _nextStory();
-      });
-    }
+  void _onProgressComplete(AnimationStatus status) {
+    if (status == AnimationStatus.completed) _nextStory();
   }
 
   void _nextStory() {
-    final item = widget.statuses[currentIndex];
-    final duration = _controller?.value.duration.inSeconds ?? 5;
+    if (statuses.isEmpty) return;
+    final item = statuses[currentIndex];
 
-    // ─── سجل قبل الانتقال ───
     ref.read(Story_riverpod.notifier).recordView(
       context,
       item["id"],
-      totalDuration: duration,
+      totalDuration: 5,
     );
 
-    if (currentIndex < widget.statuses.length - 1) {
+    if (currentIndex < statuses.length - 1) {
       setState(() => currentIndex++);
       _loadCurrent();
     } else {
@@ -101,82 +118,104 @@ class _StoryState extends ConsumerState<Story> {
 
   @override
   void dispose() {
-    _controller?.dispose();
+    _progressController?.dispose();
     super.dispose();
-  }
-
-  double get progress {
-    if (_controller == null || !_controller!.value.isInitialized) return 0;
-    final dur = _controller!.value.duration.inMilliseconds;
-    if (dur == 0) return 0;
-    return _controller!.value.position.inMilliseconds / dur;
   }
 
   @override
   Widget build(BuildContext context) {
-    final item = widget.statuses[currentIndex];
-    final isVideo = item["media_type"] == "video";
-    final mediaUrl = "https://yourdomain.com/storage/${item["media_path"]}";
-    final caption = item["caption"] ?? "";
+    ref.watch(Story_riverpod);
+    if (statuses.isEmpty) {
+      return const Scaffold(
+        backgroundColor: Colors.black,
+        body: Center(child: Text("لا توجد ستوريات متوفرة", style: TextStyle(color: Colors.white))),
+      );
+    }
 
+    final item = statuses[currentIndex];
+    final mediaUrl = item["media_url"] ?? "";
+    final int statusId = int.tryParse(item["id"]?.toString() ?? "0") ?? 0;
+
+    // ✅ جلب الـ branch_id بشكل ديناميكي آمن
+    final int branchId = _getBranchId();
+    final String businessName = widget.branchData["business_name"] ?? widget.branchData["name"] ?? "";
+    final String? logoUrl = widget.branchData["logo_url"];
+    final String timeAgo = widget.branchData["updated_ago"] ?? item["time_ago"] ?? "";
+    final bool isFavorited = ref.read(Story_riverpod.notifier).favoriteStatus[branchId] ?? false;
+    // احسب القيم
+    final int likesCountVal = ref.read(Story_riverpod.notifier).likesCount[statusId]
+        ?? int.tryParse(item["reactions"]?["total_count"]?.toString() ?? "0") ?? 0;
+
+    final int dislikesCountVal = ref.read(Story_riverpod.notifier).dislikesCount[statusId]
+        ?? int.tryParse(item["reactions"]?["dislikes_count"]?.toString() ?? "0") ?? 0;
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // ─── الميديا (فيديو أو صورة) ───
+          // 1. الصورة أو الخلفية للستوري
           SizedBox.expand(
-            child: isVideo
-                ? (_controller != null && _controller!.value.isInitialized
-                ? FittedBox(
-              fit: BoxFit.cover,
-              child: SizedBox(
-                width: _controller!.value.size.width,
-                height: _controller!.value.size.height,
-                child: VideoPlayer(_controller!),
-              ),
-            )
-                : const Center(
-              child: CircularProgressIndicator(color: Colors.white),
-            ))
-                : Image.network(
+            child: mediaUrl.isNotEmpty
+                ? Image.network(
               mediaUrl,
               fit: BoxFit.cover,
-              errorBuilder: (_, __, ___) => Image.asset(
-                widget.image,
-                fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                color: Colors.grey[900],
+                child: const Icon(Icons.image_not_supported, color: Colors.white, size: 50),
               ),
+            )
+                : Container(color: Colors.grey[900]),
+          ),
+
+          // 2. مناطق التنقل (يمين ويسار الشاشة للتنقل)
+          Positioned.fill(
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: _prevStory,
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onTap: _nextStory,
+                  ),
+                ),
+              ],
             ),
           ),
 
-          // ─── مؤشرات الستوريات (أعلى) ───
+          // 3. خطوط مؤشرات تقدم الستوريات العلوية (Progress Indicators)
           Positioned(
-            top: Sizes(context).GetHeight() * 5,
+            bottom: Sizes(context).GetHeight() * 5,
             left: Sizes(context).GetWidth() * 2,
             right: Sizes(context).GetWidth() * 2,
             child: Row(
-              children: List.generate(widget.statuses.length, (i) {
+              children: List.generate(statuses.length, (i) {
                 return Expanded(
                   child: Container(
                     margin: const EdgeInsets.symmetric(horizontal: 2),
                     height: Sizes(context).GetHeight() * 0.6,
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(10),
-                      color: i < currentIndex
-                          ? Themes().GetColor("primary")
-                          : i == currentIndex
-                          ? Themes().GetColor("primary").withOpacity(0.6)
-                          : const Color(0xFFD3E9F8),
+                      color: i < currentIndex ? Themes().GetColor("primary") : const Color(0xFFD3E9F8),
                     ),
-                    child: i == currentIndex && isVideo
-                        ? FractionallySizedBox(
-                      alignment: Alignment.centerLeft,
-                      widthFactor: progress,
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Themes().GetColor("primary"),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
+                    child: i == currentIndex
+                        ? AnimatedBuilder(
+                      animation: _progressController!,
+                      builder: (context, _) {
+                        return FractionallySizedBox(
+                          alignment: Alignment.centerLeft,
+                          widthFactor: _progressController?.value ?? 0.0,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: Themes().GetColor("primary"),
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
+                        );
+                      },
                     )
                         : null,
                   ),
@@ -185,10 +224,10 @@ class _StoryState extends ConsumerState<Story> {
             ),
           ),
 
-          // ─── زر الرجوع ───
+          // 4. زر الرجوع والإغلاق
           Positioned(
             right: Sizes(context).GetWidth() * 5,
-            top: Sizes(context).GetHeight() * 7,
+            top: Sizes(context).GetHeight() * 8,
             child: CircularButton(
               size: Sizes(context).GetHeight() * 5,
               backgroundColor: Themes().GetColor("backgroundOffWhite"),
@@ -203,105 +242,181 @@ class _StoryState extends ConsumerState<Story> {
             ),
           ),
 
-          // ─── اسم الفرع + الوقت ───
+          // 5. اسم الفرع + شعار اللوجو ووقت النشر العلوي
           Positioned(
-            right: Sizes(context).GetWidth() * 5,
-            top: Sizes(context).GetHeight() * 14,
+            left: Sizes(context).GetWidth() * 5,
+            top: Sizes(context).GetHeight() * 8,
             child: Container(
               decoration: BoxDecoration(
                 color: Themes().GetColor("backgroundOffWhite"),
                 borderRadius: BorderRadius.circular(25),
               ),
               child: Padding(
-                padding: EdgeInsets.fromLTRB(Sizes(context).GetWidth() * 1, 0, Sizes(context).GetWidth() * 2, 0),
+                padding: EdgeInsets.symmetric(
+                  horizontal: Sizes(context).GetWidth() * 2,
+                  vertical: Sizes(context).GetHeight() * 0.5,
+                ),
                 child: Row(
                   children: [
-                    CircularButton(
-                      size: Sizes(context).GetHeight() * 5,
+                    CircleAvatar(
+                      radius: Sizes(context).GetHeight() * 2,
                       backgroundColor: Themes().GetColor("secondaryPrimary"),
-                      borderColor: Themes().GetColor("secondaryPrimary"),
-                      onTap: () {},
-                      child: Center(
-                        child: Image.asset(
-                          widget.icon,
-                          height: Sizes(context).GetHeight() * 4,
-                        ),
-                      ),
+                      backgroundImage: (logoUrl != null && logoUrl.isNotEmpty) ? NetworkImage(logoUrl) : null,
+                      child: (logoUrl == null || logoUrl.isEmpty) ? const Icon(Icons.store, color: Colors.white, size: 16) : null,
                     ),
-                    SizedBox(width: Sizes(context).GetWidth() * 1),
-                    Text("15 minutes ago.", style: const TextStyle(fontSize: 9)),
-                    Text(widget.text),
+                    SizedBox(width: Sizes(context).GetWidth() * 2),
+                    Text(
+                      businessName,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                    ),
+                    SizedBox(width: Sizes(context).GetWidth() * 1.5),
+                    Text(
+                      timeAgo,
+                      style: const TextStyle(fontSize: 10, color: Colors.grey),
+                    ),
                   ],
                 ),
               ),
             ),
           ),
 
-          // ─── كابشن ───
-          if (caption.isNotEmpty)
-            Positioned(
-              bottom: Sizes(context).GetHeight() * 8,
-              left: Sizes(context).GetWidth() * 5,
-              right: Sizes(context).GetWidth() * 5,
-              child: Text(
-                caption,
-                style: const TextStyle(color: Colors.white, fontSize: 14),
-                textAlign: TextAlign.center,
-              ),
-            ),
-
-          // ─── زر اللايك ───
+          // 6. عمود الأزرار الجانبية (المفضلة واللايك والديسلايك)
           Positioned(
-            left: Sizes(context).GetWidth() * 5,
-            top: Sizes(context).GetHeight() * 45,
-            child: CircularButton(
-              size: Sizes(context).GetHeight() * 5,
-              backgroundColor: Themes().GetColor("backgroundOffWhite"),
-              borderColor: Themes().GetColor("backgroundOffWhite"),
-              onTap: () {
-                final item = widget.statuses[currentIndex];
-                ref.read(Story_riverpod.notifier).toggleReaction(context, item["id"], "like");
-              },
-              child: Center(
-                child: SvgPicture.asset(
-                  "assets/icon/likes.svg",
-                  height: Sizes(context).GetHeight() * 3,
+            left: Sizes(context).GetWidth() * 3,
+            top: Sizes(context).GetHeight() * 50,
+            child: Column(
+              children: [
+                // ✅ زر المفضلة التفاعلي الذي يتعامل بديناميكية تامة الآن
+                CircularButton(
+                  size: Sizes(context).GetHeight() * 5,
+                  backgroundColor: isFavorited ? Themes().GetColor("primary") : Themes().GetColor("backgroundOffWhite"),
+                  borderColor: Themes().GetColor("backgroundOffWhite"),
+                  onTap: () {
+                    ref.read(Story_riverpod.notifier).toggleFavorite(context, branchId);
+                  },
+                  child: SvgPicture.asset("assets/icon/Interested.svg"),
                 ),
-              ),
+                SizedBox(height: Sizes(context).GetHeight() * 2),
+
+                // زر الـ Likes
+                _statChip(
+                  icon: "assets/icon/likes.svg",
+                  value: item["reactions"]?["total_count"]?.toString() ?? "0",
+                  isActive: reactions[statusId] == "like",
+                  onTap: () {
+                    setState(() {
+                      reactions[statusId] = reactions[statusId] == "like" ? null : "like";
+                    });
+                    ref.read(Story_riverpod.notifier).toggleReaction(
+                      context,
+                      statusId,
+                      "like",
+                      reactions[statusId] == "like", // الحالة قبل التغيير — لازم تحسبها قبل setState
+                      likesCountVal,
+                    );
+                  },
+                  context: context,
+                ),
+                SizedBox(height: Sizes(context).GetHeight() * 1),
+
+                // زر الـ Dislikes
+                _statChip(
+                  icon: "assets/icon/dislike.svg",
+                  value: item["reactions"]?["dislikes_count"]?.toString() ?? "0",
+                  isActive: reactions[statusId] == "dislike",
+                  onTap: () {
+                    final bool wasLiked = reactions[statusId] == "like";
+                    final bool wasDisliked = reactions[statusId] == "dislike";
+
+                    setState(() {
+                      reactions[statusId] = wasLiked ? null : "like";
+                      // إذا كان dislike وحول لـ like، اطرح من الـ dislikes
+                      if (wasDisliked) {
+                        ref.read(Story_riverpod.notifier).dislikesCount[statusId] =
+                            (dislikesCountVal - 1).clamp(0, 999);
+                      }
+                    });
+
+                    ref.read(Story_riverpod.notifier).toggleReaction(
+                      context, statusId, "like", wasLiked, likesCountVal,
+                    );
+                  },
+                  context: context,
+                ),
+              ],
             ),
           ),
-
-          // ─── زر الدسلايك ───
           Positioned(
-            left: Sizes(context).GetWidth() * 5,
-            top: Sizes(context).GetHeight() * 52,
-            child: CircularButton(
-              size: Sizes(context).GetHeight() * 5,
-              backgroundColor: Themes().GetColor("backgroundOffWhite"),
-              borderColor: Themes().GetColor("backgroundOffWhite"),
-              onTap: () {
-                final item = widget.statuses[currentIndex];
-                ref.read(Story_riverpod.notifier).toggleReaction(context, item["id"], "dislike");
-              },
-              child: Center(
-                child: SvgPicture.asset(
-                  "assets/icon/dislike.svg",
-                  color:Themes().GetColor("textPrimary"),
-                  height: Sizes(context).GetHeight() * 3,
-                ),
+            left: Sizes(context).GetWidth() * 3,
+            top: Sizes(context).GetHeight() * 75,
+            child: GestureDetector(
+              onTap: () => showStoryComments(context, item["id"]),
+              child: Column(
+                children: [
+                  CircularButton(
+                    size: Sizes(context).GetHeight() * 5,
+                    backgroundColor: Themes().GetColor("backgroundOffWhite"),
+                    borderColor: Themes().GetColor("backgroundOffWhite"),
+                    onTap: () => showStoryComments(context, item["id"]),
+                    child: SvgPicture.asset("assets/icon/Comment.svg"),
+                  ),
+                  SizedBox(height: Sizes(context).GetHeight() * 0.5),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: Sizes(context).GetWidth() * 2,
+                      vertical: Sizes(context).GetHeight() * 0.3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Themes().GetColor("backgroundOffWhite"),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      item["comments_count"]?.toString() ?? "0",
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                  ),
+                ],
               ),
             ),
-          ),
-
-          // ─── التنقل (ضغط يمين/يسار) ───
-          Row(
-            children: [
-              Expanded(child: GestureDetector(onTap: _prevStory)),
-              Expanded(child: GestureDetector(onTap: _nextStory)),
-            ],
           ),
         ],
       ),
+    );
+  }
+
+  Widget _statChip({
+    required String icon,
+    required String value,
+    required VoidCallback onTap,
+    required BuildContext context,
+    bool isActive = false,
+  }) {
+    return Column(
+      children: [
+        CircularButton(
+          size: Sizes(context).GetHeight() * 5,
+          backgroundColor: isActive ? Themes().GetColor("primary") : Themes().GetColor("backgroundOffWhite"),
+          borderColor: Themes().GetColor("backgroundOffWhite"),
+          onTap: onTap,
+          child: SvgPicture.asset(
+            icon,
+            height: Sizes(context).GetHeight() * 3,
+            color: isActive ? Colors.white : null,
+          ),
+        ),
+        SizedBox(height: Sizes(context).GetHeight() * 0.5),
+        Container(
+          padding: EdgeInsets.symmetric(
+            horizontal: Sizes(context).GetWidth() * 2,
+            vertical: Sizes(context).GetHeight() * 0.3,
+          ),
+          decoration: BoxDecoration(
+            color: Themes().GetColor("backgroundOffWhite"),
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Text(value, style: const TextStyle(fontSize: 11)),
+        ),
+      ],
     );
   }
 }

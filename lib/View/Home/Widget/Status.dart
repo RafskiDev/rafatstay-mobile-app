@@ -25,33 +25,28 @@ class Status extends ConsumerWidget {
         itemCount: statusItems.length,
         itemBuilder: (context, index) {
           final item = statusItems[index];
-          final String name = (item["name"] ?? "").toString();
-          final String logo = (item["logo"] ?? "").toString();
-          final latestStatus = item["latest_status"];
-          final String mediaUrl = (latestStatus?["media_url"] ?? "").toString();
-
+          final String business_name = (item["business_name"] ?? "").toString();
+          final String logo = (item["logo_url"] ?? "").toString();
           return CategoryItemCard(
-            imagePath: "assets/images/A_Tazaj.png",
+            imagePath:logo,
             width: sizes.GetWidth() * 19,
             height: sizes.GetHeight() * 11,
             nameImagePath: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
             circularNameImage: true,
-            name: name,
+            name: business_name,
             paddings: 1,
             onTap: () {
               Navigator.push(
                 context,
                 PageRouteBuilder(
                   pageBuilder: (context, animation1, animation2) => Story(
-                    image: 'assets/images/A_Tazaj.png',
-                    icon: 'assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png',
-                    text: name,
-                    statuses: List<Map<String, dynamic>>.from(item["active_statuses"] ?? []),
+                    branchData: item, // 👈 نمرر الماب بالكامل فقط هنا
                   ),
                   transitionDuration: Duration.zero,
                   reverseTransitionDuration: Duration.zero,
                 ),
               );
+              print(item);
             },
           );
         },

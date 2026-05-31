@@ -17,6 +17,15 @@ Future<String?> get token async {
   final storage = GetStorage();
   return storage.read("token");
 }
+const Set<String> _guestAllowedEndpoints = {
+  'v1/auth/logout',
+  'v1/auth/login',
+  'v1/auth/register',
+  'v1/auth/social-login'
+};
+bool _requiresAuth(String endpoint) {
+  return !_guestAllowedEndpoints.contains(endpoint);
+}
 bool isGuest() {
   final user = box.read("user");
   final email = user?["email"]?.toString() ?? "";
@@ -82,7 +91,7 @@ class ApiService {
       Map<String, dynamic>? data,
       BuildContext context) async {
     final url = Uri.parse('$baseUrl$endpoint');
-    if("auth/logout"!=endpoint){
+    if (_requiresAuth(endpoint)) {
       if (!_checkNotGuest(context)) return {"success": false};
     }
     final headers = <String, String>{
@@ -110,7 +119,9 @@ class ApiService {
       Map<String, dynamic> data,
       BuildContext context,
       ) async {
-    if (!_checkNotGuest(context)) return {"success": false};
+    if (_requiresAuth(endpoint)) {
+      if (!_checkNotGuest(context)) return {"success": false};
+    }
     final url = Uri.parse('$baseUrl$endpoint');
     final myToken = await token;
     try {
@@ -140,7 +151,9 @@ class ApiService {
 
 
   Future<Map<String, dynamic>> delete(String endpoint, BuildContext context, Map<String, dynamic>? data) async {
-    if (!_checkNotGuest(context)) return {"success": false};
+    if (_requiresAuth(endpoint)) {
+      if (!_checkNotGuest(context)) return {"success": false};
+    }
     final url = Uri.parse('$baseUrl$endpoint');
     final headers = <String, String>{
       "Accept": "application/json",
@@ -163,7 +176,9 @@ class ApiService {
     }
   }
   Future<Map<String, dynamic>> patch(String endpoint, Map<String, dynamic>? data, BuildContext context) async {
-    if (!_checkNotGuest(context)) return {"success": false};
+    if (_requiresAuth(endpoint)) {
+      if (!_checkNotGuest(context)) return {"success": false};
+    }
     final url = Uri.parse('$baseUrl$endpoint');
 
     final headers = <String, String>{
@@ -193,7 +208,9 @@ class ApiService {
         required String fileField,
         required BuildContext context,
       }) async {
-    if (!_checkNotGuest(context)) return {"success": false};
+    if (_requiresAuth(endpoint)) {
+      if (!_checkNotGuest(context)) return {"success": false};
+    }
     final url = Uri.parse('$baseUrl$endpoint');
     final myToken = await token;
 
@@ -231,7 +248,9 @@ class ApiService {
         Map<String, String>? fields, // ← أضف هذا
         String? mimeType,
       }) async {
-    if (!_checkNotGuest(context)) return {"success": false};
+    if (_requiresAuth(endpoint)) {
+      if (!_checkNotGuest(context)) return {"success": false};
+    }
     final url = Uri.parse('$baseUrl$endpoint');
     final myToken = await token;
 

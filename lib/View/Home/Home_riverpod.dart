@@ -206,7 +206,7 @@ class PageNotifier extends Notifier<int> {
 
     // ─── Dish of the Day ──────────────────────────────────────────────────
     final dishResponse = await ApiService().get(
-      "v1/${_getDishOfDayPath()}", {"per_page": "20"}, context,
+      "v1/${_getDishOfDayPath()}", {"per_page": "4"}, context,
     );
     if (dishResponse != null && dishResponse['data'] != null) {
       final data = dishResponse['data'];
@@ -222,7 +222,7 @@ class PageNotifier extends Notifier<int> {
     // ─── Events (مطاعم فقط) ───────────────────────────────────────────────
     if (selectedIndex == 0) {
       final eventResponse = await ApiService().get(
-        "v1/${_getEventsPath()}?per_page=20", {}, context,
+        "v1/${_getEventsPath()}?per_page=4", {}, context,
       );
       if (eventResponse != null && eventResponse['data']?['items'] is List) {
         for (var item in eventResponse['data']['items']) {

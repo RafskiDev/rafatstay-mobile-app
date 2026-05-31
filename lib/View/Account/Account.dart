@@ -32,7 +32,7 @@ class Account extends ConsumerWidget {
      final avatarUrl = avatarPath != null
          ? "$showImage$avatarPath"
          : null;
-    // print(avatarUrl);
+     print(avatarUrl);
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
       appBar:buildCustomAppBar(showBackButton:false,context,""),
@@ -52,8 +52,9 @@ class Account extends ConsumerWidget {
                         Positioned.fill(
                           child: avatarUrl != null
                               ? Image.network(
-                            avatarUrl,
+                            avatarUrl.toString(),
                             fit: BoxFit.cover,
+
                             errorBuilder: (context, error, stackTrace) => Image.asset(
                               "assets/images/38a2a034cbe4ac063cad704f0bc1eb89da98ec7f.png",
                               fit: BoxFit.cover,

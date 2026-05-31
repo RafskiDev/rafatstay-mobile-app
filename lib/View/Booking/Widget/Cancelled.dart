@@ -31,9 +31,9 @@ class _CancelledState extends ConsumerState<Cancelled> {
 
     Future.microtask(() async {
 
-      ref.read(Booking_riverpod.notifier).resetBookings();
+      ref.read(cancelledBookingProvider.notifier).resetBookings();
 
-      await ref.read(Booking_riverpod.notifier).bookings(
+      await ref.read(cancelledBookingProvider.notifier).bookings(
         context: context,
         status: "cancelled",
       );
@@ -41,7 +41,7 @@ class _CancelledState extends ConsumerState<Cancelled> {
   }
 
   void _onScroll() {
-    final notifier = ref.read(Booking_riverpod.notifier);
+    final notifier = ref.read(cancelledBookingProvider.notifier);
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - 200) {
       if (!notifier.isFetchingMore && notifier.hasMore) {
@@ -59,8 +59,9 @@ class _CancelledState extends ConsumerState<Cancelled> {
 
   @override
   Widget build(BuildContext context) {
-    final notifier = ref.watch(Booking_riverpod.notifier);
+    final notifier = ref.watch(cancelledBookingProvider.notifier);
     final bookCancelled = notifier.bookingsData;
+
 
     // ✅ loading أول تحميل فقط
     if (notifier.isLoading && bookCancelled.isEmpty) {
@@ -92,10 +93,10 @@ class _CancelledState extends ConsumerState<Cancelled> {
               bookingNumber: booking["id"]?.toString() ?? "",
               paymentMethod: '',
               restaurantName: booking["business"]?["name"] ?? "",
-              restaurantLocation: "${booking["branch"]?["city"] ?? ""} ${booking["branch"]?["address"] ?? ""}".trim(),
+              restaurantLocation: "",//نضع هنا نوع الدفع ان كان كاش او لا اي بوابه دفع
               restaurantLogo: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
               date: booking["booking_date"] ?? "",
-              time: booking["start_time"] ?? "dd",
+              time:booking["display_time"] ?? booking["start_time"],
             ),
           );
         },

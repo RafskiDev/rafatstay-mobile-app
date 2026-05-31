@@ -154,10 +154,11 @@ class PageNotifier extends Notifier<int> {
       }
       // print(bookingsData[0]);
       if (pagination != null) {
-        final lastPage = pagination['last_page'] ?? 1;
-        hasMore = currentPage < lastPage;
+        final current = pagination['current_page'] ?? currentPage;
+        final last = pagination['last_page'] ?? currentPage;
+        hasMore = current < last;
       } else {
-        hasMore = list.length >= 5;
+        hasMore = false;
       }
 
       currentPage++;
@@ -293,8 +294,12 @@ class PageNotifier extends Notifier<int> {
       );
     }
   }
-
 }
+
 final Booking_riverpod = NotifierProvider<PageNotifier, int>(PageNotifier.new);
+final upcomingBookingProvider = NotifierProvider<PageNotifier, int>(PageNotifier.new);
+final onsiteBookingProvider = NotifierProvider<PageNotifier, int>(PageNotifier.new);
+final completedBookingProvider = NotifierProvider<PageNotifier, int>(PageNotifier.new);
+final cancelledBookingProvider = NotifierProvider<PageNotifier, int>(PageNotifier.new);
 
 

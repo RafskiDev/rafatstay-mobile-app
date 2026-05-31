@@ -2,6 +2,8 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import '../Utils/Sizes.dart';
 import '../Utils/Them.dart';
+import 'ShowLoading.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 class CategoryItemCard extends StatelessWidget {
   final String imagePath;       // الصورة الرئيسية
   final double width;           // عرض الحاوية
@@ -32,13 +34,29 @@ class CategoryItemCard extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Container(
-              width: width,
-              height: height,
-              child: CircleAvatar(
-                backgroundImage: AssetImage(imagePath),
-              )
+        CircleAvatar(
+        radius: width / 2,
+        backgroundColor: const Color(0xFFEEEEEE),
+        child: ClipOval(
+          child: CachedNetworkImage(
+            width: width,
+            height: width, // لازم متساوي
+            imageUrl: imagePath,
+            fit: BoxFit.cover,
+            placeholder: (context, url) => Center(child: showLoading()),
+            errorListener: (dynamic exception) {},
+            errorWidget: (context, url, error) {
+              return Container(
+                width: width,
+                height: width,
+                color: const Color(0xFFEEEEEE),
+                child: const Icon(Icons.image_not_supported, size: 30, color: Colors.grey),
+              );
+            },
           ),
+        ),
+      ),
+          SizedBox(height:Sizes(context).GetHeight()*0.5,),
           if (name != null) ...[
             Container(
               padding: EdgeInsets.symmetric(horizontal:sizes.GetWidth()*0.5),

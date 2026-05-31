@@ -180,10 +180,17 @@ class Payment extends ConsumerWidget {
                                 paymentMethod: "cash",
                               );
                               if (success) {
-                                final id = restaurantDetails!["id"];
+                                final id = restaurantDetails?["id"];
+
                                 final restaurantDetalis = ref.read(RestaurantDetalis_riverpod.notifier);
-                                final branch = restaurantDetalis.branches[0];
-                                if(branch['latitude']!=null && branch['longitude']!=null) {
+
+                                if (restaurantDetalis.branches.isEmpty) return;
+
+                                final branch = restaurantDetalis.branches.first;
+
+                                final lat = branch['latitude'];
+                                final lng = branch['longitude'];
+                                if(lat!=null && lng!=null) {
                                   Navigator.push(
                                     context,
                                     PageRouteBuilder(

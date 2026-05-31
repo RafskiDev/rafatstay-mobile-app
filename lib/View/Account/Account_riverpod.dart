@@ -85,4 +85,5 @@ class PageNotifier extends Notifier<int> {
     }
   }
 }
+
 final Account_riverpod = NotifierProvider<PageNotifier, int>(PageNotifier.new);

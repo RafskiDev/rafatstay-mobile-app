@@ -284,7 +284,6 @@ class PageNotifier extends Notifier<int> {
       }) async {
     if (!ref.mounted) return;
 
-    // إذا كان في بحث نشط ولا نريد جلب بيانات عادية أثناء البحث
     if (isSearching && !loadMore) return;
 
     if (loadMore) {
@@ -295,7 +294,7 @@ class PageNotifier extends Notifier<int> {
       hasMore = true;
       isLoading = true;
       _clearSection(section);
-      resetSearch(); // إعادة تعيين البحث عند جلب قسم جديد
+      resetSearch();
     }
 
     currentSection = section;
@@ -306,24 +305,27 @@ class PageNotifier extends Notifier<int> {
 
     final endpoint = _buildEndpoint(section, key ?? "", filter);
 
-    final response = await ApiService().get(
-      endpoint,
-      {
-        "per_page": "$_perPage",
-        "page": "$currentPage",
-      },
-      context,
-    );
+    final Map<String, String> params = {
+      "per_page": "$_perPage",
+      "page": "$currentPage",
+    };
+
+    if (section == RestaurantSection.status) {
+      params["category_slug"] = (key ?? "").replaceAll("/", "");
+    }
+
+    final response = await ApiService().get(endpoint, params, context);
 
     if (!ref.mounted) return;
     if (response != null && response['data'] != null) {
       final data = response['data'];
-      final items = data['items'];
-      final list = items is List
-          ? List<Map<String, dynamic>>.from(items)
+
+      final rawItems = section == RestaurantSection.status ? data : data['items'];
+      final list = rawItems is List
+          ? List<Map<String, dynamic>>.from(rawItems)
           : <Map<String, dynamic>>[];
 
-      final pagination = data['pagination'];
+      final pagination = section == RestaurantSection.status ? null : data['pagination'];
       if (pagination != null) {
         final int lastPage = pagination['last_page'] ?? 1;
         hasMore = currentPage < lastPage;
@@ -332,25 +334,21 @@ class PageNotifier extends Notifier<int> {
       }
 
       _appendToSection(section, list, loadMore);
+
       if (section == RestaurantSection.favorites) {
-        // في المفضلة — استخرج من البيانات
         for (final favorite in list) {
           final item = favorite['item'];
-          final id = item?['id'];
+          final id = int.tryParse(item?['id']?.toString() ?? "0") ?? 0;
           final type = favorite['type'] ?? 'menu_item';
-
-          if (id != null) {
-            checkFavoriteStatus(id, context, type: type);
-          }
+          if (id != 0) checkFavoriteStatus(id, context, type: type);
         }
-      } else if(section != RestaurantSection.events && section != RestaurantSection.status && section != RestaurantSection.offers) {
-        // باقي الأقسام — استخدم النوع الافتراضي
+      } else if (section != RestaurantSection.events &&
+          section != RestaurantSection.status &&
+          section != RestaurantSection.offers) {
         final itemType = _getItemType(section);
         for (final item in list) {
-          final id = item['id'];
-          if (id != null) {
-            checkFavoriteStatus(id, context, type: itemType);
-          }
+          final id = int.tryParse(item['id']?.toString() ?? "0") ?? 0;
+          if (id != 0) checkFavoriteStatus(id, context, type: itemType);
         }
       }
 
@@ -361,7 +359,6 @@ class PageNotifier extends Notifier<int> {
 
     isLoading = false;
     isFetchingMore = false;
-
 
     if (!ref.mounted) return;
     state++;
@@ -525,7 +522,7 @@ class PageNotifier extends Notifier<int> {
       case RestaurantSection.offers:
         return "v1/${base}offers";
       case RestaurantSection.status:
-        return "v1/$base";
+        return "v1/$roles/statuses";
       case RestaurantSection.favorites:
         return "v1/$roles/favorites";
       case RestaurantSection.topPicks:

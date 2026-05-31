@@ -14,6 +14,7 @@ import '../../Widget/WidgetAppBar.dart';
 import '../../Widget/WidgetTextField.dart';
 import '../OffersDetails/OffersDetails.dart';
 import '../RestaurantDetalis/RestaurantDetalis.dart';
+import '../Story/Story.dart';
 import 'SeeAll_riverpod.dart';
 
 class SeeAll extends ConsumerStatefulWidget {
@@ -88,7 +89,6 @@ class _SeeAllState extends ConsumerState<SeeAll> {
     final sizes = Sizes(context);
     final notifier = ref.watch(SeeAll_riverpod.notifier);
     ref.watch(SeeAll_riverpod);
-
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final notifier = ref.read(SeeAll_riverpod.notifier);
       if (notifier.filtersList.isEmpty && widget.filters.isNotEmpty) {
@@ -177,6 +177,7 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                   },
                 ),
               ) : const SizedBox(),
+
               if (widget.filters.isNotEmpty)
                 SizedBox(height: sizes.GetHeight() * 2),
               Expanded(
@@ -498,6 +499,54 @@ class _SeeAllState extends ConsumerState<SeeAll> {
               ),
             ),
             // ✅ مؤشر تحميل نظيف في السنتر تماماً
+            if (isLoaderVisible)
+              SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: Center(child: showLoading()),
+                ),
+              ),
+            SizedBox(height: sizes.GetHeight() * 3),
+          ],
+        );
+    // ─── Status ───────────────────────────────────
+      case RestaurantSection.status:
+        return Column(
+          children: [
+            Expanded(
+              child: GridView.builder(
+                controller: _scrollController,
+                padding: EdgeInsets.all(sizes.GetWidth() * 2),
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  mainAxisExtent: sizes.GetHeight() * 18,
+                  crossAxisSpacing: sizes.GetWidth() * 2,
+                  mainAxisSpacing: sizes.GetHeight() * 1,
+                ),
+                itemCount: currentList.length,
+                itemBuilder: (context, index) {
+                  final item = currentList[index];
+                  return CategoryItemCard(
+                    imagePath: item["latest_status"]?["media_url"] ?? "",
+                    width: sizes.GetWidth() * 25,
+                    height: sizes.GetWidth() * 25,
+                    name: item["name"] ?? "",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        PageRouteBuilder(
+                          pageBuilder: (context, animation1, animation2) => Story(
+                            branchData: item, // 👈 نمرر الماب بالكامل فقط هنا
+                          ),
+                          transitionDuration: Duration.zero,
+                          reverseTransitionDuration: Duration.zero,
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
             if (isLoaderVisible)
               SafeArea(
                 child: Padding(

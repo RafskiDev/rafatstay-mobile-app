@@ -263,6 +263,9 @@ class PageNotifier extends Notifier<int> {
         response['data'] != null) {
 
       branches = [response['data']];
+      if (branchId != null) {
+        favoriteStatus[branchId] = response['data']['is_favorited'] == true;
+      }
     } else {
       branches = [];
     }
@@ -397,7 +400,60 @@ class PageNotifier extends Notifier<int> {
     menus(context, branchId);
   }
 
+  Map<int, bool> favoriteStatus = {};
 
+// ✅ دالة التفاعل لعمل Interest / Uninterest وتحديث العداد ديناميكياً
+  Future<void> interest(BuildContext context, int branchId) async {
+    ApiService api = ApiService();
+
+    // جلب الحالة الحالية أو الافتراضية
+    final bool isCurrentlyInterested = favoriteStatus[branchId] ?? (branches.isNotEmpty && branches[0]["is_favorited"] == true);
+
+    // عكس الحالة محلياً فوراً
+    favoriteStatus[branchId] = !isCurrentlyInterested;
+
+    // ✅ [الحل]: تحويل الـ ID الخاص بالسيرفر إلى Int لضمان المطابقة دائماً (سواء رجع String أو Int)
+    if (branches.isNotEmpty) {
+      final int currentBranchId = int.tryParse(branches[0]["id"]?.toString() ?? "0") ?? 0;
+
+      if (currentBranchId == branchId) {
+        int currentCount = int.tryParse(branches[0]["interest_count"]?.toString() ?? "0") ?? 0;
+
+        if (favoriteStatus[branchId] == true) {
+          branches[0]["interest_count"] = currentCount + 1;
+        } else {
+          branches[0]["interest_count"] = currentCount > 0 ? currentCount - 1 : 0;
+        }
+      }
+    }
+
+    ref.notifyListeners();
+
+    // إرسال الطلب الفعلي للسيرفر بناءً على توثيق عقد v1/guest/favorites/toggle
+    final res = await api.post(
+      "v1/guest/favorites/toggle",
+      {
+        "item_id": branchId.toString(),
+        "type": "branch", // الاهتمام بالفروع يرسل كـ branch
+      },
+      context,
+    );
+
+    // إذا فشل الطلب لأي سبب، نعيد الحالة الأصلية حماية للبيانات
+    if (res == null || res["success"] != true) {
+      favoriteStatus[branchId] = isCurrentlyInterested;
+      // إعادة العداد الأصلي
+      if (branches.isNotEmpty && branches[0]["id"] == branchId) {
+        int currentCount = int.tryParse(branches[0]["interest_count"]?.toString() ?? "0") ?? 0;
+        if (isCurrentlyInterested) {
+          branches[0]["interest_count"] = currentCount + 1;
+        } else {
+          branches[0]["interest_count"] = currentCount > 0 ? currentCount - 1 : 0;
+        }
+      }
+      ref.notifyListeners();
+    }
+  }
 }
 
 final RestaurantDetalis_riverpod = NotifierProvider<PageNotifier, int>(PageNotifier.new);

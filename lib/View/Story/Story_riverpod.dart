@@ -40,28 +40,76 @@ class PageNotifier extends Notifier<int> {
     );
    ref.notifyListeners();
   }
+  final Map<int, bool> favoriteStatus = {};
+  final Map<int, int> likesCount = {};
+  final Map<int, int> dislikesCount = {};
+  Future<void> toggleReaction(BuildContext context, int statusId, String type, bool isCurrentlyActive, int currentCount) async {
+    if (type == "like") {
+      likesCount[statusId] = isCurrentlyActive ? currentCount - 1 : currentCount + 1;
+    } else {
+      dislikesCount[statusId] = isCurrentlyActive ? currentCount - 1 : currentCount + 1;
+    }
+    state++;
+    ref.notifyListeners();
 
-  bool isLiked = false;
-  bool isDisliked = false;
-
-  Future<void> toggleReaction(BuildContext context, int statusId, String type) async {
-    await ApiService().post(
+    final res = await ApiService().post(
       "v1/guest/statuses/$statusId/react",
       {"reaction_type": type},
       context,
     );
-
-    if (type == "like") {
-      isLiked = !isLiked;
-      if (isLiked) isDisliked = false;
-    } else {
-      isDisliked = !isDisliked;
-      if (isDisliked) isLiked = false;
+    if (res?['success'] != true) {
+      // تراجع
+      if (type == "like") likesCount[statusId] = currentCount;
+      else dislikesCount[statusId] = currentCount;
+      state--;
+      ref.notifyListeners();
     }
-
-    ref.notifyListeners();
   }
+  // 1. تبديل حالة المفضلة (مع تحديث لحظي للواجهة)
+  void toggleLike(int itemId, String type, BuildContext context) async {
+    bool isLiked = favoriteStatus[itemId] ?? false;
 
+    // 1. تحديث الحالة فوراً داخلياً
+    favoriteStatus[itemId] = !isLiked;
+
+    // 2. تحديث الـ State الخاص بالـ Notifier لإجبار الواجهة على التغيير المباشر
+    state = state + 1; // تغيير الحالة لعمل تريجر لإعادة البناء اللحظي
+    ref.notifyListeners();
+
+    // 3. إرسال الطلب في الخلفية
+    final res = await ApiService().post(
+        "v1/$roles/favorites/toggle",
+        {"item_id": itemId, "type": type},
+        context
+    );
+
+    // 4. التراجع الذكي في حال فشل الـ API لـ أي سبب
+    if (res?['success'] != true) {
+      favoriteStatus[itemId] = isLiked; // إرجاع الحالة السابقة
+      state = state - 1;
+      ref.notifyListeners();
+    }
+  }
+  Future<void> toggleFavorite(BuildContext context, int branchId) async {
+    bool currentStatus = favoriteStatus[branchId] ?? false;
+
+    // تحديث لحظي
+    favoriteStatus[branchId] = !currentStatus;
+    state++;
+    ref.notifyListeners();
+
+    final res = await ApiService().post(
+        "v1/guest/favorites/toggle", // الرابط الصحيح للمفضلة
+        {"item_id": branchId, "type": "branch"},
+        context
+    );
+
+    if (res?['success'] != true) {
+      favoriteStatus[branchId] = currentStatus; // تراجع في حال الخطأ
+      state--;
+      ref.notifyListeners();
+    }
+  }
 }
 // Provider
 final Story_riverpod =NotifierProvider<PageNotifier, int>(PageNotifier.new);
