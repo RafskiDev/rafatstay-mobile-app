@@ -324,6 +324,8 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                                             .read(RestaurantDetalis_riverpod.notifier)
                                             .menuItems[index],
                                         style: TextStyle(
+                                          fontSize: sizes.GetHeight() * 1.8,
+                                          fontWeight: FontWeight.w500,
                                           color: isSelected
                                               ? theme.GetColor(
                                               "secondary500") // اللون عند الاختيار
@@ -683,10 +685,12 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                                       textLanguage.GetWord('اصنعها على طريقتك'),
                                     ),
                                     SizedBox(width: sizes.GetWidth() * 1),
-                                    SvgPicture.asset(
-                                      "assets/icon/arrow.svg",
-                                      height: sizes.GetHeight() * 2.5,
-                                      //  color:theme.GetColor("textSecondary"),
+                                    Transform.flip(
+                                      flipX: notifier.storage.read("Language") == 1,
+                                      child: SvgPicture.asset(
+                                        "assets/icon/arrow.svg",
+                                        height: sizes.GetHeight() * 2.5,
+                                      ),
                                     ),
                                   ],
                                 ),

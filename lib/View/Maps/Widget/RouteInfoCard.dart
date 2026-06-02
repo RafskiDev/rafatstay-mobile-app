@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rafatstay/Utils/Sizes.dart';
+import 'package:rafatstay/Utils/TextLanguage.dart';
 import 'package:rafatstay/Utils/Them.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
@@ -59,7 +60,7 @@ class RouteInfoCard extends StatelessWidget {
               SvgPicture.asset("assets/icon/BookingNumber.svg"),
               SizedBox(width: Sizes(context).GetWidth() * 1.5),
               Text(
-                "Booking Number ${id}",
+                "${TextLanguage().GetWord("رقم الحجز")} ${id}",
                 style: TextStyle(
                   color: Themes().GetColor("primary"),
                   fontWeight: FontWeight.bold,
@@ -91,7 +92,7 @@ class RouteInfoCard extends StatelessWidget {
             backgroundColor: Themes().GetColor("primaryA"),
             borderRadius: 25,
             child: Text(
-              "View Booking details",
+              TextLanguage().GetWord("عرض تفاصيل الحجز"),
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,

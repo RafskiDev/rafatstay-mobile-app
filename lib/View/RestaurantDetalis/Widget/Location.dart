@@ -21,6 +21,7 @@ Widget Location(BuildContext context,WidgetRef ref){
             "assets/icon/locations.svg",
             height: sizes.GetHeight() * 2,
           ),
+
           SizedBox(width: sizes.GetWidth() * 1),
           Expanded(child: Text(restaurantDetalis.branches[0]["address_line"]??"")),
           InkWell(
@@ -45,10 +46,13 @@ Widget Location(BuildContext context,WidgetRef ref){
                 );
               }
              },
-             child: Image.asset(
-              "assets/images/088df244f25620d4a1ee3315f70fdeb0ae71b153.png",
-              height: sizes.GetHeight() * 6,
-            ),
+             child:Transform.flip(
+               flipX: restaurantDetalis.storage.read("Language") == 1,
+               child: Image.asset(
+                 "assets/images/088df244f25620d4a1ee3315f70fdeb0ae71b153.png",
+                 height: sizes.GetHeight() * 6,
+               ),
+             ),
           ),
         ],
       ),

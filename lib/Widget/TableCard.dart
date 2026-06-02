@@ -145,22 +145,25 @@ class TableCard extends StatelessWidget {
           SizedBox(height: sizes.GetHeight() * 1),
           Center(
             child: InkWell(
-              onTap: () {
-                //  print(bookingData);
-                Navigator.push(
+              onTap: () async{
+                final result = await Navigator.push(
                   context,
                   PageRouteBuilder(
                     pageBuilder: (context, a1, a2) => TableDetails(
                       branchId: bookingData['branch_id'] as int? ?? 0,
                       tableId: idTable,
-                      startTime: bookingData['starts_at']?.toString() ?? '',
-                      endTime: bookingData['ends_at']?.toString() ?? '',
+                      startTime: "${bookingData['booking_date']} ${bookingData['start_time']}",
+                      endTime: "${bookingData['booking_date']} ${bookingData['end_time']}",
                       partySize: bookingData['party_size'] as int? ?? 1,
+                      isChosen: isChecked,
                     ),
                     transitionDuration: Duration.zero,
                     reverseTransitionDuration: Duration.zero,
                   ),
                 );
+                if (result is bool && result != isChecked) {
+                  onTap();
+                }
               },
               child: Text(
                 TextLanguage().GetWord("تفاصيل الطاولة"),

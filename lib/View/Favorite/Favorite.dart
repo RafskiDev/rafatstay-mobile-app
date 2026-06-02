@@ -63,8 +63,7 @@ class _FavoriteState extends ConsumerState<Favorite> {
           padding: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 2),
           child: Column(
             children: [
-              buildCustomAppBar(context, showBackButton: false, "Favorite"),
-
+              buildCustomAppBar(context, showBackButton: false, textLanguage.GetWord("مفضل")),
               // ✅ عرض دائرة التحميل إذا كانت البيانات قيد الجلب
               if (_isLoading)
                 Padding(
@@ -81,7 +80,7 @@ class _FavoriteState extends ConsumerState<Favorite> {
                 if (favoriteBranches.isNotEmpty) ...[
                   Row(
                     children: [
-                      Text("Favorite restaurants",
+                      Text(textLanguage.GetWord("المطاعم المفضلة"),
                           style: TextStyle(
                               color: theme.GetColor("textPrimary"),
                               fontWeight: FontWeight.bold)),
@@ -121,7 +120,7 @@ class _FavoriteState extends ConsumerState<Favorite> {
                                     SizedBox(width: sizes.GetWidth() * 0.4),
                                     Text(item["visits_label"]?.toString() ?? "", style: const TextStyle(fontSize: 10)),
                                     SizedBox(width: sizes.GetWidth() * 0.4),
-                                    const Text("Visit", style: const TextStyle(fontSize: 10)),
+                                     Text(textLanguage.GetWord("يزور"), style:  TextStyle(fontSize: 10)),
                                   ],
                                 ),
                                 SizedBox(height: sizes.GetHeight() * 1),
@@ -137,7 +136,7 @@ class _FavoriteState extends ConsumerState<Favorite> {
                             showIcon: true,
                             imagePath: item["image"] ?? "",
                             title: item["business_name"] ?? "",
-                            description: item["description"] ?? "لا يوجد بيانات",
+                            description: item["description"] ?? " ",
                             circleImagePath: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
                             buttonText: item["cta"]?["label"] ?? textLanguage.GetWord("يكتشف"),
                             onButtonTap: () {
@@ -174,7 +173,7 @@ class _FavoriteState extends ConsumerState<Favorite> {
                 if (favoriteDishes.isNotEmpty) ...[
                   Row(
                     children: [
-                      Text("Favorite dish",
+                      Text(textLanguage.GetWord("الطبق المفضل"),
                           style: TextStyle(
                               color: theme.GetColor("textPrimary"),
                               fontWeight: FontWeight.bold)),
@@ -249,7 +248,7 @@ class _FavoriteState extends ConsumerState<Favorite> {
                 if (branchesWithStories.isNotEmpty) ...[
                   Row(
                     children: [
-                      Text("Status", style: TextStyle(color: theme.GetColor("textPrimary"), fontWeight: FontWeight.bold)),
+                      Text(textLanguage.GetWord("حالة"), style: TextStyle(color: theme.GetColor("textPrimary"), fontWeight: FontWeight.bold)),
                     ],
                   ),
                   SizedBox(height: sizes.GetHeight() * 1.5),
@@ -327,7 +326,7 @@ class _FavoriteState extends ConsumerState<Favorite> {
                   Row(
                     children: [
                       Text(
-                        "Interests",
+                        textLanguage.GetWord("الاهتمامات"),
                         style: TextStyle(
                             color: theme.GetColor("textPrimary"),
                             fontWeight: FontWeight.bold

@@ -58,12 +58,12 @@ AppBar buildCustomAppBar(BuildContext context, String title,{bool showBackButton
 
 class GlassAppBar extends StatelessWidget {
   final String titel;
-  final VoidCallback onBack;
+  final VoidCallback? onBack;
   final VoidCallback onNotification;
 
   const GlassAppBar({
     required this.titel,
-    required this.onBack,
+     this.onBack,
     required this.onNotification,
   });
 
@@ -104,7 +104,11 @@ class GlassAppBar extends StatelessWidget {
                       color: theme.GetColor("textPrimary"),
                     ),
                     onPressed: () {
-                      Navigator.pop(context, 0);
+                      if (onBack != null) {
+                        onBack!();
+                      } else {
+                        Navigator.pop(context,0);
+                      }
                     },
                   ),
                 ),

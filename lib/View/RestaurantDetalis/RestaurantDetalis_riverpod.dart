@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/material.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:rafatstay/Utils/TextLanguage.dart';
 import 'package:video_player/video_player.dart';
 import '../../Service/ApiService.dart';
@@ -8,6 +9,7 @@ import '../../Utils/Them.dart';
 import '../../Utils/ToastMessage.dart';
 import 'RestaurantDetalis.dart';
 class PageNotifier extends Notifier<int> {
+  final storage = GetStorage();
   TextEditingController searchController = TextEditingController();
   FocusNode searchNode = FocusNode();
   int selectedIndex = 0;
@@ -91,7 +93,13 @@ class PageNotifier extends Notifier<int> {
 
   final List<String> tags = [];
   int selectedMenuIndex=0;
-  final menuItems = ["Location", "Policy", "Garage", "Employees", "Super Guest"];
+  List<String> get menuItems => [
+    TextLanguage().GetWord("الموقع"),
+    TextLanguage().GetWord("السياسات"),
+    TextLanguage().GetWord("موقف سيارات"),
+    TextLanguage().GetWord("الموظفين"),
+    TextLanguage().GetWord("ضيف مميز"),
+  ];
   void changeSelectedMenu(int index) {
     selectedMenuIndex = index;
     ref.notifyListeners();

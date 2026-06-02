@@ -123,7 +123,7 @@ class _MakeItYourWayState extends ConsumerState<MakeItYourWay> {
                               borderColor:isSelected?theme.GetColor("textPrimary"):theme.GetColor("textSecondary"),
                               borderRadius: sizes.GetHeight() * 10,
                               backgroundColor:theme.GetColor("background"),
-                              width: sizes.GetWidth() * 22,
+                              width: sizes.GetWidth() * 30,
                               height: sizes.GetHeight() * 5,
                               onTap: () {
                                 ref.read(MakeItYourWay_riverpod.notifier).setSelectedCookingType(index);
@@ -228,10 +228,13 @@ class _MakeItYourWayState extends ConsumerState<MakeItYourWay> {
                                 textLanguage.GetWord('يكمل'),
                               ),
                               SizedBox(width: sizes.GetWidth() * 1),
-                              SvgPicture.asset(
-                                "assets/icon/arrow.svg",
-                                height:sizes.GetHeight()*2.5,
-                                //  color:theme.GetColor("textSecondary"),
+                              Transform.flip(
+                                flipX: ref.read(MakeItYourWay_riverpod.notifier).storage.read("Language") == 1,
+                                child: SvgPicture.asset(
+                                  "assets/icon/arrow.svg",
+                                  height:sizes.GetHeight()*2.5,
+                                  //  color:theme.GetColor("textSecondary"),
+                                ),
                               ),
                             ],
                           ),

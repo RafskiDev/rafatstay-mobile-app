@@ -76,12 +76,13 @@ class PageNotifier extends Notifier<int> {
       method: "POST",
       fields: {"_method": "PATCH"},
     );
+    print(response);
     if (response?["success"] == true) {
       final user = storage.read("user");
-      user["avatar"] = response?["data"]["user"]["avatar"];
+     // user["avatar"] = response?["data"]["user"]["avatar"];
+      user["avatar_url"] = response?["data"]["user"]["avatar_url"];
       storage.write("user", user);
       state = state + 1; // trigger rebuild
-      print(response?["data"]["avatar_url"]);
     }
   }
 }

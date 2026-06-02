@@ -12,6 +12,7 @@ import '../../Widget/WidgetButton.dart';
 import '../../Widget/WidgetCustomDialog.dart';
 import '../Credit/Credit.dart';
 import '../Home/Home_riverpod.dart';
+import '../MakeItYourWay/MakeItYourWay_riverpod.dart';
 import '../Maps/Maps.dart';
 import '../PaymentWebView/PaymentWebView.dart';
 import '../PayusingyourSTCPaywallet/PayusingyourSTCPaywallet.dart';
@@ -35,12 +36,11 @@ class Payment extends ConsumerWidget {
     ref.watch(Payment_riverpod);
     final sizes=Sizes(context);
     Themes theme = Themes();
-    print("bookingId:$bookingId");
     TextLanguage textLanguage = TextLanguage();
     final selected = ref.watch(Payment_riverpod);
    // final url =  ref.read(Payment_riverpod.notifier).initiatePayment(context, 1,0);
     return  Scaffold(
-      appBar:buildCustomAppBar(context,"Payment"),
+      appBar:buildCustomAppBar(context,textLanguage.GetWord("دفع")),
       backgroundColor:theme.GetColor("background"),
       body:Container(
         padding:EdgeInsets.symmetric(horizontal: sizes.GetWidth()*2),
@@ -146,77 +146,82 @@ class Payment extends ConsumerWidget {
                       context,
                       barrierDismissible: false,
                       backgroundColor: Themes().GetColor("backgroundOffWhite"),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          SvgPicture.asset("assets/icon/cash_payment.svg"),
-                          Text(
-                            textAlign: TextAlign.center,
-                            style: TextStyle(fontSize: Sizes(context).GetHeight() * 2.2),
-                            textLanguage.GetWord('سيتم إضافة رسوم خدمة بنسبة 5% عند اختيار الدفع النقدي.'),
-                          ),
-                          SizedBox(height: Sizes(context).GetHeight() * 2),
-                          SquareButton(
-                            width: sizes.GetWidth() * 50,
-                            height: sizes.GetHeight() * 6,
-                            onTap: () => Navigator.pop(context),
-                            child: Text(textLanguage.GetWord("ادفع عبر الإنترنت")),
-                            backgroundColor: theme.GetColor("primary"),
-                            borderRadius: sizes.GetWidth() * 10,
-                          ),
-                          SizedBox(height: Sizes(context).GetHeight() * 2),
-                          SquareButton(
+                      child: Container(
+                        padding: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 10, vertical: sizes.GetHeight() * 1),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            SvgPicture.asset("assets/icon/cash_payment.svg"),
+                            /*
+                            Text(
+                              textAlign: TextAlign.center,
+                              style: TextStyle(fontSize: Sizes(context).GetHeight() * 2.2),
+                              textLanguage.GetWord('سيتم إضافة رسوم خدمة بنسبة 5% عند اختيار الدفع النقدي.'),
+                            ),
+                             */
+                            SizedBox(height: Sizes(context).GetHeight() * 2),
+                            SquareButton(
+                              width: sizes.GetWidth() * 50,
+                              height: sizes.GetHeight() * 5,
+                              onTap: () => Navigator.pop(context),
+                              child: Text(textLanguage.GetWord("ادفع عبر الإنترنت")),
+                              backgroundColor: theme.GetColor("primary"),
+                              borderRadius: sizes.GetWidth() * 10,
+                            ),
+                            SizedBox(height: Sizes(context).GetHeight() * 2),
+                            SquareButton(
 
-                            width: sizes.GetWidth() * 50,
+                              width: sizes.GetWidth() * 50,
 
-                            height: sizes.GetHeight() * 6,
+                              height: sizes.GetHeight() * 5,
 
-                            onTap: () async {
-                              Navigator.pop(context);
-                              final success = await notifier.payBooking(
-                                context: context,
-                                bookingId: bookingId,
-                                paymentMethod: "cash",
-                              );
-                              if (success) {
-                                final id = restaurantDetails?["id"];
+                              onTap: () async {
+                                Navigator.pop(context);
+                                final success = await notifier.payBooking(
+                                  context: context,
+                                  bookingId: bookingId,
+                                  paymentMethod: "cash",
+                                );
+                                if (success) {
+                                  final id = restaurantDetails?["id"];
 
-                                final restaurantDetalis = ref.read(RestaurantDetalis_riverpod.notifier);
+                                  final restaurantDetalis = ref.read(RestaurantDetalis_riverpod.notifier);
 
-                                if (restaurantDetalis.branches.isEmpty) return;
+                                  if (restaurantDetalis.branches.isEmpty) return;
 
-                                final branch = restaurantDetalis.branches.first;
+                                  final branch = restaurantDetalis.branches.first;
 
-                                final lat = branch['latitude'];
-                                final lng = branch['longitude'];
-                                if(lat!=null && lng!=null) {
-                                  Navigator.push(
-                                    context,
-                                    PageRouteBuilder(
-                                      pageBuilder: (context, a1, a2) =>
-                                          Maps(
-                                            restaurantLat: double.parse(branch['latitude'].toString()),
-                                            restaurantLng: double.parse(branch['longitude'].toString()),
-                                            data: [
-                                              {
-                                                "id": id,
-                                                "RouteInfoCard": true
-                                              },
-                                            ],
-                                          ),
-                                        transitionDuration: Duration.zero,
-                                        reverseTransitionDuration: Duration.zero,
-                                    ),
-                                  );
+                                  final lat = branch['latitude'];
+                                  final lng = branch['longitude'];
+                                  if(lat!=null && lng!=null) {
+                                    Navigator.push(
+                                      context,
+                                      PageRouteBuilder(
+                                        pageBuilder: (context, a1, a2) =>
+                                            Maps(
+                                              restaurantLat: double.parse(branch['latitude'].toString()),
+                                              restaurantLng: double.parse(branch['longitude'].toString()),
+                                              data: [
+                                                {
+                                                  "id": id,
+                                                  "RouteInfoCard": true
+                                                },
+                                              ],
+                                            ),
+                                          transitionDuration: Duration.zero,
+                                          reverseTransitionDuration: Duration.zero,
+                                      ),
+                                    );
+                                  }
                                 }
-                              }
-                            },
-                            child: Text(textLanguage.GetWord("الدفع النقدي")),
-                            backgroundColor: theme.GetColor("backgroundOffWhite"),
-                            borderColor: theme.GetColor("textPrimary"),
-                            borderRadius: sizes.GetWidth() * 10,
-                          ),
-                        ],
+                              },
+                              child: Text(textLanguage.GetWord("الدفع النقدي")),
+                              backgroundColor: theme.GetColor("backgroundOffWhite"),
+                              borderColor: theme.GetColor("textPrimary"),
+                              borderRadius: sizes.GetWidth() * 10,
+                            ),
+                          ],
+                        ),
                       ),
                     );
                   }
@@ -279,8 +284,11 @@ class Payment extends ConsumerWidget {
                       textLanguage.GetWord("التالي"),
                     ),
                     SizedBox(width: sizes.GetWidth() * 1),
-                    SvgPicture.asset(
-                      "assets/icon/arrow.svg",
+                    Transform.flip(
+                      flipX: ref.read(MakeItYourWay_riverpod.notifier).storage.read("Language") == 1,
+                      child: SvgPicture.asset(
+                        "assets/icon/arrow.svg",
+                      ),
                     ),
                   ],
                 ),

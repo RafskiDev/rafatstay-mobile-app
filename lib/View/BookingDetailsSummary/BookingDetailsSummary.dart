@@ -44,7 +44,7 @@ class _BookingDetailsSummaryState extends ConsumerState<BookingDetailsSummary> {
     TextLanguage textLanguage = TextLanguage();
     final reviewData = ref.watch(BookingDetailsSummary_riverpod.notifier).reviewData;
     return  Scaffold(
-      appBar:buildCustomAppBar(context,"Booking Details"),
+      appBar:buildCustomAppBar(context,textLanguage.GetWord("تفاصيل الحجز")),
       backgroundColor:theme.GetColor("background"),
       body:ValueListenableBuilder<bool>(
         valueListenable: LoadingService.isLoading,
@@ -63,7 +63,7 @@ class _BookingDetailsSummaryState extends ConsumerState<BookingDetailsSummary> {
                               height: sizes.GetHeight() * 2.2,
                               color: theme.GetColor("textPrimary"),),
                             SizedBox(width: sizes.GetWidth() * 1),
-                            Text("Booking details"),
+                            Text(textLanguage.GetWord("تفاصيل الحجز")),
                           ],
                         ),
                         SizedBox(height: sizes.GetHeight() * 2),
@@ -179,7 +179,7 @@ class _BookingDetailsSummaryState extends ConsumerState<BookingDetailsSummary> {
                                 children: [
                                   SvgPicture.asset("assets/icon/FoodPackaging.svg"),
                                   SizedBox(width: sizes.GetWidth() * 1),
-                                  Text("Food packaging"),
+                                  Text(textLanguage.GetWord("تغليف المواد الغذائية")),
                                 ],
                               ),
                               SizedBox(width: sizes.GetWidth() * 10),
@@ -190,7 +190,7 @@ class _BookingDetailsSummaryState extends ConsumerState<BookingDetailsSummary> {
                                     SizedBox(width: sizes.GetWidth() * 1),
                                     SvgPicture.asset("assets/icon/SAR.svg",height:sizes.GetHeight()*1.2),
                                     SizedBox(width: sizes.GetWidth() * 1),
-                                    Text("55"),
+                                    Text(reviewData?['pricing']?['packaging_fee']?.toString() ?? "0",),
                                   ],
                                 ),
                               ),
@@ -273,14 +273,21 @@ class _BookingDetailsSummaryState extends ConsumerState<BookingDetailsSummary> {
                           ),
                         ],
                         SizedBox(height: sizes.GetHeight() * 2),
+                        /*
                         // Total
                         PriceRow(
-                          labelText: '${textLanguage.GetWord(
-                              'الإجمالي')} (${((reviewData?['pricing']?['vat_rate'] ??
-                              0.15) * 100).toInt()}% ${textLanguage.GetWord(
-                              'شامل الضريبة')})',
-                          amount: reviewData?['pricing']?['total']
-                              ?.toString() ?? '0',
+                          labelText:
+                          '${textLanguage.GetWord('الإجمالي')} '
+                              '(${reviewData?['pricing']?['vat_rate'] == null ? 0 : reviewData?['pricing']?['vat_rate'] * 100}% ${textLanguage.GetWord("شامل الضريبة")})',
+                          amount: reviewData?['pricing']?['total']?.toString() ?? '0',
+
+                          sizes: Sizes(context).GetWidth() * 5,
+                        ),
+                         */
+                        PriceRow(
+                          labelText:'',
+                          amount: reviewData?['pricing']?['total']?.toString() ?? '0',
+
                           sizes: Sizes(context).GetWidth() * 5,
                         ),
                         SizedBox(height: sizes.GetHeight() * 5),

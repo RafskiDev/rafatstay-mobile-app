@@ -66,9 +66,9 @@ class _HomeState extends ConsumerState<Home> {
     final statuses        = ref.watch(Home_riverpod.notifier).statuses;
   //  final String statusKey = ref.read(Home_riverpod.notifier).getStatusKey();
     final user = ref.read(Home_riverpod.notifier).box.read("user");
-    final avatarPath = user?["avatar"];
+    final avatarPath = user?["avatar_url"];
     final avatarUrl = avatarPath != null
-        ? "$showImage$avatarPath"
+        ? "$avatarPath"
         : null;
     return Scaffold(
       backgroundColor: theme.GetColor("background"),

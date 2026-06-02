@@ -25,9 +25,6 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:gal/gal.dart';
 import 'BookingDetails.dart';
 import 'EventCard.dart';
-final timerProvider = StreamProvider<DateTime>((ref) {
-  return Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now());
-});
 class Upcoming extends ConsumerStatefulWidget {
   const Upcoming({super.key});
 
@@ -47,11 +44,11 @@ class _UpcomingState extends ConsumerState<Upcoming> {
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(timerProvider);
+    ref.watch(upcomingBookingProvider);
     final sizes = Sizes(context);
     final theme = Themes();
     TextLanguage textLanguage = TextLanguage();
-    final bookingsData = ref.watch(upcomingBookingProvider.notifier).bookingsData;
+    final bookingsData = ref.read(upcomingBookingProvider.notifier).bookingsData;
     final hasData = bookingsData.isNotEmpty;
     final eventsList = hasData ? (bookingsData[0]['events']?['items'] as List?) ?? [] : [];
     return ValueListenableBuilder<bool>(

@@ -37,7 +37,7 @@ class PageNotifier extends Notifier<int> {
       {"image": "assets/icon/hour.svg", "title": formattedTime},
       {"image": "assets/icon/user_plus.svg", "title": data['party_size']?.toString() ?? "0"},
       {"image": "assets/icon/children.svg", "title": data['children_count']?.toString() ?? "0"},
-      {"image": "assets/icon/DineIn.svg", "title": data['service_mode']?.toString() ?? ""},
+      {"image": "assets/icon/DineIn.svg", "title": data['service_mode_translated']?.toString() ?? ""},
     ];
     ref.notifyListeners();
   }

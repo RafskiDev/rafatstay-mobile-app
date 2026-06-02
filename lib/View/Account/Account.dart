@@ -29,9 +29,9 @@ class Account extends ConsumerWidget {
     TextLanguage textLanguage = TextLanguage();
 
     final user = ref.read(Account_riverpod.notifier).storage.read("user");
-     final avatarPath = user?["avatar"];
+     final avatarPath = user?["avatar_url"];
      final avatarUrl = avatarPath != null
-         ? "$showImage$avatarPath"
+         ? "$avatarPath"
          : null;
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
@@ -45,7 +45,7 @@ class Account extends ConsumerWidget {
                 onTap:()=>ref.read(Account_riverpod.notifier).pickAndUploadAvatar(context),
                 child: SizedBox(
                   width: sizes.GetWidth() * 30,
-                  height: sizes.GetHeight() * 15,
+                  height: sizes.GetWidth() * 30,
                   child: ClipOval(
                     child: Stack(
                       children: [
@@ -53,16 +53,15 @@ class Account extends ConsumerWidget {
                           child: avatarUrl != null
                               ? Image.network(
                             avatarUrl.toString(),
-                            fit: BoxFit.cover,
-
+                            fit: BoxFit.fill,
                             errorBuilder: (context, error, stackTrace) => Image.asset(
                               "assets/images/38a2a034cbe4ac063cad704f0bc1eb89da98ec7f.png",
-                              fit: BoxFit.cover,
+                              fit: BoxFit.fill,
                             ),
                           )
                               : Image.asset(
                             "assets/images/38a2a034cbe4ac063cad704f0bc1eb89da98ec7f.png",
-                            fit: BoxFit.cover,
+                            fit: BoxFit.fill,
                           ),
                         ),
                         Positioned(
@@ -86,7 +85,7 @@ class Account extends ConsumerWidget {
                 )
               ),
               SizedBox(height:Sizes(context).GetHeight()*2),
-              Text(user["full_name"]??""),
+              Text(user["full_name"]??"",style:TextStyle(fontWeight:FontWeight.bold,color:theme.GetColor("textPrimary"))),
               SizedBox(height:Sizes(context).GetHeight()*2),
               Row(
                 children: [

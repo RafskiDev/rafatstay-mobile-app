@@ -57,7 +57,7 @@ class _AvailableTablesState extends ConsumerState<AvailableTables> {
     //print(widget.bookingData);
   //  final booking = notifier.policiesData['booking'] as Map? ?? {};
     return Scaffold(
-      appBar: buildCustomAppBar(context, "Available Tables"),
+      appBar: buildCustomAppBar(context,textLanguage.GetWord("الطاولات المتاحة")),
       backgroundColor: theme.GetColor("background"),
       body:ValueListenableBuilder<bool>(
         valueListenable:LoadingService.isLoading,
@@ -87,7 +87,7 @@ class _AvailableTablesState extends ConsumerState<AvailableTables> {
                                final table = notifier.tables[index];
                                final isSelected = notifier.selectedTableIndex == index;
                                return TableCard(
-                                 title: "Table #${table['id']?.toString() ?? (index + 1).toString()}",
+                                 title: "${textLanguage.GetWord("طاولة")} #${table['id']?.toString() ?? (index + 1).toString()}",
                                  image:table["photo_url"]??"",
                                  subtitle: table['location_type']?.toString()??"",
                                  price: table['reservation_fee']?.toString()  ?? "0",
@@ -191,7 +191,13 @@ class _AvailableTablesState extends ConsumerState<AvailableTables> {
                                    children: [
                                      Text(textLanguage.GetWord('يكمل')),
                                      SizedBox(width: sizes.GetWidth() * 1),
-                                     SvgPicture.asset("assets/icon/arrow.svg", height: sizes.GetHeight() * 2.5),
+                                     Transform.flip(
+                                       flipX: TextLanguage().storage.read("Language") ==1,
+                                       child: SvgPicture.asset(
+                                         "assets/icon/arrow.svg",
+                                         height: sizes.GetHeight() * 2.5,
+                                       ),
+                                     ),
                                    ],
                                  ),
                                ),

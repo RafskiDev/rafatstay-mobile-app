@@ -119,58 +119,63 @@ class _SetYourBookingDetailsState extends ConsumerState<SetYourBookingDetails> {
               Consumer(
                 builder: (context, ref, _) {
                   final notifier = ref.watch(SetYourBookingDetails_riverpod.notifier);
-                  return Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      ref.read(RestaurantDetalis_riverpod.notifier).supportsTakeaway==true?WidgetButton(
-                        context: context,
-                        buttonText: "Takeaway",
-                        onPressed: () => notifier.selectButton(0),
-                        width: sizes.GetWidth() * 25,
-                        backgroundColor: Colors.transparent,
-                        textColor: notifier.selectedButton == 0
-                            ? theme.GetColor("textPrimary")
-                            : theme.GetColor("textSecondary"),
-                        buttonSize: sizes.GetHeight() * 2,
-                        isCircular: true,
-                        borderColor: notifier.selectedButton == 0
-                            ? theme.GetColor("textPrimary")
-                            : theme.GetColor("textSecondary"),
-                        borderWidth: 1,
-                      ):SizedBox.shrink(),
-                      WidgetButton(
-                        context: context,
-                        buttonText: "Dine In",
-                        onPressed: () => notifier.selectButton(1),
-                        width: sizes.GetWidth() * 25,
-                        backgroundColor: Colors.transparent,
-                        textColor: notifier.selectedButton == 1
-                            ? theme.GetColor("textPrimary")
-                            : theme.GetColor("textSecondary"),
-                        buttonSize: sizes.GetHeight() * 2,
-                        isCircular: true,
-                        borderColor: notifier.selectedButton == 1
-                            ? theme.GetColor("textPrimary")
-                            : theme.GetColor("textSecondary"),
-                        borderWidth: 1,
-                      ),
-                      WidgetButton(
-                        context: context,
-                        buttonText: "Dine In To-Go",
-                        onPressed: () => notifier.selectButton(2),
-                        width: sizes.GetWidth() * 25,
-                        backgroundColor: Colors.transparent,
-                        textColor: notifier.selectedButton == 2
-                            ? theme.GetColor("textPrimary")
-                            : theme.GetColor("textSecondary"),
-                        buttonSize: sizes.GetHeight() * 2,
-                        isCircular: true,
-                        borderColor: notifier.selectedButton == 2
-                            ? theme.GetColor("textPrimary")
-                            : theme.GetColor("textSecondary"),
-                        borderWidth: 1,
-                      ),
-                    ],
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        ref.read(RestaurantDetalis_riverpod.notifier).supportsTakeaway==true?WidgetButton(
+                          context: context,
+                          buttonText: textLanguage.GetWord("طلب سفري"),
+                          onPressed: () => notifier.selectButton(0),
+                          width: sizes.GetWidth() * 25,
+                          backgroundColor: Colors.transparent,
+                          textColor: notifier.selectedButton == 0
+                              ? theme.GetColor("textPrimary")
+                              : theme.GetColor("textSecondary"),
+                          buttonSize: sizes.GetHeight() * 2,
+                          isCircular: true,
+                          borderColor: notifier.selectedButton == 0
+                              ? theme.GetColor("textPrimary")
+                              : theme.GetColor("textSecondary"),
+                          borderWidth: 1,
+                        ):SizedBox.shrink(),
+                        SizedBox(width: sizes.GetWidth() * 1),
+                        WidgetButton(
+                          context: context,
+                          buttonText: textLanguage.GetWord("تناول داخل المطعم"),
+                          onPressed: () => notifier.selectButton(1),
+                          width: sizes.GetWidth() * 25,
+                          backgroundColor: Colors.transparent,
+                          textColor: notifier.selectedButton == 1
+                              ? theme.GetColor("textPrimary")
+                              : theme.GetColor("textSecondary"),
+                          buttonSize: sizes.GetHeight() * 2,
+                          isCircular: true,
+                          borderColor: notifier.selectedButton == 1
+                              ? theme.GetColor("textPrimary")
+                              : theme.GetColor("textSecondary"),
+                          borderWidth: 1,
+                        ),
+                        SizedBox(width: sizes.GetWidth() * 1),
+                        WidgetButton(
+                          context: context,
+                          buttonText: textLanguage.GetWord("تناول ثم سفري"),
+                          onPressed: () => notifier.selectButton(2),
+                          width: sizes.GetWidth() * 25,
+                          backgroundColor: Colors.transparent,
+                          textColor: notifier.selectedButton == 2
+                              ? theme.GetColor("textPrimary")
+                              : theme.GetColor("textSecondary"),
+                          buttonSize: sizes.GetHeight() * 2,
+                          isCircular: true,
+                          borderColor: notifier.selectedButton == 2
+                              ? theme.GetColor("textPrimary")
+                              : theme.GetColor("textSecondary"),
+                          borderWidth: 1,
+                        ),
+                      ],
+                    ),
                   );
                 },
               ),
@@ -296,9 +301,12 @@ class _SetYourBookingDetailsState extends ConsumerState<SetYourBookingDetails> {
                       children: [
                         Text(textLanguage.GetWord('يكمل')),
                         SizedBox(width: sizes.GetWidth() * 1),
-                        SvgPicture.asset(
-                          "assets/icon/arrow.svg",
-                          height: sizes.GetHeight() * 2.5,
+                        Transform.flip(
+                          flipX: TextLanguage().storage.read("Language") ==1,
+                          child: SvgPicture.asset(
+                            "assets/icon/arrow.svg",
+                            height: sizes.GetHeight() * 2.5,
+                          ),
                         ),
                       ],
                     ),

@@ -40,7 +40,7 @@ class _MapsState extends ConsumerState<Maps> {
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final notifier = ref.read(mapsProvider.notifier);
-      print("data: ${widget.data}");
+
 
       notifier.fetchRoute(
         restaurantLat: widget.restaurantLat,

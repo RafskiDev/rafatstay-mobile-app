@@ -6,9 +6,11 @@ import '../../Utils/Sizes.dart';
 import '../../Utils/TextLanguage.dart';
 import '../../Utils/Them.dart';
 import '../../Widget/CheckBox.dart';
+import '../../Widget/CountdownText.dart';
 import '../../Widget/WidgetAppBar.dart';
 import '../../Widget/WidgetButton.dart';
 import '../../Widget/WidgetTextField.dart';
+import '../MakeItYourWay/MakeItYourWay_riverpod.dart';
 import '../Payment/Payment.dart';
 import '../Payment/Payment_riverpod.dart';
 import 'Review_Confirm_riverpod.dart';
@@ -41,8 +43,9 @@ class _Review_ConfirmState extends ConsumerState<Review_Confirm> {
     TextLanguage textLanguage = TextLanguage();
     final items = ref.watch(Review_Confirm_riverpod.notifier).items;
     final tablePrice = double.tryParse(widget.bookingData["table_price"]?.toString() ?? '0') ?? 0;
+
     return  Scaffold(
-      appBar:buildCustomAppBar(context,"Review & Confirm"),
+      appBar:buildCustomAppBar(context,textLanguage.GetWord("مراجعة وتأكيد")),
       backgroundColor:theme.GetColor("background"),
       body:Container(
         padding:EdgeInsets.symmetric(horizontal: sizes.GetWidth()*2),
@@ -69,7 +72,7 @@ class _Review_ConfirmState extends ConsumerState<Review_Confirm> {
                     ),
                   ),
                   SizedBox(width: sizes.GetWidth() * 1),
-                  Text(widget.name ?? ""),
+                  Text(widget.name ?? "",style: TextStyle(color:theme.GetColor("primary"),fontWeight: FontWeight.bold,decoration: TextDecoration.underline,decorationColor:theme.GetColor("primary"))),
                 ],
               ),
               SizedBox(height: sizes.GetHeight() * 2),
@@ -99,7 +102,8 @@ class _Review_ConfirmState extends ConsumerState<Review_Confirm> {
                   Row(
                     children: [
                       SvgPicture.asset(height:sizes.GetHeight()*2,"assets/icon/SandGlass.svg",color:theme.GetColor("textPrimary"),),
-                      Text(DateTimeHelper().getRemainingTime(widget.bookingData)),
+                      SizedBox(width:sizes.GetWidth()*1,),
+                      CountdownText(bookingData: widget.bookingData),
                     ],
                   ),
                 ],
@@ -124,7 +128,7 @@ class _Review_ConfirmState extends ConsumerState<Review_Confirm> {
               ),
               SizedBox(height: sizes.GetHeight() * 1),
               InfoRow(
-                title: "Total (15% VAT Included)",
+                title: "",//Total (15% VAT Included)
                 value: ref.watch(Review_Confirm_riverpod.notifier).total,
                 size: sizes.GetHeight() * 2.5,
                 icons: ["assets/icon/dollar.svg", "assets/icon/SAR.svg"],
@@ -132,7 +136,7 @@ class _Review_ConfirmState extends ConsumerState<Review_Confirm> {
               SizedBox(height: sizes.GetHeight() * 2),
               SquareButton(
                 width: sizes.GetWidth() * 50,
-                height: sizes.GetHeight() * 6,
+                height: sizes.GetHeight() * 5,
                 onTap: ()async {
                   Navigator.push(
                     context,
@@ -155,15 +159,17 @@ class _Review_ConfirmState extends ConsumerState<Review_Confirm> {
                       textLanguage.GetWord("دفع"),
                     ),
                     SizedBox(width: sizes.GetWidth() * 1),
-                    SvgPicture.asset(
+                    Transform.flip(
+                      flipX: ref.read(MakeItYourWay_riverpod.notifier).storage.read("Language") == 1,
+                      child: SvgPicture.asset(
                       "assets/icon/arrow.svg",
                     ),
+                   ),
                   ],
                 ),
                 backgroundColor:theme.GetColor("primary"),
                 borderRadius:sizes.GetWidth()*10,
               ),
-
             ]
           )
         )
@@ -189,7 +195,7 @@ class BadgeBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 0.4),
-      width: sizes.GetWidth() * 18.5,
+      width: sizes.GetWidth() * 22,
       height: sizes.GetHeight() * 10,
       decoration: BoxDecoration(
         color: theme.GetColor("background"),
@@ -202,15 +208,18 @@ class BadgeBox extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
+          SizedBox(height: sizes.GetHeight() * 1),
           SvgPicture.asset(
             svgPath,                     // هنا نستخدم البراميتر
             height: sizes.GetHeight() * 4,
             color: theme.GetColor("primary"),
           ),
-          const SizedBox(height: 6),
-          Text(
-            text,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+           SizedBox(height: sizes.GetHeight() * 1),
+          Expanded(
+            child: Text(
+              text,
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
         ],
       ),

@@ -63,8 +63,9 @@ class _BookingDetailsState extends ConsumerState<BookingDetails> {
       int count = int.tryParse(item["count"].toString()) ?? 1;
       return sum + (price * count);
     });
+    final pageNotifier = ref.watch(BookingDetails_riverpod.notifier);
     return  Scaffold(
-      appBar:buildCustomAppBar(context,"Booking Details"),
+      appBar:buildCustomAppBar(context,textLanguage.GetWord("تفاصيل الحجز")),
       backgroundColor:theme.GetColor("background"),
       body:Container(
         padding:EdgeInsets.symmetric(horizontal: sizes.GetWidth()*2),
@@ -103,22 +104,21 @@ class _BookingDetailsState extends ConsumerState<BookingDetails> {
                 ],
               ),
               SizedBox(height: sizes.GetHeight() * 2),
-              SizedBox(
-                height: sizes.GetHeight() * 10,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: items.length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding:EdgeInsets.symmetric(horizontal:sizes.GetHeight()*0.2),
+              SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
+                child: Row(
+                  children: List.generate(
+                    items.length,
+                        (index) => Padding(
+                      padding: EdgeInsets.symmetric(horizontal: sizes.GetHeight() * 0.2),
                       child: BadgeBox(
                         sizes: sizes,
                         theme: theme,
                         text: items[index]["title"].toString(),
-                        svgPath:items[index]["image"].toString(),
+                        svgPath: items[index]["image"].toString(),
                       ),
-                    );
-                  },
+                    ),
+                  ),
                 ),
               ),
               SizedBox(height: sizes.GetHeight() * 2),
@@ -318,12 +318,12 @@ class _BookingDetailsState extends ConsumerState<BookingDetails> {
                 child: TableInfoRow(
                   sizes: sizes,
                   theme: theme,
-                  tableTitle:widget.bookingData['table_name']?.toString() ?? "Table",
+                  tableTitle: "${textLanguage.GetWord('طاولة')} ${(widget.bookingData['table_name']?.toString() ?? "Table").replaceAll(RegExp(r'table\s*', caseSensitive: false), '')}",
                   price:widget.bookingData['table_price']?.toString() ?? "0",
                   priceSvg: "assets/icon/dollar.svg",
                   currencySvg: "assets/icon/SAR.svg",
                   extraSvg: "assets/icon/LocationTable.svg",
-                  extraText:widget.bookingData['location_type']?.toString() ?? "",
+                  extraText:pageNotifier.translateMode(widget.bookingData['location_type']?.toString()),
                 ),
               ),
               SizedBox(height: sizes.GetHeight() * 1),
@@ -429,11 +429,11 @@ class _BookingDetailsState extends ConsumerState<BookingDetails> {
                   Text(textLanguage.GetWord("لست بحاجة إلى موقف سيارات")),
                 ],
               ),
-              SizedBox(height: sizes.GetHeight() * 1),
+              SizedBox(height: sizes.GetHeight() * 2),
               SquareButton(
                 isLoading:ref.watch(BookingDetails_riverpod.notifier).isLoading,
                 width: sizes.GetWidth() * 50,
-                height: sizes.GetHeight() * 6,
+                height: sizes.GetHeight() * 5,
                 onTap: ()async {
                   if (ref.read(BookingDetails_riverpod) != 0) {
                     ref.read(BookingDetails_riverpod.notifier).isLoading = true;
@@ -472,8 +472,11 @@ class _BookingDetailsState extends ConsumerState<BookingDetails> {
                       textLanguage.GetWord("مراجعة وتأكيد"),
                     ),
                     SizedBox(width: sizes.GetWidth() * 1),
-                    SvgPicture.asset(
-                      "assets/icon/arrow.svg",
+                    Transform.flip(
+                      flipX: ref.read(MakeItYourWay_riverpod.notifier).storage.read("Language") == 1,
+                      child: SvgPicture.asset(
+                        "assets/icon/arrow.svg",
+                      ),
                     ),
                   ],
                 ),
@@ -508,7 +511,7 @@ class BadgeBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 0.4),
-      width: sizes.GetWidth() * 18.5,
+      width: sizes.GetWidth() * 27,
       height: sizes.GetHeight() * 10,
       decoration: BoxDecoration(
         color: theme.GetColor("background"),
@@ -520,16 +523,23 @@ class BadgeBox extends StatelessWidget {
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          SizedBox(height: sizes.GetHeight() * 1),
           SvgPicture.asset(
             svgPath,                     // هنا نستخدم البراميتر
             height: sizes.GetHeight() * 4,
             color: theme.GetColor("primary"),
           ),
-          const SizedBox(height: 6),
-          Text(
-            text,
-            style: const TextStyle(fontWeight: FontWeight.bold),
+          SizedBox(height: sizes.GetHeight() * 1),
+          Expanded(
+            child: Text(
+              text,
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(fontWeight: FontWeight.bold,fontSize: 11),
+            ),
           ),
         ],
       ),

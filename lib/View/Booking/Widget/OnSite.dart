@@ -256,7 +256,7 @@ class _OnSiteState extends ConsumerState<OnSite> {
           width: sizes.GetWidth()*45,
           isCircular:true,
           context: context,
-          buttonText:"Finish Experience",
+          buttonText:textLanguage.GetWord("إنهاء التجربة"),
           textColor:Themes().GetColor("textPrimary"),
           onPressed: () {
             final bookingId = booking["id"] as int;
@@ -354,7 +354,6 @@ class _OnSiteState extends ConsumerState<OnSite> {
 
         return Consumer(
           builder: (context, ref, _) {
-            ref.watch(Booking_riverpod);
             final selectedIndex = ref.watch(Booking_riverpod.notifier).selectedAssistanceIndex;
             return Container(
              padding:EdgeInsets.all(8.0),

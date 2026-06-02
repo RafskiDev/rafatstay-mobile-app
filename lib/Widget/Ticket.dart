@@ -1,6 +1,7 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:rafatstay/Utils/TextLanguage.dart';
 import '../Utils/Sizes.dart';
 import '../Utils/Them.dart';
 class Ticket extends StatelessWidget {
@@ -30,6 +31,7 @@ class Ticket extends StatelessWidget {
   Widget build(BuildContext context) {
     final sizes = Sizes(context);
     final themes = Themes();
+    final textLanguage = TextLanguage();
     return Container(
       width: width,
       height: height,
@@ -98,7 +100,7 @@ class Ticket extends StatelessWidget {
                           SizedBox(width: sizes.GetWidth() * 2),
                           Flexible(
                             child: Text(
-                              "Booking Number $bookingNumber Pay $payAmount",
+                              "${textLanguage.GetWord("رقم الحجز")} $bookingNumber ${textLanguage.GetWord("الدفع")} $payAmount",
                               style: TextStyle(
                                 fontSize: sizes.GetHeight() * 2,
                                 fontWeight: FontWeight.bold,
@@ -113,7 +115,7 @@ class Ticket extends StatelessWidget {
                             : [
                           Flexible(
                             child: Text(
-                              "Booking Number $bookingNumber Pay $payAmount",
+                              "${textLanguage.GetWord("رقم الحجز")} $bookingNumber ${textLanguage.GetWord("ادفع")} $payAmount",
                               style: TextStyle(
                                 fontSize: sizes.GetHeight() * 2,
                                 fontWeight: FontWeight.bold,

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/svg.dart';
 import '../../Utils/Sizes.dart';
 import '../../Utils/TextLanguage.dart';
 import '../../Utils/Them.dart';
@@ -88,7 +87,7 @@ class CustomBox extends StatelessWidget {
         alignment: Alignment.center,
         width: sizes.GetWidth() * 20,
         height: sizes.GetHeight() * 4,
-        padding: EdgeInsets.all(sizes.GetHeight() * 0.5),
+        padding: EdgeInsets.all(sizes.GetHeight() * 0.2),
         decoration: BoxDecoration(
           color: isSelected ? theme.GetColor("secondaryPrimary") : theme.GetColor("primaryS"),
           borderRadius: BorderRadius.circular(30),

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 
 import '../../Service/ApiService.dart';
+import '../../Utils/TextLanguage.dart';
 import '../RestaurantDetalis/RestaurantDetalis_riverpod.dart';
 class PageNotifier extends Notifier<int> {
   DateTime? startDate;
@@ -99,6 +100,20 @@ class PageNotifier extends Notifier<int> {
 
   // ← جمع البيانات وتخزينها
   Map<String, dynamic> collectBookingData(int branchId,String businessName) {
+    final textLanguage = TextLanguage();
+
+    String translatedMode = "";
+    switch (selectedServiceMode) {
+      case 'takeaway':
+        translatedMode = textLanguage.GetWord("طلب سفري");
+        break;
+      case 'dine_in':
+        translatedMode = textLanguage.GetWord("تناول داخل المطعم");
+        break;
+      case 'dine_in_to_go':
+        translatedMode = textLanguage.GetWord("تناول ثم سفري");
+        break;
+    }
     bookingData = {
       'branch_id': branchId,
       'booking_date': formattedDate,
@@ -107,6 +122,7 @@ class PageNotifier extends Notifier<int> {
       'party_size': guests,
       'children_count': children,
       'service_mode': selectedServiceMode,
+      'service_mode_translated': translatedMode, // (هذا المفتاح الجديد المترجم للواجهات)
       'businessName':businessName,
     };
     print(bookingData);

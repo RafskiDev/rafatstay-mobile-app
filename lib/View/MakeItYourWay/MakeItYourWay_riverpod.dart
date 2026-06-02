@@ -1,14 +1,28 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../Service/ApiService.dart';
+import '../../Utils/TextLanguage.dart';
 import 'MakeItYourWay.dart';
-
+import 'package:get_storage/get_storage.dart';
 class PageNotifier extends Notifier<int> {
+  final storage = GetStorage();
   TextEditingController controller = TextEditingController();
   int? branchId;
    // 1. ما يظهر للمستخدم في الشاشة (UI)
-  final cookingTypes = ["Grilled", "Fried", "Baked", "Steamed", "Air Fried"];
-  final cookingTypes_ = ["Rare", "Medium Rare", "Medium", "Medium Well", "Well Done"];
+  List<String> get cookingTypes => [
+    TextLanguage().GetWord("مشوي"),
+    TextLanguage().GetWord("مقلي"),
+    TextLanguage().GetWord("مخبوز"),
+    TextLanguage().GetWord("مطهو على البخار"),
+    TextLanguage().GetWord("مقلي بالهواء"),
+  ];
+  List<String> get cookingTypes_ => [
+    TextLanguage().GetWord("نيء"),
+    TextLanguage().GetWord("متوسط النضج"),
+    TextLanguage().GetWord("متوسط"),
+    TextLanguage().GetWord("متوسط جيد"),
+    TextLanguage().GetWord("ناضج تماماً"),
+  ];
   // 2. ما يجب إرساله للخادم (API) - 🔴 يرجى التأكد من هذه القيم مع مطور الخادم
   final apiCookingTypes = ["grilled", "fried", "baked", "steamed", "air_fried"];
   final apiDonenessTypes = ["rare", "medium_rare", "medium", "medium_well", "well_done"];
@@ -32,7 +46,7 @@ class PageNotifier extends Notifier<int> {
     String? cookingMethod,
     String? doneness,
   }) async {
-    final response = await ApiService().post(
+     await ApiService().post(
       "v1/$roles/cart/items",
       {
         "branch_id": branchId,
@@ -45,7 +59,6 @@ class PageNotifier extends Notifier<int> {
       },
       context,
     );
-    print("addItemToCart: $response");
   }
 
   void increaseCount(int index, BuildContext context, int branchId) {

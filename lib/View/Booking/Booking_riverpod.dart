@@ -1,18 +1,21 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rafatstay/Utils/TextLanguage.dart';
-
 import '../../Service/ApiService.dart';
 import '../../Utils/Them.dart';
 import '../../Utils/ToastMessage.dart';
-
 class PageNotifier extends Notifier<int> {
   List<Map<String, dynamic>> bookingsData = [];
   Map<String, dynamic> bookingDetailss = {};
 
   bool hasFetched = false;
   final bool value = false;
-  final List<String> tabs = ["Upcoming", "On-site", "Completed", "Cancelled"];
+  List<String> get tabs => [
+    TextLanguage().GetWord("القادمة"),
+    TextLanguage().GetWord("في الموقع"),
+    TextLanguage().GetWord("مكتملة"),
+    TextLanguage().GetWord("ملغاة"),
+  ];
   List<bool> bookingTicketStates = [false, false];
   List<bool> bookingDetails = [false, false];
   bool requestAssistance = false;

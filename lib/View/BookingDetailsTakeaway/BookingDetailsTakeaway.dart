@@ -73,8 +73,13 @@ class _BookingDetailsTakeawayState extends ConsumerState<BookingDetailsTakeaway>
       int count = int.tryParse(item["count"].toString()) ?? 1;
       return sum + (price * count);
     });
+    int durationInt = 0;
+    if (garage.isNotEmpty) {
+      String durationText = garage[0]["duration"]?.toString().replaceAll(RegExp(r'[^0-9]'), '') ?? '';
+      durationInt = int.tryParse(durationText) ?? 0;
+    }
     return  Scaffold(
-      appBar:buildCustomAppBar(context,"Booking Details"),
+      appBar:buildCustomAppBar(context,textLanguage.GetWord("تفاصيل الحجز")),
       backgroundColor:theme.GetColor("background"),
       body:ValueListenableBuilder<bool>(
         valueListenable:LoadingService.isLoading,
@@ -328,7 +333,7 @@ class _BookingDetailsTakeawayState extends ConsumerState<BookingDetailsTakeaway>
                                     height: sizes.GetHeight() * 3,
                                   ),
                                   SizedBox(width: sizes.GetWidth() * 1),
-                                  Text("Food packaging", style: TextStyle(
+                                  Text(textLanguage.GetWord("تغليف المواد الغذائية"), style: TextStyle(
                                       fontWeight: FontWeight.bold)),
                                 ],
                               ),
@@ -431,7 +436,7 @@ class _BookingDetailsTakeawayState extends ConsumerState<BookingDetailsTakeaway>
                                         height:sizes.GetHeight()*1.8,
                                       ),
                                       SizedBox(width: sizes.GetWidth() * 1),
-                                      Text("${garage[0]["open_time"]??"00:00"} hours"),
+                                      Text("${durationInt} ${textLanguage.GetWord("ساعات")}"),
                                     ],
                                   ),
                                   Row(
@@ -442,7 +447,7 @@ class _BookingDetailsTakeawayState extends ConsumerState<BookingDetailsTakeaway>
                                         height:sizes.GetHeight()*1.8,
                                       ),
                                       SizedBox(width: sizes.GetWidth() * 1),
-                                      Text(garage[0]["location"] ?? "indoor"),//غير موجوده في باك اند الحفل
+                                      Text(ref.read(BookingDetailsTakeaway_riverpod.notifier).translateMode(garage[0]["parking_type"]) ?? "indoor"),//غير موجوده في باك اند الحفل
                                     ],
                                   ),
 
@@ -502,10 +507,10 @@ class _BookingDetailsTakeawayState extends ConsumerState<BookingDetailsTakeaway>
                                 "لست بحاجة إلى موقف سيارات")),
                           ],
                         ),
-                        SizedBox(height: sizes.GetHeight() * 1),
+                        SizedBox(height: sizes.GetHeight() * 2),
                         SquareButton(
                           width: sizes.GetWidth() * 50,
-                          height: sizes.GetHeight() * 6,
+                          height: sizes.GetHeight() * 5,
                           onTap: () async {
                             final hasGarage = garage.isNotEmpty && garage[0]["available"] == true;
                             final state = ref.read(BookingDetailsTakeaway_riverpod);
@@ -520,6 +525,7 @@ class _BookingDetailsTakeawayState extends ConsumerState<BookingDetailsTakeaway>
                             }
 
                             final needsParking = ref.read(BookingDetailsTakeaway_riverpod.notifier).isFirstSelected();
+
                             final enrichedBookingData = {
                               ...widget.bookingData,
                               'menuItems': ref.read(MakeItYourWay_riverpod.notifier).menuItems,
@@ -527,8 +533,8 @@ class _BookingDetailsTakeawayState extends ConsumerState<BookingDetailsTakeaway>
                               if (needsParking) ...{
                                 'car_plate': ref.read(BookingDetailsTakeaway_riverpod.notifier).CarPlate.text,
                                 'car_color': ref.read(BookingDetailsTakeaway_riverpod.notifier).CarColor.text,
-                                'parking_hours': garage[0]["open_time"] ?? 1,
-                                'parking_location': "indoor",
+                                'parking_hours':durationInt,
+                                'parking_location':garage[0]["parking_type"]??"",
                               }
                             };
 
@@ -548,6 +554,7 @@ class _BookingDetailsTakeawayState extends ConsumerState<BookingDetailsTakeaway>
                                 reverseTransitionDuration: Duration.zero,
                               ),
                             );
+
                           },
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -556,8 +563,11 @@ class _BookingDetailsTakeawayState extends ConsumerState<BookingDetailsTakeaway>
                                 textLanguage.GetWord("مراجعة وتأكيد"),
                               ),
                               SizedBox(width: sizes.GetWidth() * 1),
-                              SvgPicture.asset(
-                                "assets/icon/arrow.svg",
+                              Transform.flip(
+                                flipX: ref.read(MakeItYourWay_riverpod.notifier).storage.read("Language") == 1,
+                                child: SvgPicture.asset(
+                                  "assets/icon/arrow.svg",
+                                ),
                               ),
                             ],
                           ),
@@ -594,7 +604,7 @@ class BadgeBox extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       margin: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 0.4),
-      width: sizes.GetWidth() * 18.5,
+      width: sizes.GetWidth() * 23,
       height: sizes.GetHeight() * 10,
       decoration: BoxDecoration(
         color: theme.GetColor("background"),
@@ -608,11 +618,11 @@ class BadgeBox extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SvgPicture.asset(
-            svgPath,                     // هنا نستخدم البراميتر
+            svgPath,
             height: sizes.GetHeight() * 4,
             color: theme.GetColor("primary"),
           ),
-          const SizedBox(height: 6),
+          SizedBox(height: sizes.GetHeight() * 1),
           Text(
             text,
             style: const TextStyle(fontWeight: FontWeight.bold),

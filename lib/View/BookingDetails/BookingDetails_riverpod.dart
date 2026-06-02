@@ -53,7 +53,7 @@ class PageNotifier extends Notifier<int> {
       },
       {
         "image": "assets/icon/DineIn.svg",
-        "title": data['service_mode']?.toString() ?? "",
+        "title": data['service_mode_translated']?.toString() ?? "",
       },
     ];
     ref.notifyListeners();
@@ -75,6 +75,18 @@ class PageNotifier extends Notifier<int> {
 
   bool isFirstSelected() => (state & 1) != 0;
   bool isSecondSelected() => (state & 2) != 0;
+
+  String translateMode(String? val) {
+    if (val == null) return "";
+    switch (val.trim().toLowerCase()) {
+      case 'indoor':
+        return textLanguage.GetWord('داخلي'); // ستترجم لعربي أو إنجليزي حسب اللغة الحالية
+      case 'outdoor':
+        return textLanguage.GetWord('خارجي');
+      default:
+        return val; // ترجع القيمة كما هي لو لم تكن indoor أو outdoor
+    }
+  }
 }
 
 

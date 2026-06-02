@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../Service/ApiService.dart';
+import '../../Utils/TextLanguage.dart';
 import '../../Utils/Them.dart';
 import '../../Utils/ToastMessage.dart';
 
@@ -17,7 +18,10 @@ class TablesNotifier extends Notifier<int> {
     isTableChosen = !isTableChosen;
     ref.notifyListeners();
   }
-
+  void setChosen(bool value) {
+    isTableChosen = value;
+    ref.notifyListeners();
+  }
   Future<void> fetchTableDetails(
       BuildContext context,
       int branchId,
@@ -55,6 +59,43 @@ class TablesNotifier extends Notifier<int> {
     isLoadingDetails = false;
     ref.notifyListeners();
   }
+  String getStatusLabel(String code) {
+    switch (code) {
+      case 'available':
+        return TextLanguage().GetWord("متاحة");
+      case 'unavailable':
+        return TextLanguage().GetWord("غير متاحة");
+      default:
+        return code;
+    }
+  }
+  String getLocationLabel(String code) {
+    switch (code) {
+      case 'indoor':
+        return TextLanguage().GetWord("داخلي");
+      case 'outdoor':
+        return TextLanguage().GetWord("خارجي");
+      default:
+        return code;
+    }
+  }
+  String getFeatureTitle(String key) {
+    switch (key) {
+      case 'window':
+        return TextLanguage().GetWord("قرب النافذة");
+      case 'quiet_area':
+        return TextLanguage().GetWord("منطقة هادئة");
+      case 'non_smoking':
+        return TextLanguage().GetWord("لا تدخين");
+      default:
+        return key;
+    }
+  }
+  final List<Map<String, dynamic>> staticFeatures = [
+    {'icon': 'window'},
+    {'icon': 'quiet_area'},
+    {'icon': 'non_smoking'},
+  ];
 }
 
 final TableDetails_riverpod = NotifierProvider<TablesNotifier, int>(() {

@@ -54,7 +54,7 @@ class NavigationInfoCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          const SizedBox(height: 15),
+           SizedBox(height: sizes.GetHeight() * 2),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -98,7 +98,7 @@ class NavigationInfoCard extends StatelessWidget {
                     onTap: onRouteTap,
                     child: SvgPicture.asset('assets/icon/alt_route_outlined.svg', width: sizes.GetHeight() * 2.5),
                   ),
-                  const SizedBox(width: 12),
+                   SizedBox(width: sizes.GetWidth() * 2),
                   CircularButton(
                     size: sizes.GetHeight() * 5.5,
                     backgroundColor: Colors.white,

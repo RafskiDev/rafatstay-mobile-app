@@ -16,6 +16,7 @@ class TableDetails extends ConsumerStatefulWidget {
   final String startTime;
   final String endTime;
   final int partySize;
+  final bool isChosen;
 
   const TableDetails({
     super.key,
@@ -24,6 +25,7 @@ class TableDetails extends ConsumerStatefulWidget {
     required this.startTime,
     required this.endTime,
     required this.partySize,
+    this.isChosen = false,
   });
 
   @override
@@ -50,7 +52,6 @@ class _TableDetailsState extends ConsumerState<TableDetails> {
       final String formattedEnd = fullTimeEnd.length >= 5
           ? fullTimeEnd.substring(0, 5)
           : fullTimeEnd;
-
       ref.read(TableDetails_riverpod.notifier).fetchTableDetails(
         context,
         widget.branchId,
@@ -60,6 +61,7 @@ class _TableDetailsState extends ConsumerState<TableDetails> {
         endTime: formattedEnd,
         partySize: widget.partySize,
       );
+      ref.read(TableDetails_riverpod.notifier).setChosen(widget.isChosen);
     });
   }
 
@@ -71,25 +73,27 @@ class _TableDetailsState extends ConsumerState<TableDetails> {
     final tableDetails = notifier.tableDetails;
     final isChosen = notifier.isTableChosen;
 
+
     final sizes = Sizes(context);
     final theme = Themes();
 
     final table = tableDetails?['table'] as Map<String, dynamic>?;
     final features = tableDetails?['features'] as Map<String, dynamic>?;
-    final cta = tableDetails?['cta'] as Map<String, dynamic>?;
+   // final cta = tableDetails?['cta'] as Map<String, dynamic>?;
 
     final price = table?['reservation_fee'] ?? 0;
     final statusCode = table?['status']?['code'] ?? 'unavailable';
-    final statusLabel = table?['status']?['label'] ?? 'غير متاحة';
+    final statusLabel = notifier.getStatusLabel(statusCode);
     final statusColor = statusCode == 'available' ? Colors.green : Colors.red;
-    final locationLabel = table?['location_label'] ?? '';
+    final locationCode = table?['location_type'] ?? '';
+    final locationLabel = notifier.getLocationLabel(locationCode);
     final capacityLabel = table?['capacity_label'] ?? '';
-
+    final capacityNumber = RegExp(r'\d+').firstMatch(capacityLabel)?.group(0) ?? '';
    // final rawPhotoUrl = table?['photo_url']?.toString() ?? '';
     final gallery = (table?['gallery'] as List? ?? []);
     final List<Map<String, dynamic>> featureItems =
         (features?['items'] as List?)?.cast<Map<String, dynamic>>() ?? [];
-    print(table);
+
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
       body: isLoading
@@ -147,9 +151,9 @@ class _TableDetailsState extends ConsumerState<TableDetails> {
                     padding: EdgeInsets.symmetric(
                         horizontal: sizes.GetWidth() * 4),
                     child: GlassAppBar(
-                      onBack: () => Navigator.pop(context),
+                      onBack: () => Navigator.pop(context, notifier.isTableChosen),
                       onNotification: () {},
-                      titel: "تفاصيل الطاولة",
+                      titel:TextLanguage().GetWord("تفاصيل الطاولة"),
                     ),
                   ),
                 ),
@@ -182,7 +186,7 @@ class _TableDetailsState extends ConsumerState<TableDetails> {
                               SvgPicture.asset("assets/icon/TablePerson.svg",
                                   color: theme.GetColor("textPrimary")),
                               SizedBox(width: sizes.GetWidth() * 1),
-                              Text(capacityLabel),
+                              Text("$capacityNumber ${TextLanguage().GetWord("ضيف")}"),
                             ],
                           ),
                           Row(
@@ -209,7 +213,7 @@ class _TableDetailsState extends ConsumerState<TableDetails> {
                               SvgPicture.asset("assets/icon/Chair.svg",
                                   color: theme.GetColor("textPrimary")),
                               SizedBox(width: sizes.GetWidth() * 1),
-                              Text(capacityLabel),
+                              Text("$capacityNumber ${TextLanguage().GetWord("ضيف")}"),
                             ],
                           ),
                           SizedBox(width: sizes.GetWidth() * 10),
@@ -227,7 +231,7 @@ class _TableDetailsState extends ConsumerState<TableDetails> {
                       Row(
                         children: [
                           Text(
-                            "Table Features",
+                            TextLanguage().GetWord("مميزات الطاولة"),
                             style: TextStyle(
                               color: theme.GetColor("textPrimary"),
                               fontSize: sizes.GetWidth() * 5.8,
@@ -238,36 +242,40 @@ class _TableDetailsState extends ConsumerState<TableDetails> {
                       ),
                       SizedBox(height: sizes.GetHeight() * 2),
                       if (featureItems.isNotEmpty)
-                        SingleChildScrollView(
-                          scrollDirection: Axis.horizontal,
-                          child: Row(
-                            children: featureItems.map((feature) {
-                              final title = feature['title'] ?? '';
-                              final iconKey = feature['icon'] ?? '';
-                              String iconPath;
-                              switch (iconKey) {
-                                case 'window':
-                                  iconPath = "assets/icon/Window.svg";
-                                  break;
-                                case 'quiet_area':
-                                  iconPath = "assets/icon/QuietArea.svg";
-                                  break;
-                                case 'non_smoking':
-                                  iconPath = "assets/icon/NonSmoking.svg";
-                                  break;
-                                default:
-                                  iconPath = "assets/icon/QuietArea.svg";
-                              }
-                              return Padding(
-                                padding: EdgeInsets.only(
-                                    right: sizes.GetWidth() * 1),
-                                child: CustomSelectionCard(
-                                  title: title,
-                                  svg: iconPath,
-                                ),
-                              );
-                            }).toList(),
-                          ),
+                        Row(
+                          children: [
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: notifier.staticFeatures.map((feature) {
+                                  final iconKey = feature['icon'] ?? '';
+                                  final title = notifier.getFeatureTitle(iconKey);
+                                  String iconPath;
+                                  switch (iconKey) {
+                                    case 'window':
+                                      iconPath = "assets/icon/Window.svg";
+                                      break;
+                                    case 'quiet_area':
+                                      iconPath = "assets/icon/QuietArea.svg";
+                                      break;
+                                    case 'non_smoking':
+                                      iconPath = "assets/icon/NonSmoking.svg";
+                                      break;
+                                    default:
+                                      iconPath = "assets/icon/QuietArea.svg";
+                                  }
+                                  return Padding(
+                                    padding: EdgeInsets.only(
+                                        right: sizes.GetWidth() * 1),
+                                    child: CustomSelectionCard(
+                                      title: title,
+                                      svg: iconPath,
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ),
+                          ],
                         ),
                       SizedBox(height: sizes.GetHeight() * 2),
                       Row(
@@ -276,16 +284,16 @@ class _TableDetailsState extends ConsumerState<TableDetails> {
                             onTap: () => notifier.changePage_(),
                             child: SvgPicture.asset(
                               isChosen
-                                  ? "assets/icon/BOXCHECK_OFF.svg"
-                                  : "assets/icon/BOXCHECK_ON.svg",
+                                  ? "assets/icon/BOXCHECK_ON.svg"
+                                  : "assets/icon/BOXCHECK_OFF.svg",
                               color: isChosen
-                                  ? theme.GetColor("textSecondary")
-                                  : theme.GetColor("primary"),
+                                  ? theme.GetColor("primary")
+                                  : theme.GetColor("textSecondary"),
                             ),
                           ),
                           SizedBox(width: sizes.GetWidth() * 1),
                           Text(
-                            cta?['label'] ?? "اختر هذه الطاولة",
+                            TextLanguage().GetWord("اختر هذه الطاولة"),
                             style:
                             TextStyle(color: theme.GetColor("primary")),
                           ),
@@ -320,8 +328,8 @@ class CustomSelectionCard extends StatelessWidget {
     final theme = Themes();
 
     return Container(
-      width: sizes.GetWidth() * 22,
-      height: sizes.GetWidth() * 22,
+      width: sizes.GetWidth() * 25,
+      height: sizes.GetWidth() * 25,
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         color: const Color(0xFFF4EFE6),
@@ -334,9 +342,9 @@ class CustomSelectionCard extends StatelessWidget {
           SvgPicture.asset(
             svg,
             color: theme.GetColor("textPrimary"),
-            width: sizes.GetWidth() * 8,
+            width: sizes.GetWidth() * 12,
           ),
-          SizedBox(height: sizes.GetHeight() * 0.5),
+          SizedBox(height: sizes.GetHeight() * 1),
           Text(
             title,
             textAlign: TextAlign.center,
