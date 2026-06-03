@@ -94,7 +94,6 @@ class _HistoryState extends ConsumerState<History> {
                             // إعادة الحجز - سننفذه لاحقاً
                           },
                           onTap_: () {
-                            print(bookingId);
                             // الانتقال إلى تفاصيل الحجز (HistoryDescription) مع تمرير booking_id
                             Navigator.push(
                               context,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-
+import 'package:rafatstay/Utils/Sizes.dart';
+import 'package:rafatstay/Utils/Them.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 class InterestCard extends StatelessWidget {
   final String logoUrl;
   final String businessName;
@@ -25,26 +27,22 @@ class InterestCard extends StatelessWidget {
       child: Container(
         width: width,
         height: height,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        padding:  EdgeInsets.symmetric(horizontal: Sizes(context).GetWidth() * 2.2, vertical: Sizes(context).GetHeight() * 1.5),
         decoration: BoxDecoration(
-          // اللون البيج الفاتح المريح المطابق تماماً للصورة المعطاة
-          color: const Color(0xFFFAF6F0),
+          color: Themes().GetColor("scaffoldBackground"),
           borderRadius: BorderRadius.circular(24),
         ),
         child: Row(
           children: [
-            // 1. الشعار الدائري للمطعم والشركة
             CircleAvatar(
-              radius: 28,
-              backgroundColor: const Color(0xFF70551A), // درجة اللون الزيتوني/البني المطابقة للخلفية
+              radius: Sizes(context).GetHeight()*2.2,
+              backgroundColor: const Color(0xFF70551A),
               backgroundImage: logoUrl.isNotEmpty ? NetworkImage(logoUrl) : null,
               child: logoUrl.isEmpty
-                  ? const Icon(Icons.store, color: Colors.white, size: 24)
+                  ? const Icon(Icons.store, color: Colors.white, size: 22)
                   : null,
             ),
-            const SizedBox(width: 14),
-
-            // 2. النصوص (اسم الشركة + اسم الفرع بجانبه)
+            SizedBox(width: Sizes(context).GetWidth() * 2),
             Expanded(
               child: RichText(
                 maxLines: 1,
@@ -70,16 +68,24 @@ class InterestCard extends StatelessWidget {
 
             // 3. زر السهم الدائري الجانبي (الأكشن)
             Container(
-              width: 44,
-              height: 44,
+              width: Sizes(context).GetWidth() * 8.5,
+              height: Sizes(context).GetWidth() * 8.5,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                color: Color(0xFFF3EBE1), // خلفية دائرية أغمق قليلاً للتأثير البصري المتقن
+                color: Color(0xFFF3EBE1),
               ),
-              child: const Icon(
-                Icons.arrow_forward_ios,
-                size: 16,
-                color: Color(0xFF4A453E), // لون خط أيقونة السهم
+              child: Center(
+                child:Transform(
+                  alignment: Alignment.center,
+                  transform: Matrix4.rotationY(
+                    Directionality.of(context) == TextDirection.rtl ? 3.1416 : 0,
+                  ),
+                  child: SvgPicture.asset(
+                    "assets/icon/arrow.svg",
+                    width: Sizes(context).GetWidth() * 6,
+                    height: Sizes(context).GetWidth() * 6,
+                  ),
+                ),
               ),
             ),
           ],

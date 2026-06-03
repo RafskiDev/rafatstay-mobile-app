@@ -96,7 +96,8 @@ class _FavoriteState extends ConsumerState<Favorite> {
                         final item = favoriteBranches[i];
                         final int itemId = item['item_id'] ?? 0;
                         final type = item['type'] ?? 'branch';
-
+                        final visits = item["visits_label"]?.toString().split(' ').first ?? "0";
+                        print(item);
                         return Padding(
                           padding: EdgeInsets.only(right: sizes.GetWidth() * 1),
                           child: ContentCard(
@@ -106,21 +107,13 @@ class _FavoriteState extends ConsumerState<Favorite> {
                                   children: [
                                     SvgPicture.asset("assets/icon/site.svg", height: sizes.GetHeight() * 1.7),
                                     SizedBox(width: sizes.GetWidth() * 0.4),
-                                    Text(item["distance_label"] ?? "", style: const TextStyle(fontSize: 10)),
+                                    Text("${item["distance_km"]?.toString() ?? "0"} ${textLanguage.GetWord("كم")}",
+                                        style: const TextStyle(fontSize: 10)),
                                     SizedBox(width: sizes.GetWidth() * 1.5),
                                     SvgPicture.asset("assets/icon/time.svg", height: sizes.GetHeight() * 1.7),
                                     SizedBox(width: sizes.GetWidth() * 0.4),
-                                    Text(item["eta_label"] ?? "", style: const TextStyle(fontSize: 10)),
-                                  ],
-                                ),
-                                SizedBox(height: sizes.GetHeight() * 1),
-                                Row(
-                                  children: [
-                                    SvgPicture.asset("assets/icon/evaluation.svg"),
-                                    SizedBox(width: sizes.GetWidth() * 0.4),
-                                    Text(item["visits_label"]?.toString() ?? "", style: const TextStyle(fontSize: 10)),
-                                    SizedBox(width: sizes.GetWidth() * 0.4),
-                                     Text(textLanguage.GetWord("يزور"), style:  TextStyle(fontSize: 10)),
+                                    Text("${item["eta_minutes"]?.toString() ?? "0"} ${textLanguage.GetWord("دقائق")}",
+                                        style: const TextStyle(fontSize: 10)),
                                   ],
                                 ),
                                 SizedBox(height: sizes.GetHeight() * 1),
@@ -128,7 +121,17 @@ class _FavoriteState extends ConsumerState<Favorite> {
                                   children: [
                                     SvgPicture.asset("assets/icon/Viewers.svg"),
                                     SizedBox(width: sizes.GetWidth() * 0.4),
-                                    Text(item["reviews_label"]?.toString() ?? "", style: const TextStyle(fontSize: 10)),
+                                    Text("${item["rating"]?.toString() ?? "0"} (${item["reviews_count"]?.toString() ?? "0"} ${textLanguage.GetWord("التقييمات")})", style: const TextStyle(fontSize: 10)),
+                                  ],
+                                ),
+                                SizedBox(height: sizes.GetHeight() * 1),
+                                Row(
+                                  children: [
+                                    SvgPicture.asset("assets/icon/evaluation.svg"),
+                                    SizedBox(width: sizes.GetWidth() * 0.4),
+                                    Text(visits, style: const TextStyle(fontSize: 10)),
+                                    SizedBox(width: sizes.GetWidth() * 0.4),
+                                    Text(textLanguage.GetWord("يزور"), style:  TextStyle(fontSize: 10)),
                                   ],
                                 ),
                               ],
@@ -138,7 +141,7 @@ class _FavoriteState extends ConsumerState<Favorite> {
                             title: item["business_name"] ?? "",
                             description: item["description"] ?? " ",
                             circleImagePath: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
-                            buttonText: item["cta"]?["label"] ?? textLanguage.GetWord("يكتشف"),
+                            buttonText:textLanguage.GetWord("يكتشف"),
                             onButtonTap: () {
                               final int branchId = item["item_id"] ?? 0;
                               if (branchId == 0) return;
@@ -146,7 +149,7 @@ class _FavoriteState extends ConsumerState<Favorite> {
                                 context,
                                 PageRouteBuilder(
                                   pageBuilder: (context, animation1, animation2) => RestaurantDetalis(
-                                    title: item["name"] ?? "",
+                                    title: item["business_name"] ?? "",
                                     branchId: branchId,
                                   ),
                                   transitionDuration: Duration.zero,
@@ -189,7 +192,6 @@ class _FavoriteState extends ConsumerState<Favorite> {
                         final item = favoriteDishes[i];
                         final int itemId = item['item_id'] ?? 0;
                         final type = item['type'] ?? 'menu_item';
-
                         return Padding(
                           padding: EdgeInsets.only(right: sizes.GetWidth() * 1),
                           child: ContentCard(
@@ -213,7 +215,7 @@ class _FavoriteState extends ConsumerState<Favorite> {
                             subTitle: item["name"] ?? "",
                             description: item["description"] ?? "",
                             circleImagePath: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
-                            buttonText: item["cta"]?["label"] ?? textLanguage.GetWord("اطلب الآن"),
+                            buttonText:textLanguage.GetWord("اطلب الآن"),
                             onButtonTap: () {
                               final int branchId = item["branch_id"] ?? 0;
                               if (branchId == 0) return;

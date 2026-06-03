@@ -119,10 +119,8 @@ class PageNotifier extends Notifier<int> {
     final body = <String, dynamic>{
       "payment_method": paymentMethod,
       if (paymentMethod != "cash")
-        "redirect_url": redirectUrl ?? "https://rafatstay.com/payment/callback",
+        "redirect_url": redirectUrl ?? "https://api.rafatstay.com/payment/callback",
     };
-
-
 
     final response = await ApiService().post(
       "v1/guest/bookings/$bookingId/pay",

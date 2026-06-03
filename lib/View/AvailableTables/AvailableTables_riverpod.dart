@@ -39,7 +39,7 @@ class PageNotifier extends Notifier<int> {
     };
 
     final response = await ApiService().get(endpoint, data, context);
-
+  //  print(response);
     if (response?["success"] == true) {
       tables = List<Map<String, dynamic>>.from(response?["data"] ?? []);
     }

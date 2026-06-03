@@ -553,7 +553,8 @@ class _HomeState extends ConsumerState<Home> {
                                 final String dishPrice = dishs["price"]?.toString() ?? "0";
                                 final dynamic rawId = dishs["id"] ?? dishs["item"]?["id"] ?? dishs["branch_id"];
                                 final int itemId = int.tryParse(rawId?.toString() ?? "0") ?? 0;
-                                final bool isLiked = ref.watch(Home_riverpod.notifier).favoriteStatus[itemId] ?? false;
+                              //  final bool isLiked = ref.watch(Home_riverpod.notifier).favoriteStatus[itemId] ?? false;
+                                final bool is_featured = dishs["is_favorited"];
                                 return Padding(
                                   padding: EdgeInsets.only(right: sizes.GetWidth() * 1),
                                   child: ContentCard(
@@ -583,10 +584,10 @@ class _HomeState extends ConsumerState<Home> {
                                     },
                                     width: sizes.GetWidth() * 50,
                                     height: sizes.GetHeight() * 40,
-                                    liked: isLiked,
+                                    liked: is_featured,
                                     onLikeTap: () {
                                       if (itemId == 0) return;
-                                      ref.read(Home_riverpod.notifier).toggleLike(itemId, i, context, type: "menu_item");
+                                      ref.read(Home_riverpod.notifier).toggleLike(itemId, i, context, type: "dish");
                                     },
                                     menuItemId: dishs['id'],
                                   ),

@@ -241,6 +241,7 @@ class PageNotifier extends Notifier<int> {
         if (id != 0) favoriteStatus[id] = true;
       }
     }
+
     // ─── Dish of the Day ───
     final dishItems = dishResponse?['data']?['items'];
     if (dishItems is List) {
@@ -254,10 +255,10 @@ class PageNotifier extends Notifier<int> {
             ...Map<String, dynamic>.from(item),
             "liked": favoriteStatus[id] ?? false,
           });
+        //  if (id != 0) checkFavoriteStatus(id, context, type: "menu_item");
         }
       }
     }
-
     ref.notifyListeners();
   }
 
@@ -524,7 +525,6 @@ class PageNotifier extends Notifier<int> {
     final response = await ApiService().post(
       "v1/$roles/favorites/toggle", {"item_id": itemId, "type": type}, context,
     );
-    print(response);
     if (response != null && response['success'] == true) return response;
 
     final fallbackType = type == "branch" ? "menu_item" : "branch";
@@ -534,10 +534,10 @@ class PageNotifier extends Notifier<int> {
   }
 
   // ─── Favorite Status ──────────────────────────────────────────────────────
-  void checkFavoriteStatus(int itemId, BuildContext context) async {
+  Future<void> checkFavoriteStatus(int itemId, BuildContext context, {String type = "branch"}) async {
     final response = await ApiService().get(
       "v1/$roles/favorites/check",
-      {"item_id": itemId.toString(), "type": "branch"},
+      {"item_id": itemId.toString(), "type": type},
       context,
     );
     if (response != null && response['success'] == true && response['data'] != null) {
@@ -545,7 +545,6 @@ class PageNotifier extends Notifier<int> {
       ref.notifyListeners();
     }
   }
-
   List<Map<String, dynamic>> getTopPickItems(List homes) {
     try {
       if (homes.isEmpty) return [];

@@ -118,7 +118,6 @@ class PageNotifier extends Notifier<int> {
       {},
       context,
     );
-    print(res);
     if (res?["success"] == true) {
       offer = List<Map<String, dynamic>>.from(res["data"] ?? []);
       ref.notifyListeners();
@@ -262,7 +261,6 @@ class PageNotifier extends Notifier<int> {
   bool isFetchingBranch = true;
   Future<void> branche(BuildContext context, int? branchId) async {
     branches.clear();
-
     final response = await ApiService().get(
       "v1/$roles/branches/$branchId",
       {},
@@ -272,10 +270,16 @@ class PageNotifier extends Notifier<int> {
         response['success'] == true &&
         response['data'] != null) {
 
-      branches = [response['data']];
-      if (branchId != null) {
-        favoriteStatus[branchId] = response['data']['is_favorited'] == true;
+      final data = Map<String, dynamic>.from(response['data']);
+
+      // ← احفظ القيم المحلية إذا موجودة (بعد toggle)
+      if (favoriteStatus.containsKey(branchId)) {
+        data['is_favorited'] = favoriteStatus[branchId];
+      } else {
+        favoriteStatus[branchId!] = data['is_favorited'] == true;
       }
+
+      branches = [data];
     } else {
       branches = [];
     }
@@ -419,72 +423,27 @@ class PageNotifier extends Notifier<int> {
   Future<void> interest(BuildContext context, int branchId) async {
     ApiService api = ApiService();
 
-    // 1. جلب الحالة الحالية المخزنة محلياً (إذا لم توجد نعتمد على السيرفر)
-    final bool isCurrentlyInterested = favoriteStatus[branchId] ??
-        (branches.isNotEmpty && branches[0]["is_favorited"] == true);
-
-    // 2. تحديث الواجهة فوراً بشكل مؤقت (Optimistic Update)
-    favoriteStatus[branchId] = !isCurrentlyInterested;
-
-    if (branches.isNotEmpty) {
-      final int currentBranchId = int.tryParse(branches[0]["id"]?.toString() ?? "0") ?? 0;
-      if (currentBranchId == branchId) {
-        int currentCount = int.tryParse(branches[0]["interest_count"]?.toString() ?? "0") ?? 0;
-
-        // إذا تحولت إلى true (زيادة العداد)، وإذا false (إنقاص العداد)
-        if (favoriteStatus[branchId] == true) {
-          branches[0]["interest_count"] = currentCount + 1;
-        } else {
-          branches[0]["interest_count"] = currentCount > 0 ? currentCount - 1 : 0;
-        }
-      }
-    }
-    ref.notifyListeners();
-
-    // 3. إرسال الطلب الفعلي للسيرفر
     final res = await api.post(
       "v1/guest/favorites/toggle",
-      {
-        "item_id": branchId.toString(),
-        "type": "interest",
-      },
+      {"item_id": branchId.toString(), "type": "interest"},
       context,
     );
-    print(res);
 
-    // 4. الحسم بناءً على رد السيرفر الحقيقي لمنع أي "مقلب" أو عكس في الحالة
     if (res != null && res["success"] == true && res["data"] != null) {
-      final serverData = res["data"];
-      // نأخذ الحالة الصريحة والنهائية من السيرفر (false تعني تمت الإزالة، true تعني تمت الإضافة)
-      final bool serverFavorited = serverData["is_favorited"] == true;
+      final bool serverFavorited = res["data"]["is_favorited"] == true;
+      favoriteStatus[branchId] = serverFavorited;
 
-      // إذا كانت حالة السيرفر النهائية تختلف عن التحديث الفوري، نصلح العداد والـ UI فوراً
-      if (favoriteStatus[branchId] != serverFavorited) {
-        favoriteStatus[branchId] = serverFavorited;
-
-        if (branches.isNotEmpty && int.tryParse(branches[0]["id"]?.toString() ?? "0") == branchId) {
-          int currentCount = int.tryParse(branches[0]["interest_count"]?.toString() ?? "0") ?? 0;
-          if (serverFavorited) {
-            branches[0]["interest_count"] = currentCount + 1;
-          } else {
-            branches[0]["interest_count"] = currentCount > 0 ? currentCount - 1 : 0;
-          }
-        }
+      if (branches.isNotEmpty) {
+        int currentCount = int.tryParse(
+            branches[0]["interest_count"]?.toString() ?? "0") ?? 0;
+        // إضافة أو إزالة بناءً على رد السيرفر
+        branches[0]["interest_count"] = serverFavorited
+            ? currentCount + 1
+            : (currentCount > 0 ? currentCount - 1 : 0);
+        branches[0]["is_favorited"] = serverFavorited;
       }
-    } else {
-      // في حال فشل الطلب بالكامل، نرتد للحالة الأصلية الآمنة
-      favoriteStatus[branchId] = isCurrentlyInterested;
-      if (branches.isNotEmpty && int.tryParse(branches[0]["id"]?.toString() ?? "0") == branchId) {
-        int currentCount = int.tryParse(branches[0]["interest_count"]?.toString() ?? "0") ?? 0;
-        if (isCurrentlyInterested) {
-          branches[0]["interest_count"] = currentCount + 1;
-        } else {
-          branches[0]["interest_count"] = currentCount > 0 ? currentCount - 1 : 0;
-        }
-      }
+      ref.notifyListeners();
     }
-
-    ref.notifyListeners();
   }
 }
 

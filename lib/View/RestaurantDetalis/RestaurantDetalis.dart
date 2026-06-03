@@ -107,7 +107,7 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
   @override
   Widget build(BuildContext context) {
     ref.watch(RestaurantDetalis_riverpod);
-    final notifier = ref.read(RestaurantDetalis_riverpod.notifier);
+    final notifier = ref.watch(RestaurantDetalis_riverpod.notifier);
     final branches = notifier.branches;
     final sizes = Sizes(context);
     final theme = Themes();
@@ -117,9 +117,14 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
         body: Center(child: showLoading()),
       );
     }
-    final bool isInterested = notifier.favoriteStatus[widget.branchId] ?? (notifier.branches.isNotEmpty && notifier.branches[0]["is_favorited"] == true);
-    final int interestCount = notifier.branches.isNotEmpty ? (int.tryParse(notifier.branches[0]["interest_count"]?.toString() ?? "0") ?? 0) : 0;
+
+    final int interestCount = notifier.branches.isNotEmpty
+        ? (int.tryParse(
+        notifier.branches[0]["interest_count"]?.toString() ?? "0") ??
+        0)
+        : 0;
   //  print("branches: $branches");
+   // print(notifier.branches[0]);
     final textLanguage = TextLanguage();
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
