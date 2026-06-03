@@ -6,71 +6,87 @@ import '../../../Utils/Them.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../RestaurantDetalis_riverpod.dart';
 Widget Policy(BuildContext context, WidgetRef ref) {
-  final rawPolicies = ref.read(RestaurantDetalis_riverpod.notifier).policies;
+  // جلب البيانات الخام من الريفربود
+  final List<dynamic> rawPolicies = ref.read(RestaurantDetalis_riverpod.notifier).policies;
 
-  final policies = rawPolicies
-      .whereType<Map<String, dynamic>>()
-      .toList();
-
-  if (policies.isEmpty) return const SizedBox.shrink();
-
-  final policy = policies[0];
-  final cancellation = policy["cancellation"] is Map
-      ? Map<String, dynamic>.from(policy["cancellation"])
-      : null;
-  final booking = policy["booking"] is Map
-      ? Map<String, dynamic>.from(policy["booking"])
-      : null;
-  final general = policy["general"] is List
-      ? policy["general"] as List
-      : [];
+  if (rawPolicies.isEmpty) return const SizedBox.shrink();
 
   final List<Widget> items = [];
 
-  // ─── Cancellation ───
-  if (cancellation != null) {
-    final desc = cancellation["description"]?.toString() ?? "";
-    if (desc.isNotEmpty) {
-      items.add(infow(
-        icon: "assets/icon/Reservations.svg",
-        text: "سياسة الإلغاء",
-        subtext: desc,
-      ));
+  // فحص العنصر الأول في القائمة
+  final firstItem = rawPolicies[0];
+
+  // 1️⃣ الحالة الأولى: إذا كانت البيانات عبارة عن نص مباشر (مثل الحالة مالتك الحالية)
+  if (firstItem is String) {
+    for (final policyText in rawPolicies) {
+      if (policyText.toString().isNotEmpty) {
+        items.add(infow(
+          icon: "assets/icon/Reservations.svg", // الأيقونة الافتراضية
+          text: "السياسات والأحكام",
+          subtext: policyText.toString(),
+        ));
+      }
     }
   }
+  // 2️⃣ الحالة الثانية: إذا كانت البيانات عبارة عن Map (الكود المتقدم مالتك)
+  else if (firstItem is Map) {
+    final policy = Map<String, dynamic>.from(firstItem);
 
-  // ─── Booking ───
-  if (booking != null) {
-    final minHours = booking["min_advance_hours"];
-    final maxDays = booking["max_advance_days"];
-    final hasDeposit = booking["requires_deposit"] == true;
-    final depositPct = booking["deposit_percentage"];
+    final cancellation = policy["cancellation"] is Map
+        ? Map<String, dynamic>.from(policy["cancellation"])
+        : null;
+    final booking = policy["booking"] is Map
+        ? Map<String, dynamic>.from(policy["booking"])
+        : null;
+    final general = policy["general"] is List
+        ? policy["general"] as List
+        : [];
 
-    String bookingDesc = "";
-    if (minHours != null) bookingDesc += "الحجز المسبق: $minHours ساعة على الأقل\n";
-    if (maxDays != null)  bookingDesc += "الحد الأقصى: $maxDays يوم مقدماً\n";
-    if (hasDeposit)       bookingDesc += "عربون: $depositPct%";
-
-    if (bookingDesc.isNotEmpty) {
-      items.add(infow(
-        icon: "assets/icon/Reservations.svg",
-        text: "سياسة الحجز",
-        subtext: bookingDesc.trim(),
-      ));
+    // ─── Cancellation ───
+    if (cancellation != null) {
+      final desc = cancellation["description"]?.toString() ?? "";
+      if (desc.isNotEmpty) {
+        items.add(infow(
+          icon: "assets/icon/Reservations.svg",
+          text: "سياسة الإلغاء",
+          subtext: desc,
+        ));
+      }
     }
-  }
 
-  // ─── General ───
-  for (final item in general) {
-    if (item is! Map) continue; // ✅ تجاهل أي شي مو Map
-    final title = item["title"]?.toString() ?? "";
-    final desc  = item["description"]?.toString() ?? "";
-    if (title.isNotEmpty || desc.isNotEmpty) {
-      items.add(infow(
-        icon: _getIcon(item["key"]?.toString()),
-        text: title,
-        subtext: desc,
-      ));
+    // ─── Booking ───
+    if (booking != null) {
+      final minHours = booking["min_advance_hours"];
+      final maxDays = booking["max_advance_days"];
+      final hasDeposit = booking["requires_deposit"] == true;
+      final depositPct = booking["deposit_percentage"];
+
+      String bookingDesc = "";
+      if (minHours != null) bookingDesc += "الحجز المسبق: $minHours ساعة على الأقل\n";
+      if (maxDays != null)  bookingDesc += "الحد الأقصى: $maxDays يوم مقدماً\n";
+      if (hasDeposit)       bookingDesc += "عربون: $depositPct%";
+
+      if (bookingDesc.isNotEmpty) {
+        items.add(infow(
+          icon: "assets/icon/Reservations.svg",
+          text: "سياسة الحجز",
+          subtext: bookingDesc.trim(),
+        ));
+      }
+    }
+
+    // ─── General ───
+    for (final item in general) {
+      if (item is! Map) continue;
+      final title = item["title"]?.toString() ?? "";
+      final desc  = item["description"]?.toString() ?? "";
+      if (title.isNotEmpty || desc.isNotEmpty) {
+        items.add(infow(
+          icon: _getIcon(item["key"]?.toString()),
+          text: title,
+          subtext: desc,
+        ));
+      }
     }
   }
 

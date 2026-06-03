@@ -22,14 +22,12 @@ class SeeAll extends ConsumerStatefulWidget {
   final RestaurantSection section;
   final RestaurantFilter filter;
   final String sectionKey;
-  final List<Map<String, dynamic>> filters;
 
   const SeeAll({
     required this.title,
     required this.section,
     this.filter = RestaurantFilter.all,
     this.sectionKey = "",
-    this.filters = const [],
     Key? key,
   });
 
@@ -89,12 +87,6 @@ class _SeeAllState extends ConsumerState<SeeAll> {
     final sizes = Sizes(context);
     final notifier = ref.watch(SeeAll_riverpod.notifier);
     ref.watch(SeeAll_riverpod);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final notifier = ref.read(SeeAll_riverpod.notifier);
-      if (notifier.filtersList.isEmpty && widget.filters.isNotEmpty) {
-        notifier.filtersList = widget.filters;
-      }
-    });
 
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
@@ -134,19 +126,19 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                   ),
                 ),
               SizedBox(height: sizes.GetHeight() * 2),
-              widget.filters.isNotEmpty ? SizedBox(
+              // ✅ الفلاتر تجي من notifier.filtersList (من الـ API) مو من widget
+              notifier.filtersList.isNotEmpty ? SizedBox(
                 height: sizes.GetHeight() * 5,
                 child: ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 2),
-                  itemCount: widget.filters.length,
+                  itemCount: notifier.filtersList.length,
                   itemBuilder: (context, index) {
-                    final filter = widget.filters[index];
+                    final filter = notifier.filtersList[index];
                     final isSelected = notifier.selectedFilterIndex == index;
                     final label = filter["label_en"] ?? filter["label"] ?? filter["key"] ?? "";
                     return GestureDetector(
-                      onTap: (){
-                        final filter = widget.filters[index];
+                      onTap: () {
                         ref.read(SeeAll_riverpod.notifier)
                             .selectFilter(context, index, widget.sectionKey, filter);
                       },
@@ -178,7 +170,7 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                 ),
               ) : const SizedBox(),
 
-              if (widget.filters.isNotEmpty)
+              if (notifier.filtersList.isNotEmpty)
                 SizedBox(height: sizes.GetHeight() * 2),
               Expanded(
                 child: _buildSectionContent(notifier, sizes, theme, textLanguage),
@@ -197,8 +189,6 @@ class _SeeAllState extends ConsumerState<SeeAll> {
       TextLanguage textLanguage,
       ) {
     final currentList = notifier.getCurrentList();
-
-    // تم تعديل التحقق هنا ليعتمد على الـ state الفعلي للتحميل من الـ notifier
     final bool isLoaderVisible = notifier.isFetchingMore;
 
     switch (widget.section) {
@@ -224,7 +214,7 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                         'rightColor': const Color(0xFFFFF8DC),
                         'title': offer['name'] ?? '',
                         'description': offer['description'] ?? '',
-                        'image': 'assets/images/ChickenDish.png',
+                        'image': offer['image'] ?? '',
                       },
                       height: sizes.GetHeight() * 18,
                       onTap: () {
@@ -232,7 +222,8 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                           context,
                           MaterialPageRoute(
                             builder: (_) => OffersDetails(
-                              title: textLanguage.GetWord("تفاصيل العروض"), offerId: 3,
+                              title: textLanguage.GetWord("تفاصيل العروض"),
+                              offerId: offer["branch_id"] ?? 0,
                             ),
                           ),
                         );
@@ -242,7 +233,6 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                 },
               ),
             ),
-            // ✅ هنا يظهر مؤشر التحميل في المنتصف تماماً أسفل القائمة
             if (isLoaderVisible)
               SafeArea(
                 child: Padding(
@@ -286,16 +276,17 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                             SvgPicture.asset("assets/icon/site.svg", height: sizes.GetHeight() * 1.7),
                             SizedBox(width: sizes.GetWidth() * 0.4),
                             Flexible(
-                                child: Text(
-                                  (item["distance_km"] ?? "0 KM").toString(),
-                                  style: const TextStyle(fontSize: 10),
-                                  overflow: TextOverflow.ellipsis,
-                                )),
+                              child: Text(
+                                (item["distance_km"] ?? "0 ${textLanguage.GetWord("كم")}").toString(),
+                                style: const TextStyle(fontSize: 10),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
                             SizedBox(width: sizes.GetWidth() * 1.5),
                             SvgPicture.asset("assets/icon/time.svg", height: sizes.GetHeight() * 1.7),
                             SizedBox(width: sizes.GetWidth() * 0.4),
                             Text(
-                              (item["eta_minutes"] ?? "0 Mins").toString(),
+                              (item["eta_minutes"] ?? "0 ${textLanguage.GetWord("دقائق")}").toString(),
                               style: const TextStyle(fontSize: 10),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -328,7 +319,6 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                 },
               ),
             ),
-            // ✅ تم إخراجه من الـ GridView ليصبح في السطر الأخير ممتد في السنتر تماماً
             if (isLoaderVisible)
               SafeArea(
                 child: Padding(
@@ -429,7 +419,6 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                 },
               ),
             ),
-            // ✅ مؤشر تحميل نظيف في السنتر تماماً
             if (isLoaderVisible)
               SafeArea(
                 child: Padding(
@@ -466,7 +455,7 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                     description: dish["description"]?.toString() ?? "لا يوجد بينات",
                     circleImagePath: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
                     buttonText: textLanguage.GetWord("يكتشف"),
-                    onButtonTap: ()async {
+                    onButtonTap: () async {
                       final branchId = dish["branch_id"];
                       await Navigator.push(
                         context,
@@ -498,7 +487,6 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                 },
               ),
             ),
-            // ✅ مؤشر تحميل نظيف في السنتر تماماً
             if (isLoaderVisible)
               SafeArea(
                 child: Padding(
@@ -509,6 +497,7 @@ class _SeeAllState extends ConsumerState<SeeAll> {
             SizedBox(height: sizes.GetHeight() * 3),
           ],
         );
+
     // ─── Status ───────────────────────────────────
       case RestaurantSection.status:
         return Column(
@@ -540,7 +529,7 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                         context,
                         PageRouteBuilder(
                           pageBuilder: (context, animation1, animation2) => Story(
-                            branchData: item, // 👈 نمرر الماب بالكامل فقط هنا
+                            branchData: item,
                           ),
                           transitionDuration: Duration.zero,
                           reverseTransitionDuration: Duration.zero,

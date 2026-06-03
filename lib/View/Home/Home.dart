@@ -218,7 +218,6 @@ class _HomeState extends ConsumerState<Home> {
                                     : (filterItem["label"] ?? filterItem["label_en"] ?? filterItem["key"] ?? "").toString();
                                 final String filterKey = (filterItem["key"] ?? category).toString().toLowerCase().replaceAll(" ", "_");
                                 final isSelected = ref.watch(Home_riverpod.notifier).selectedCategoryIndex == index;
-
                                 return GestureDetector(
                                   onTap: () {
                                     ref.read(Home_riverpod.notifier).selectCategory(index);
@@ -326,10 +325,10 @@ class _HomeState extends ConsumerState<Home> {
                           SizedBox(height: sizes.GetHeight() * 2),
                           Row(children: [Expanded(child: Status())]),
                         ],
+                        statuses.isEmpty?SizedBox(height: sizes.GetHeight() * 2):SizedBox.shrink(),
 
                         // ─── Offers ───────────────────────────────────
                         if (offers.isNotEmpty) ...[
-                          SizedBox(height: sizes.GetHeight() * 2),
                           _sectionHeader(
                             title: textLanguage.w("عروض اليوم"),
                             onSeeAll: () {
@@ -351,9 +350,10 @@ class _HomeState extends ConsumerState<Home> {
                             currentIndex: ref.watch(Home_riverpod.notifier).mainCarouselIndex,
                             onTap: () {
                               final currentIndex = ref.watch(Home_riverpod.notifier).mainCarouselIndex;
+
                               final selectedOffer = offers[currentIndex];
                               final int offerId = int.tryParse(selectedOffer["id"]?.toString() ?? "0") ?? 0;
-
+                           //  print(selectedOffer);
                               Navigator.push(context, PageRouteBuilder(
                                 pageBuilder: (_, __, ___) => OffersDetails(
                                   title: textLanguage.w("تفاصيل العروض"),
@@ -368,11 +368,10 @@ class _HomeState extends ConsumerState<Home> {
                             activeColor: theme.GetColor("primary"),
                             inactiveColor: Color(0xFFD3E9F8),
                           ),
+                          SizedBox(height: sizes.GetHeight() * 2),
                         ],
-
                         // ─── Top Picks ────────────────────────────────
                           if (ref.read(Home_riverpod.notifier).displayItems.isNotEmpty)
-                          SizedBox(height: sizes.GetHeight() * 2),
                           Toppicks(
                           homes: [{"items": ref.watch(Home_riverpod.notifier).displayItems}],
                           filters: homes,
@@ -478,7 +477,6 @@ class _HomeState extends ConsumerState<Home> {
                             ),
                           ),
                         ],
-
                         // ─── Favorites ────────────────────────────────
                         if (favorite.isNotEmpty) ...[
                           SizedBox(height: sizes.GetHeight() * 2),
@@ -567,7 +565,7 @@ class _HomeState extends ConsumerState<Home> {
                                       SvgPicture.asset("assets/icon/SAR.svg", color: theme.GetColor("secondaryPrimary")),
                                     ]),
                                     showIcon: true,
-                                    imagePath: dishs["image"]??"",
+                                    imagePath: fixImage(dishs["image"])??"",
                                     title: dishTitle,
                                     subTitle: dishSubTitle,
                                     description: dishDesc,

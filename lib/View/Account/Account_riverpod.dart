@@ -51,15 +51,14 @@ class PageNotifier extends Notifier<int> {
       storage.remove("token");
       storage.remove("user");
       storage.remove("password");
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(builder: (context) => Login()),
-            (route) => false,
-      );
     }else{
       ToastMessages(context,textLanguage.GetWord("خطأ في المصداقية"),Themes().GetColor("error"),Themes().GetColor("white"));
     }
-
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (context) => Login()),
+          (route) => false,
+    );
     return response;
   }
 
@@ -76,7 +75,6 @@ class PageNotifier extends Notifier<int> {
       method: "POST",
       fields: {"_method": "PATCH"},
     );
-    print(response);
     if (response?["success"] == true) {
       final user = storage.read("user");
      // user["avatar"] = response?["data"]["user"]["avatar"];

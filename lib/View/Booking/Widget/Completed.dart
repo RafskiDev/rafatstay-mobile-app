@@ -81,6 +81,7 @@ class _CompletedState extends ConsumerState<Completed> {
           }
           final booking = bookCompleted[index];
           final branch = booking["branch"] ?? {};
+          print(branch["image"]);
           return Padding(
             padding: EdgeInsets.only(bottom: Sizes(context).GetHeight() * 1),
             child: BookingCard(

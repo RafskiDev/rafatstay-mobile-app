@@ -28,19 +28,16 @@ class _FilteredResultsState extends ConsumerState<FilteredResults> {
       final List<Map<String, dynamic>> initialData = [];
 
       for (var item in widget.data) {
-        if (item is Map<String, dynamic>) {
+        // ✅ تم تعديله ليكون فحصاً مرناً (is Map) ليتوافق مع بيانات السيرفر بأمان
+        if (item is Map) {
           initialData.add(Map<String, dynamic>.from(item));
         }
       }
 
-      final notifier =
-      ref.read(filteredResultsProvider.notifier);
-
+      final notifier = ref.read(filteredResultsProvider.notifier);
       notifier.setData(initialData);
-
     });
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -51,12 +48,12 @@ class _FilteredResultsState extends ConsumerState<FilteredResults> {
     final allData = ref.watch(filteredResultsProvider);
 
     return Scaffold(
-      appBar: buildCustomAppBar(context, "Filtered Results"),
+      appBar: buildCustomAppBar(context, textLanguage.GetWord("نتائج مُفلترة")),
       backgroundColor: theme.GetColor("background"),
       body: allData.isEmpty
           ? Center(
         child: Text(
-          "لا توجد بيانات",
+          textLanguage.GetWord("لا توجد بيانات"),
           style: TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.bold,
@@ -71,37 +68,25 @@ class _FilteredResultsState extends ConsumerState<FilteredResults> {
             shrinkWrap: true,
             physics: const NeverScrollableScrollPhysics(),
             padding: EdgeInsets.all(sizes.GetWidth() * 2),
-            gridDelegate:  SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              mainAxisExtent: Sizes(context).GetHeight() *39.2,
+              mainAxisExtent: Sizes(context).GetHeight() * 37.2,
               crossAxisSpacing: Sizes(context).GetWidth() * 1,
               mainAxisSpacing: Sizes(context).GetHeight() * 1,
             ),
             itemCount: allData.length,
             itemBuilder: (context, i) {
               final item = allData[i];
+              print(item);
               return Padding(
                 padding: EdgeInsets.only(right: sizes.GetWidth() * 1),
                 child: ContentCard(
                   borderColor: theme.GetColor("success"),
                   additionalInfo: Column(
+
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(
-                              "Fast food chicken meals with a distinctive Saudi flavor.",
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: theme.GetColor("textSecondary"),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: sizes.GetHeight() * 2),
+
+                      SizedBox(height: sizes.GetHeight() * 3),
                       Row(
                         children: [
                           SvgPicture.asset(
@@ -111,7 +96,7 @@ class _FilteredResultsState extends ConsumerState<FilteredResults> {
                           SizedBox(width: sizes.GetWidth() * 0.4),
                           Flexible(
                             child: Text(
-                              "0 KM",
+                              item["distance_km"] ?? "KM 0",
                               style: const TextStyle(fontSize: 10),
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -120,45 +105,47 @@ class _FilteredResultsState extends ConsumerState<FilteredResults> {
                           SvgPicture.asset(
                             "assets/icon/time.svg",
                             height: sizes.GetHeight() * 1.7,
+                            // ✅ تم إزالة color: Colors.transparent لتبدو طبيعية
                           ),
                           SizedBox(width: sizes.GetWidth() * 0.4),
-                          const Text(
-                            "0 Mins",
-                            style: TextStyle(fontSize: 10),
+                          Text(
+                            item["eta_minutes"] ?? "KM 0",
+                            style: const TextStyle(fontSize: 10),
                           ),
                         ],
                       ),
-                      SizedBox(height: sizes.GetHeight() * 1),
+                   //   SizedBox(height: sizes.GetHeight() * 1), // مسافة في الأسفل
                     ],
                   ),
 
                   showIcon: true,
-                  //item["image"]
-                  imagePath:"assets/images/image6.png",
+                  imagePath: "assets/images/image6.png",
                   title: item["business_name"] ?? "بدون عنوان",
-                  description: item["description"] ?? "",
-                  circleImagePath:
-                  "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
+                  description: item["description"] ?? " ",
+                  circleImagePath: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
                   buttonText: textLanguage.GetWord("يكتشف"),
                   onButtonTap: () {
-                    final branchId=item["id"];
+                    final branchId = item["id"];
                     Navigator.push(
                       context,
                       PageRouteBuilder(
                         pageBuilder: (context, animation1, animation2) =>
                             RestaurantDetalis(
                               title: item["business_name"] ?? "بدون عنوان",
-                              branchId:branchId),
+                              branchId: branchId,
+                            ),
                         transitionDuration: Duration.zero,
                         reverseTransitionDuration: Duration.zero,
                       ),
                     );
                   },
                   width: sizes.GetWidth() * 50,
-                  height: sizes.GetHeight() * 40,
-                  liked: item["liked"] ?? false,
-                  onLikeTap: () {
+                  height: sizes.GetHeight() * 38,
 
+                  // 👑 التعديل المطلوب: تم ربطها بـ is_favorited القادمة من الـ API مالتك مباشرة
+                  liked: item["is_favorited"] ?? item["liked"] ?? false,
+
+                  onLikeTap: () {
                     ref
                         .read(filteredResultsProvider.notifier)
                         .toggleFavorite(i, context);

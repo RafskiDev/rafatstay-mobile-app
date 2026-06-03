@@ -36,7 +36,6 @@ class CustomCarousel extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Themes();
     final sizes = Sizes(context);
-   // print(items);
     return Column(
       children: [
         CarouselSlider(

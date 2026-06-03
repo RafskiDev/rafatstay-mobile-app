@@ -75,6 +75,8 @@ class PageNotifier extends Notifier<int> {
 
       //  searchResults = [...taggedBranches, ...taggedMenuItems];
         searchResults = [...taggedBranches];
+
+        print(searchResults);
         // 🟢 حفظ البحث في السجل
         /*
         final newSearch = {

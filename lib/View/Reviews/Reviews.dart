@@ -16,6 +16,7 @@ import '../../Widget/WidgetButton.dart';
 import '../../Widget/WidgetTextField.dart';
 import '../Payment/Payment.dart';
 import 'Reviews_riverpod.dart';
+
 class Reviews extends ConsumerStatefulWidget {
   final int branchId;
   const Reviews({super.key, required this.branchId});
@@ -25,7 +26,6 @@ class Reviews extends ConsumerStatefulWidget {
 }
 
 class _ReviewsState extends ConsumerState<Reviews> {
-  // ✅ ScrollController في الـ State مو الـ notifier
   final ScrollController _scrollController = ScrollController();
   late PageNotifier _notifier;
 
@@ -63,7 +63,6 @@ class _ReviewsState extends ConsumerState<Reviews> {
     super.dispose();
   }
 
-
   @override
   Widget build(BuildContext context) {
     ref.watch(Reviews_riverpod);
@@ -71,73 +70,81 @@ class _ReviewsState extends ConsumerState<Reviews> {
     final sizes = Sizes(context);
     final theme = Themes();
     final reviews = notifier.reviews;
+
     return Scaffold(
-      appBar: buildCustomAppBar(context,"Reviews"),
+      appBar: buildCustomAppBar(context, TextLanguage().GetWord("التقييمات")),
       backgroundColor: theme.GetColor("background"),
       body: ValueListenableBuilder<bool>(
         valueListenable: LoadingService.isLoading,
-          builder: (context, isLoading, child) {
-            if (reviews.isEmpty && notifier.currentPage == 1) {
-              return showLoading();
-            }
-            return   Column(
-              children: [
-                Expanded(
-                  child: ListView.builder(
-                    controller: _scrollController, // ✅
-                    padding: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 2, vertical: sizes.GetHeight() * 2),
-                    itemCount: reviews.length + 1, // +1 للـ loading
-                    itemBuilder: (context, index) {
-                      if (index == reviews.length) {
-                        if (notifier.isLoadingMore) {
-                          return Column(
-                            children: [
-                              Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: Center(
-                                  child: showLoading(),
-                                ),
-                              ),
-                              SizedBox(height: sizes.GetHeight() * 2),
-                            ],
-                          );
-                        } else {
-                          return const SizedBox.shrink();
-                        }
-                      }
-                      final item = reviews[index];
-                      final imageUrl = () {
-                        final media = item["media"] as List? ?? [];
-                        final images = media.where((m) => m["media_type"] == "image").toList();
-                        if (images.isEmpty) return null;
-                        return "https://api.rafatstay.com${images[0]["media_url"]}";
-                      }();
-                      return Padding(
-                        padding: EdgeInsets.only(bottom: sizes.GetHeight() * 2),
-                        child: ReviewCard(
-                          name: item["user"]?["full_name"]?.toString() ?? "غير معروف",
-                          date:DateTimeHelper.extractTime(item["created_at"]),
-                          comment: item["comment"]?.toString() ?? "",
-                          rating: item["overall_rating"] ?? 0,
-                          image: item["user"]["avatar_url"]??"",
-                          video: null,
-                          imageOnly: imageUrl,
-                          sizes: sizes,
-                          theme: theme,
-                          mediaItems: List<dynamic>.from(item["media"] ?? []),
-                          onAvatarTap: ()async {
-
-                          },
-                        ),
-                      );
-                    },
-                  ),
-                ),
-                SizedBox(height: sizes.GetHeight() * 2),
-              ],
-            );
+        builder: (context, isLoading, child) {
+          if (reviews.isEmpty && notifier.currentPage == 1) {
+            return showLoading();
           }
+          return Column(
+            children: [
+              Expanded(
+                child: ListView.builder(
+                  controller: _scrollController,
+                  padding: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 2, vertical: sizes.GetHeight() * 2),
+                  itemCount: reviews.length + 1, // +1 للـ loading
+                  itemBuilder: (context, index) {
+                    if (index == reviews.length) {
+                      if (notifier.isLoadingMore) {
+                        return Column(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: Center(
+                                child: showLoading(),
+                              ),
+                            ),
+                            SizedBox(height: sizes.GetHeight() * 2),
+                          ],
+                        );
+                      } else {
+                        return const SizedBox.shrink();
+                      }
+                    }
 
+                    final item = reviews[index];
+
+
+                    // ✅ استخراج روابط الميديا بشكل آمن وصحيح
+                    final mediaList = item["media"] as List? ?? [];
+
+
+
+                    // ✅ تأمين جلب أول مسار صورة للتقييم بدون استخدام الترتيب الخارجي (index) لمنع الكراش
+                    final String imageOnlyUrl = mediaList.isNotEmpty && mediaList[0]["media_url"] != null
+                        ? "${mediaList[0]["media_url"]}"
+                        : "";
+                    return Padding(
+                      padding: EdgeInsets.only(bottom: sizes.GetHeight() * 2),
+                      child: ReviewCard(
+                        name: item["user"]?["full_name"]?.toString() ?? "غير معروف",
+                        date: DateTimeHelper.extractTime(item["created_at"]),
+                        comment: item["comment"]?.toString() ?? "",
+                        rating: item["overall_rating"] ?? 0,
+                        // ✅ تأمين قراءة بيانات الأفاتار للمستخدم حتى لو كانت القيمة لست نصية مباشرة
+                        image:item["user"]["avatar_url"]?.toString()??"",
+                        video: null,
+                        // ✅ تمرير مسار الصورة المصلح والآمن هنا
+                        imageOnly: imageOnlyUrl,
+                        sizes: sizes,
+                        theme: theme,
+                        mediaItems: List<dynamic>.from(mediaList),
+                        onAvatarTap: () async {
+                          // الأكشن الخاص بالضغط على الأفاتار
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+              SizedBox(height: sizes.GetHeight() * 2),
+            ],
+          );
+        },
       ),
     );
   }

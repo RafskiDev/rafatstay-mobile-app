@@ -16,7 +16,6 @@ class Status extends ConsumerWidget {
     final statusItems = ref.watch(Home_riverpod.notifier).statuses;
 
    // if (statusItems.isEmpty) return SizedBox.shrink();
-
     return SizedBox(
       height: sizes.GetHeight() * 16.5,
       child: ListView.builder(
@@ -26,9 +25,10 @@ class Status extends ConsumerWidget {
         itemBuilder: (context, index) {
           final item = statusItems[index];
           final String business_name = (item["business_name"] ?? "").toString();
-          final String logo = (item["logo_url"] ?? "").toString();
+          final latestStatus = item["latest_status"] as Map<String, dynamic>?;
+          final String statusImage = latestStatus != null ? (latestStatus["media_url"] ?? "").toString() : "";
           return CategoryItemCard(
-            imagePath:logo,
+            imagePath:statusImage,
             width: sizes.GetWidth() * 19,
             height: sizes.GetHeight() * 11,
             nameImagePath: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
@@ -46,7 +46,6 @@ class Status extends ConsumerWidget {
                   reverseTransitionDuration: Duration.zero,
                 ),
               );
-              print(item);
             },
           );
         },

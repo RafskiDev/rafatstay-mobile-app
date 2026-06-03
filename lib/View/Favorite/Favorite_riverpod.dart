@@ -54,7 +54,6 @@ class PageNotifier extends Notifier<int> {
           interestBranches = List<Map<String, dynamic>>.from(sections["interests"]["items"]);
           for (final item in interestBranches) {
             if (item['item_id'] != null) {
-              // بما أنها قادمة في شاشة المفضلة إذن هي مفضلة تلقائياً حتى يغيرها المستخدم
               favoriteStatus[item['item_id']] = true;
             }
           }

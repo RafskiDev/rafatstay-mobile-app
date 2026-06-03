@@ -26,7 +26,12 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
   Map<int, String?> reactions = {};
   List<Map<String, dynamic>> statuses = [];
 
-  // دالة ذكية لاستخراج الـ branch_id ديناميكياً حسب التصميمين
+  // ⭐ متغيرات جديدة لتحكم في التحميل
+  bool _imageLoaded = false;
+  bool _isLoadingImage = true;
+  ImageStream? _imageStream;
+  ImageStreamListener? _imageListener;
+
   int _getBranchId() {
     final id = widget.branchData["branch_id"] ?? widget.branchData["id"];
     return int.tryParse(id?.toString() ?? "0") ?? 0;
@@ -44,7 +49,6 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
         final id = int.tryParse(status["id"]?.toString() ?? "0") ?? 0;
         final userReaction = status["reactions"]?["user_reaction"]?.toString();
         if (id != 0) {
-          // ← سجل في الـ notifier مباشرة
           ref.read(Story_riverpod.notifier).userReactions[id] = userReaction;
         }
       }
@@ -62,30 +66,90 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
       duration: const Duration(seconds: 5),
     );
 
-    // ✅ جلب الـ ID بشكل ديناميكي آمن
     final int branchId = _getBranchId();
     final bool isBranchFavorited = widget.branchData["is_favorited"] == true;
 
     if (branchId != 0) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        // تحديث حالة الـ Riverpod بالحالة الحقيقية
         ref.read(Story_riverpod.notifier).favoriteStatus[branchId] = isBranchFavorited;
         ref.read(Story_riverpod.notifier).ref.notifyListeners();
       });
     }
 
-    _loadCurrent();
+    // ⭐ لا نبدأ العداد هنا - ننتظر تحميل الصورة
+    _preloadCurrentImage();
   }
 
-  void _loadCurrent() {
-    _progressController?.stop();
-    _progressController?.reset();
+  // ⭐ دالة جديدة: تحميل الصورة مسبقاً قبل بدء العداد
+  void _preloadCurrentImage() {
+    if (statuses.isEmpty) {
+      setState(() {
+        _isLoadingImage = false;
+        _imageLoaded = true;
+      });
+      return;
+    }
+
+    final item = statuses[currentIndex];
+    final mediaUrl = item["media_url"] ?? "";
+
+    if (mediaUrl.isEmpty) {
+      // لا توجد صورة، نبدأ العداد فوراً
+      setState(() {
+        _isLoadingImage = false;
+        _imageLoaded = true;
+      });
+      _startProgress();
+      return;
+    }
+
+    setState(() {
+      _isLoadingImage = true;
+      _imageLoaded = false;
+    });
+
+    // إنشاء ImageProvider وتحميلها
+    final ImageProvider imageProvider = NetworkImage(mediaUrl);
+
+    _imageListener = ImageStreamListener(
+          (ImageInfo info, bool synchronousCall) {
+        // ✅ الصورة اكتمل تحميلها
+        _imageStream?.removeListener(_imageListener!);
+
+        if (mounted) {
+          setState(() {
+            _isLoadingImage = false;
+            _imageLoaded = true;
+          });
+          // نبدأ العداد بعد اكتمال التحميل
+          _startProgress();
+        }
+      },
+      onError: (dynamic exception, StackTrace? stackTrace) {
+        // ❌ فشل تحميل الصورة - نبدأ العداد على أي حال
+        _imageStream?.removeListener(_imageListener!);
+
+        if (mounted) {
+          setState(() {
+            _isLoadingImage = false;
+            _imageLoaded = true; // نعتبرها محملة حتى لا نعلق
+          });
+          _startProgress();
+        }
+      },
+    );
+
+    _imageStream = imageProvider.resolve(const ImageConfiguration());
+    _imageStream!.addListener(_imageListener!);
+  }
+
+  // ⭐ دالة جديدة: بدء العداد بعد التحميل
+  void _startProgress() {
     _progressController?.removeStatusListener(_onProgressComplete);
+    _progressController?.reset();
 
     ref.read(Story_riverpod.notifier).startWatching();
 
-    setState(() {});
-    _progressController?.duration = const Duration(seconds: 5);
     _progressController?.forward();
     _progressController?.addStatusListener(_onProgressComplete);
   }
@@ -105,8 +169,13 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
     );
 
     if (currentIndex < statuses.length - 1) {
-      setState(() => currentIndex++);
-      _loadCurrent();
+      setState(() {
+        currentIndex++;
+        // ⭐ إعادة تعيين حالة التحميل للصورة الجديدة
+        _imageLoaded = false;
+        _isLoadingImage = true;
+      });
+      _preloadCurrentImage(); // تحميل الصورة الجديدة
     } else {
       Navigator.pop(context);
     }
@@ -114,13 +183,22 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
 
   void _prevStory() {
     if (currentIndex > 0) {
-      setState(() => currentIndex--);
-      _loadCurrent();
+      setState(() {
+        currentIndex--;
+        // ⭐ إعادة تعيين حالة التحميل للصورة الجديدة
+        _imageLoaded = false;
+        _isLoadingImage = true;
+      });
+      _preloadCurrentImage(); // تحميل الصورة الجديدة
     }
   }
 
   @override
   void dispose() {
+    // ⭐ تنظيف مستمع الصورة
+    if (_imageStream != null && _imageListener != null) {
+      _imageStream!.removeListener(_imageListener!);
+    }
     _progressController?.dispose();
     super.dispose();
   }
@@ -128,10 +206,16 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     ref.watch(Story_riverpod);
+
     if (statuses.isEmpty) {
       return const Scaffold(
         backgroundColor: Colors.black,
-        body: Center(child: Text("لا توجد ستوريات متوفرة", style: TextStyle(color: Colors.white))),
+        body: Center(
+          child: Text(
+            "لا توجد ستوريات متوفرة",
+            style: TextStyle(color: Colors.white),
+          ),
+        ),
       );
     }
 
@@ -139,19 +223,17 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
     final mediaUrl = item["media_url"] ?? "";
     final int statusId = int.tryParse(item["id"]?.toString() ?? "0") ?? 0;
 
-    // ✅ جلب الـ branch_id بشكل ديناميكي آمن
     final int branchId = _getBranchId();
     final String businessName = widget.branchData["business_name"] ?? widget.branchData["name"] ?? "";
     final String? logoUrl = widget.branchData["logo_url"];
     final String timeAgo = widget.branchData["updated_ago"] ?? item["time_ago"] ?? "";
     final bool isFavorited = ref.read(Story_riverpod.notifier).favoriteStatus[branchId] ?? false;
-    // احسب القيم
+
     final int likesCountVal = ref.read(Story_riverpod.notifier).likesCount[statusId]
         ?? int.tryParse(item["reactions"]?["total_count"]?.toString() ?? "0") ?? 0;
 
     final int dislikesCountVal = ref.read(Story_riverpod.notifier).dislikesCount[statusId]
         ?? int.tryParse(item["reactions"]?["dislikes_count"]?.toString() ?? "0") ?? 0;
-
 
     final String? currentReaction = ref.watch(Story_riverpod.notifier).userReactions[statusId];
 
@@ -173,65 +255,95 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
                 : Container(color: Colors.grey[900]),
           ),
 
-          // 2. مناطق التنقل (يمين ويسار الشاشة للتنقل)
+          // ⭐ 2. مؤشر تحميل الصورة (يظهر أثناء التحميل فقط)
+          if (_isLoadingImage && !_imageLoaded)
+            const Positioned.fill(
+              child: Center(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 3,
+                    ),
+                    SizedBox(height: 12),
+                    Text(
+                      "جاري التحميل...",
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 14,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+          // 3. مناطق التنقل (يمين ويسار الشاشة للتنقل)
+          // ⭐ نعطل التنقل أثناء تحميل الصورة
           Positioned.fill(
             child: Row(
               children: [
                 Expanded(
                   child: GestureDetector(
                     behavior: HitTestBehavior.translucent,
-                    onTap: _prevStory,
+                    onTap: _imageLoaded ? _prevStory : null,
                   ),
                 ),
                 Expanded(
                   child: GestureDetector(
                     behavior: HitTestBehavior.translucent,
-                    onTap: _nextStory,
+                    onTap: _imageLoaded ? _nextStory : null,
                   ),
                 ),
               ],
             ),
           ),
 
-          // 3. خطوط مؤشرات تقدم الستوريات العلوية (Progress Indicators)
-          Positioned(
-            bottom: Sizes(context).GetHeight() * 5,
-            left: Sizes(context).GetWidth() * 2,
-            right: Sizes(context).GetWidth() * 2,
-            child: Row(
-              children: List.generate(statuses.length, (i) {
-                return Expanded(
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 2),
-                    height: Sizes(context).GetHeight() * 0.6,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(10),
-                      color: i < currentIndex ? Themes().GetColor("primary") : const Color(0xFFD3E9F8),
-                    ),
-                    child: i == currentIndex
-                        ? AnimatedBuilder(
-                      animation: _progressController!,
-                      builder: (context, _) {
-                        return FractionallySizedBox(
-                          alignment: Alignment.centerLeft,
-                          widthFactor: _progressController?.value ?? 0.0,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: Themes().GetColor("primary"),
-                              borderRadius: BorderRadius.circular(10),
+          // 4. خطوط مؤشرات تقدم الستوريات العلوية (Progress Indicators)
+          // ⭐ لا نعرض العداد إلا بعد اكتمال التحميل
+          if (_imageLoaded)
+            Positioned(
+              bottom: Sizes(context).GetHeight() * 5,
+              left: Sizes(context).GetWidth() * 2,
+              right: Sizes(context).GetWidth() * 2,
+              child: Row(
+                children: List.generate(statuses.length, (i) {
+                  return Expanded(
+                    child: Container(
+                      margin: const EdgeInsets.symmetric(horizontal: 2),
+                      height: Sizes(context).GetHeight() * 0.6,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(10),
+                        color: i < currentIndex
+                            ? Themes().GetColor("primary")
+                            : const Color(0xFFD3E9F8),
+                      ),
+                      child: i == currentIndex
+                          ? AnimatedBuilder(
+                        animation: _progressController!,
+                        builder: (context, _) {
+                          return FractionallySizedBox(
+                            alignment: Alignment.centerLeft,
+                            widthFactor: _progressController?.value ?? 0.0,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: Themes().GetColor("primary"),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
                             ),
-                          ),
-                        );
-                      },
-                    )
-                        : null,
-                  ),
-                );
-              }),
+                          );
+                        },
+                      )
+                          : null,
+                    ),
+                  );
+                }),
+              ),
             ),
-          ),
 
-          // 4. زر الرجوع والإغلاق
+          // 5. زر الرجوع والإغلاق
           Positioned(
             right: Sizes(context).GetWidth() * 5,
             top: Sizes(context).GetHeight() * 8,
@@ -249,7 +361,7 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
             ),
           ),
 
-          // 5. اسم الفرع + شعار اللوجو ووقت النشر العلوي
+          // 6. اسم الفرع + شعار اللوجو ووقت النشر العلوي
           Positioned(
             left: Sizes(context).GetWidth() * 5,
             top: Sizes(context).GetHeight() * 8,
@@ -268,8 +380,12 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
                     CircleAvatar(
                       radius: Sizes(context).GetHeight() * 2,
                       backgroundColor: Themes().GetColor("secondaryPrimary"),
-                      backgroundImage: (logoUrl != null && logoUrl.isNotEmpty) ? NetworkImage(logoUrl) : null,
-                      child: (logoUrl == null || logoUrl.isEmpty) ? const Icon(Icons.store, color: Colors.white, size: 16) : null,
+                      backgroundImage: (logoUrl != null && logoUrl.isNotEmpty)
+                          ? NetworkImage(logoUrl)
+                          : null,
+                      child: (logoUrl == null || logoUrl.isEmpty)
+                          ? const Icon(Icons.store, color: Colors.white, size: 16)
+                          : null,
                     ),
                     SizedBox(width: Sizes(context).GetWidth() * 2),
                     Text(
@@ -286,105 +402,6 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
               ),
             ),
           ),
-           /*
-          // 6. عمود الأزرار الجانبية (المفضلة واللايك والديسلايك)
-          Positioned(
-            left: Sizes(context).GetWidth() * 3,
-            top: Sizes(context).GetHeight() * 50,
-            child: Column(
-              children: [
-                // ✅ زر المفضلة التفاعلي الذي يتعامل بديناميكية تامة الآن
-                CircularButton(
-                  size: Sizes(context).GetHeight() * 5,
-                  backgroundColor: isFavorited ? Themes().GetColor("primary") : Themes().GetColor("backgroundOffWhite"),
-                  borderColor: Themes().GetColor("backgroundOffWhite"),
-                  onTap: () {
-                    ref.read(Story_riverpod.notifier).toggleFavorite(context, branchId);
-                  },
-                  child: SvgPicture.asset("assets/icon/Interested.svg"),
-                ),
-                SizedBox(height: Sizes(context).GetHeight() * 2),
-
-                // زر الـ Likes
-                _statChip(
-                  icon: "assets/icon/likes.svg",
-                  value: likesCountVal.toString(), // ← هنا التغيير
-                  isActive: currentReaction == "like", // ← من الـ notifier
-                  onTap: () {
-                    ref.read(Story_riverpod.notifier).toggleReaction(
-                      context,
-                      statusId,
-                      "like",
-                      currentReaction == "like", // ← الحالة الصحيحة
-                      likesCountVal,
-                    );
-                  },
-                  context: context,
-                ),
-                SizedBox(height: Sizes(context).GetHeight() * 1),
-
-                // زر الـ Dislikes
-                _statChip(
-                  icon: "assets/icon/dislike.svg",
-                  value: item["reactions"]?["dislikes_count"]?.toString() ?? "0",
-                  isActive: reactions[statusId] == "dislike",
-                  onTap: () {
-                    final bool wasLiked = reactions[statusId] == "like";
-                    final bool wasDisliked = reactions[statusId] == "dislike";
-
-                    setState(() {
-                      reactions[statusId] = wasLiked ? null : "like";
-                      // إذا كان dislike وحول لـ like، اطرح من الـ dislikes
-                      if (wasDisliked) {
-                        ref.read(Story_riverpod.notifier).dislikesCount[statusId] =
-                            (dislikesCountVal - 1).clamp(0, 999);
-                      }
-                    });
-
-                    ref.read(Story_riverpod.notifier).toggleReaction(
-                      context, statusId, "like", wasLiked, likesCountVal,
-                    );
-                  },
-                  context: context,
-                ),
-              ],
-            ),
-          ),
-          Positioned(
-            left: Sizes(context).GetWidth() * 3,
-            top: Sizes(context).GetHeight() * 75,
-            child: GestureDetector(
-              onTap: () => showStoryComments(context, item["id"]),
-              child: Column(
-                children: [
-                  CircularButton(
-                    size: Sizes(context).GetHeight() * 5,
-                    backgroundColor: Themes().GetColor("backgroundOffWhite"),
-                    borderColor: Themes().GetColor("backgroundOffWhite"),
-                    onTap: () => showStoryComments(context, item["id"]),
-                    child: SvgPicture.asset("assets/icon/Comment.svg"),
-                  ),
-                  SizedBox(height: Sizes(context).GetHeight() * 0.5),
-                  Container(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: Sizes(context).GetWidth() * 2,
-                      vertical: Sizes(context).GetHeight() * 0.3,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Themes().GetColor("backgroundOffWhite"),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      item["comments_count"]?.toString() ?? "0",
-                      style: const TextStyle(fontSize: 11),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-
-            */
         ],
       ),
     );
@@ -401,7 +418,9 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
       children: [
         CircularButton(
           size: Sizes(context).GetHeight() * 5,
-          backgroundColor: isActive ? Themes().GetColor("primary") : Themes().GetColor("backgroundOffWhite"),
+          backgroundColor: isActive
+              ? Themes().GetColor("primary")
+              : Themes().GetColor("backgroundOffWhite"),
           borderColor: Themes().GetColor("backgroundOffWhite"),
           onTap: onTap,
           child: SvgPicture.asset(

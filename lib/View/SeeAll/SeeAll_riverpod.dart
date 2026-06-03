@@ -157,9 +157,14 @@ class PageNotifier extends Notifier<int> {
           ? List<Map<String, dynamic>>.from(items)
           : <Map<String, dynamic>>[];
 
-      final pagination = data['pagination'];
-      if (pagination != null) {
-        hasMore = currentPage < (pagination['last_page'] ?? 1);
+      if (data != null && data['pagination'] != null) {
+        final pagination = data['pagination'];
+
+        // تحويل القيم بأمان لمنع الـ String type sub-type error
+        final int lastPage = int.tryParse(pagination['last_page']?.toString() ?? '1') ?? 1;
+        final int apiCurrentPage = int.tryParse(pagination['current_page']?.toString() ?? '1') ?? 1;
+
+        hasMore = currentPage < lastPage;
       } else {
         hasMore = list.length >= _perPage;
       }
@@ -251,7 +256,6 @@ class PageNotifier extends Notifier<int> {
     }
     isLoading = false;
     isFetchingMore = false;
-
     if (!ref.mounted) return;
     state++;
   }
@@ -274,6 +278,7 @@ class PageNotifier extends Notifier<int> {
     currentFilter = RestaurantFilter.all;
     state++;
   }
+
   // ==================== جلب القسم العادي ====================
   Future<void> fetchSection(
       BuildContext context, {
@@ -319,6 +324,11 @@ class PageNotifier extends Notifier<int> {
     if (!ref.mounted) return;
     if (response != null && response['data'] != null) {
       final data = response['data'];
+
+      // ✅ قراءة الفلاتر من الـ API عند أول تحميل فقط
+      if (!loadMore && data['filters'] != null) {
+        filtersList = List<Map<String, dynamic>>.from(data['filters']);
+      }
 
       final rawItems = section == RestaurantSection.status ? data : data['items'];
       final list = rawItems is List
@@ -474,7 +484,6 @@ class PageNotifier extends Notifier<int> {
         break;
       case RestaurantSection.mostOrdered:
         mostOrdered.clear();
-
         break;
     }
   }

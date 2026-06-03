@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:rafatstay/Utils/Sizes.dart';
+import 'package:rafatstay/Utils/TextLanguage.dart';
 import 'package:rafatstay/Utils/Them.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -52,25 +53,25 @@ Widget Garage(BuildContext context, String title, String image,WidgetRef ref) {
               ),
               Row(
                 children: [
-                   buildIconText(context,"assets/icon/Status.svg", "Status: ${garage[0]["available"] == true ? "Available" : "Not Available"}", secondaryColor),
+                   buildIconText(context,"assets/icon/Status.svg", "${TextLanguage().GetWord("حالة")}: ${garage[0]["available"] == true ? TextLanguage().GetWord("متاحة") :TextLanguage().GetWord("غير متاحة")}", secondaryColor),
                    SizedBox(width: Sizes(context).GetWidth() * 1),
-                   buildIconText(context,"assets/icon/Spots.svg", "Spots: ${garage[0]["total_spots"] ?? 0}", secondaryColor),
+                   buildIconText(context,"assets/icon/Spots.svg", "${TextLanguage().GetWord("أماكن")}: ${garage[0]["total_spots"] ?? 0}", secondaryColor),
                 ],
               ),
-              buildIconText(context,"assets/icon/Parking.svg", "Parking Type: ${garage[0]["parking_type"]}", secondaryColor),
+              buildIconText(context,"assets/icon/Parking.svg", "${TextLanguage().GetWord("نوع الموقف")}: ${getParkingTypeText(garage[0]["parking_type"] ?? "")}", secondaryColor),
               Row(
                 children: [
-                  buildIconText(context,"assets/icon/dollar.svg", "Price:${garage[0]["price"]??0}", secondaryColor),
+                  buildIconText(context,"assets/icon/dollar.svg", "${TextLanguage().GetWord("سعر")}:${garage[0]["price"]??0}", secondaryColor),
                   SizedBox(width: Sizes(context).GetWidth() * 1),
                   buildIconText(
                     context,
                     "assets/icon/time.svg",
-                    "Duration: ${garage[0]["duration"] ?? "N/A"}",
+                    "${TextLanguage().GetWord("مدة")}: ${garage[0]["duration"] ?? "N/A"}",
                     secondaryColor,
                   ),
                 ],
               ),
-              buildIconText(context,"assets/icon/Reservations.svg",  "Reservation: ${garage[0]["reservation"] == true ? "Available" : "Not Available"}", secondaryColor),
+              buildIconText(context,"assets/icon/Reservations.svg",  "${TextLanguage().GetWord("حجز")}: ${garage[0]["reservation"] == true ? TextLanguage().GetWord("متاحة") : TextLanguage().GetWord("غير متاحة")}", secondaryColor),
             ],
           ),
         ),
@@ -78,7 +79,22 @@ Widget Garage(BuildContext context, String title, String image,WidgetRef ref) {
     ),
   );
 }
-
+String getParkingTypeText(String type) {
+  switch (type.toLowerCase()) {
+    case "indoor":
+      return TextLanguage().GetWord("داخلي");
+    case "outdoor":
+      return TextLanguage().GetWord("خارجي");
+    case "covered":
+      return TextLanguage().GetWord("مظلل");
+    case "underground":
+      return TextLanguage().GetWord("تحت الأرض");
+    case "valet":
+      return TextLanguage().GetWord("خدمة صف السيارات");
+    default:
+      return type; // لو ما معروف يرجعه مثل ما هو
+  }
+}
 Widget buildIconText(BuildContext context,String icon, String text, Color color) {
   return Row(
     mainAxisSize: MainAxisSize.min,

@@ -195,7 +195,6 @@ class _EmployeeDetails extends ConsumerState<EmployeeDetails> {
                         // 1. استخراج القيمة الخام وتجنب الـ Null
                         final rawRating = review["overall_rating"] ?? review["rating"] ?? 0;
                         int finalRating = (rawRating is num) ? rawRating.round() : 0;
-                        print(review["user"]["avatar"]);
                         return Padding(
                           padding: EdgeInsets.symmetric(vertical: sizes.GetHeight() * 0.5),
                           child: ReviewCard(
@@ -217,7 +216,7 @@ class _EmployeeDetails extends ConsumerState<EmployeeDetails> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        "Rate the Chef's Service",
+                        textLanguage.GetWord("قيّم خدمة الطاهي"),
                         style: TextStyle(
                           color: theme.GetColor("primary"),
                           fontWeight: FontWeight.bold,
@@ -231,21 +230,21 @@ class _EmployeeDetails extends ConsumerState<EmployeeDetails> {
                           scrollDirection: Axis.horizontal,
                           children: [
                             _buildRatingCard(
-                              label: "Attitude",
+                              label:textLanguage.GetWord("السلوك"),
                               iconPath: "assets/icon/Attitude.svg",
                               rating: reviewNotifier.attitudeRating,
                               onRate: (val) => setState(() => reviewNotifier.attitudeRating = val),
                             ),
                             SizedBox(width: sizes.GetWidth() * 3),
                             _buildRatingCard(
-                              label: "Attention to Detail",
+                              label:textLanguage.GetWord("الاهتمام بالتفاصيل"),
                               iconPath: "assets/icon/AttentionToDetail.svg",
                               rating: reviewNotifier.attentionRating,
                               onRate: (val) => setState(() => reviewNotifier.attentionRating = val),
                             ),
                             SizedBox(width: sizes.GetWidth() * 3),
                             _buildRatingCard(
-                              label: "Professionalism",
+                              label:textLanguage.GetWord("الاحترافية"),
                               iconPath: "assets/icon/Professionalism.svg",
                               rating: reviewNotifier.professionalism,
                               onRate: (val) => setState(() => reviewNotifier.professionalism = val),

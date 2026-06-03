@@ -30,18 +30,23 @@ class OffersDetails extends ConsumerStatefulWidget {
 }
 
 class _OffersDetailsState extends ConsumerState<OffersDetails> {
+  // ✅ متغير محلي يتتبع حالة التحميل
+  bool _isLoading = true;
+
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
 
-      // نقل العمليات الجانبية (Side Effects) إلى هنا لضمان سلامة التطبيق وعمله مرة واحدة فقط
       ref.read(MakeItYourWay_riverpod.notifier).menuItems.clear();
       ref.read(RestaurantDetalis_riverpod.notifier).supportsTakeaway = false;
 
-      // جلب البيانات بأمان
-      ref.read(OffersDetails_riverpod.notifier).fetchOfferDetails(context, widget.offerId);
+      await ref.read(OffersDetails_riverpod.notifier).fetchOfferDetails(context, widget.offerId);
+
+      if (mounted) {
+        setState(() => _isLoading = false);
+      }
     });
   }
 
@@ -56,14 +61,28 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
     final offerData = notifier.offerData;
     final item = notifier.items;
 
-    if (offerData == null) {
+    // ✅ شاشة تحميل
+    if (_isLoading) {
       return Scaffold(
         backgroundColor: theme.GetColor("background"),
         body: Center(child: CircularProgressIndicator(color: theme.GetColor("primary"))),
       );
     }
 
-    // معالجة قيم الـ Null بشكل آمن هنا
+    // ✅ شاشة لا توجد بيانات — بعد انتهاء التحميل فقط
+    if (offerData == null) {
+      return Scaffold(
+        backgroundColor: theme.GetColor("background"),
+        appBar: buildCustomAppBar(context, widget.title),
+        body: Center(
+          child: Text(
+            textLanguage.GetWord("لا توجد بيانات"),
+            style: TextStyle(color: theme.GetColor("textSecondary"), fontSize: 16),
+          ),
+        ),
+      );
+    }
+
     final countdown = offerData["countdown_seconds"];
     final images = offerData["image_urls"] ?? [];
     final language = notifier.box.read("Language");
@@ -212,7 +231,7 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
                             SvgPicture.asset("assets/icon/SandGlass.svg", height: sizes.GetHeight() * 2),
                             SizedBox(width: sizes.GetWidth() * 2),
                             CountdownSeconds(
-                              countdownSeconds: (countdown ?? 0).toInt(), // معالجة آمنة للحماية من الـ Crash
+                              countdownSeconds: (countdown ?? 0).toInt(),
                             ),
                           ],
                         ),
@@ -289,10 +308,11 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
                             context,
                             PageRouteBuilder(
                               pageBuilder: (context, animation1, animation2) => MakeItYourWay(
-                                  selectedMeals: includedItems,
-                                  title: title,
-                                  businessName: businessName,
-                                  branchId: branchId),
+                                selectedMeals: includedItems,
+                                title: title,
+                                businessName: businessName,
+                                branchId: branchId,
+                              ),
                               transitionDuration: Duration.zero,
                               reverseTransitionDuration: Duration.zero,
                             ),
@@ -326,7 +346,6 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
   }
 }
 
-// تعديل الـ Widget لتستقبل الصور والـ SVG بذكاء وديناميكية بدون تدمير التصميم
 class ImageWithTitleItem extends StatelessWidget {
   final String imageUrl;
   final String title;

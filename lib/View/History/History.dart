@@ -37,7 +37,7 @@ class _HistoryState extends ConsumerState<History> {
     final reviews = notifier.statusForRestaurants;
     final TextLanguage textL = TextLanguage();
     return Scaffold(
-      appBar:buildCustomAppBar(context,TextLanguage().GetWord('السجل')),
+      appBar:buildCustomAppBar(context,textL.GetWord('السجل')),
       backgroundColor: Themes().GetColor("background"),
       body:ValueListenableBuilder<bool>(
         valueListenable: LoadingService.isLoading,

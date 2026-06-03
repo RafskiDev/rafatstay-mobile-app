@@ -6,7 +6,6 @@ import '../../../Utils/TextLanguage.dart';
 import '../../../Widget/ContentCard.dart';
 import '../../RestaurantDetalis/RestaurantDetalis.dart';
 import '../Home_riverpod.dart';
-
 Map<String, dynamic> normalizeFavorite(dynamic fav) {
   if (fav is Map && fav["item"] != null) {
     return Map<String, dynamic>.from(fav["item"]);
@@ -23,7 +22,6 @@ class Favorites extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final sizes = Sizes(context);
     final textLanguage = TextLanguage();
-
     return Visibility(
       visible: ref.read(Home_riverpod.notifier).favorite.isNotEmpty,
       child: SizedBox(
@@ -52,7 +50,7 @@ class Favorites extends ConsumerWidget {
                         Text(
                           (item["distance"] ??
                               item["distance_km"] ??
-                              "0 KM")
+                              "0 ${textLanguage.GetWord("كم")}")
                               .toString(),
                           style: const TextStyle(fontSize: 10),
                           overflow: TextOverflow.ellipsis,
@@ -66,7 +64,7 @@ class Favorites extends ConsumerWidget {
                         Text(
                           (item["estimated_time"] ??
                               item["eta_minutes"] ??
-                              "0 Mins")
+                              "0 ${textLanguage.GetWord("دقائق")}")
                               .toString(),
                           style: const TextStyle(fontSize: 10),
                         ),
@@ -78,7 +76,7 @@ class Favorites extends ConsumerWidget {
                         SvgPicture.asset("assets/icon/evaluation.svg"),
                         SizedBox(width: sizes.GetWidth() * 1),
                         Text(
-                          "${item["reviews_count"] ?? 0} reviews",
+                          "${item["reviews_count"] ?? 0} ${textLanguage.GetWord("التقييمات")}",
                           style: const TextStyle(fontSize: 10),
                         ),
                       ],
@@ -89,7 +87,7 @@ class Favorites extends ConsumerWidget {
                         SvgPicture.asset("assets/icon/Viewers.svg"),
                         SizedBox(width: sizes.GetWidth() * 1),
                         Text(
-                          "${item["visits_count"] ?? 0} visits",
+                          "${item["visits_count"] ?? 0} ${textLanguage.GetWord("الزيارات")}",
                           style: const TextStyle(fontSize: 10),
                         ),
                       ],

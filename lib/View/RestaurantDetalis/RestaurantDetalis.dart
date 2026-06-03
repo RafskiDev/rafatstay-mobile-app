@@ -119,6 +119,7 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
     }
     final bool isInterested = notifier.favoriteStatus[widget.branchId] ?? (notifier.branches.isNotEmpty && notifier.branches[0]["is_favorited"] == true);
     final int interestCount = notifier.branches.isNotEmpty ? (int.tryParse(notifier.branches[0]["interest_count"]?.toString() ?? "0") ?? 0) : 0;
+  //  print("branches: $branches");
     final textLanguage = TextLanguage();
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
@@ -269,7 +270,7 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                             InkWell(
                               onTap: () {
                                 //حاليا معلف
-                                //notifier.interest(context, widget.branchId);
+                                notifier.interest(context, widget.branchId);
                               },
                               child: Row(
                                 children: [
@@ -359,7 +360,7 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                                   .watch(RestaurantDetalis_riverpod.notifier)
                                   .selectedMenuIndex == 3 ? Employees(ref
                                   .read(RestaurantDetalis_riverpod.notifier)
-                                  .employee,widget.branchId,context) : Container(),
+                                  .employee,widget.branchId,context,ref) : Container(),
                               ref
                                   .watch(RestaurantDetalis_riverpod.notifier)
                                   .selectedMenuIndex == 4 ? SuperGuest(context,

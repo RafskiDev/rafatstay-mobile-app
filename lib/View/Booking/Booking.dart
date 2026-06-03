@@ -20,7 +20,7 @@ class Booking extends ConsumerWidget {
     final selectedIndex = ref.watch(Booking_riverpod);
     final notifier = ref.read(Booking_riverpod.notifier);
     return Scaffold(
-      appBar:buildCustomAppBar(context,"Booking",showBackButton:false),
+      appBar:buildCustomAppBar(context,textLanguage.GetWord("الحجز"),showBackButton:false),
       backgroundColor: theme.GetColor("background"),
       body: SafeArea(
         child: Container(

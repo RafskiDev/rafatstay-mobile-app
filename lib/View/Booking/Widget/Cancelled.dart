@@ -85,6 +85,7 @@ class _CancelledState extends ConsumerState<Cancelled> {
             );
           }
           final booking = bookCancelled[index];
+          print(booking);
           return Padding(
             padding: EdgeInsets.only(bottom: Sizes(context).GetHeight() * 2),
             child: BookingCard(

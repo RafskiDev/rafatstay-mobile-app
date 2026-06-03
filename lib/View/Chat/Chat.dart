@@ -61,7 +61,7 @@ class _ChatState extends ConsumerState<Chat> {
     final messages = ref.read(Chat_riverpod.notifier).messages;
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
-      appBar: buildCustomAppBar(context, "chat"),
+      appBar: buildCustomAppBar(context,TextLanguage().GetWord("محادثة")),
       body:ValueListenableBuilder<bool>(
         valueListenable: LoadingService.isLoading,
         builder: (context, isLoading, child) {
@@ -257,7 +257,7 @@ class Input extends ConsumerWidget {
       decoration: InputDecoration(
         filled: true,
         fillColor: Themes().GetColor("backgroundOffWhite"),
-        hintText: "Type message........",
+        hintText:TextLanguage().GetWord("اكتب الرسالة........"),
         contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 0),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(30),

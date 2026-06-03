@@ -42,7 +42,7 @@ class _HistoryDescriptionState extends ConsumerState<HistoryDescription> {
 
     if (data == null) {
       return Scaffold(
-        appBar: buildCustomAppBar(context, "History"),
+        appBar: buildCustomAppBar(context,TextLanguage().GetWord('السجل')),
         backgroundColor: Themes().GetColor("background"),
         body: showLoading(),
       );
@@ -75,7 +75,7 @@ class _HistoryDescriptionState extends ConsumerState<HistoryDescription> {
     Map<String, dynamic> firstStaff = {};
     if (staffItems.isNotEmpty) firstStaff = staffItems[0];
     return Scaffold(
-      appBar: buildCustomAppBar(context, "History"),
+      appBar: buildCustomAppBar(context,TextLanguage().GetWord('السجل')),
       backgroundColor: Themes().GetColor("background"),
       body:ValueListenableBuilder<bool>(
           valueListenable: LoadingService.isLoading,
@@ -126,7 +126,7 @@ class _HistoryDescriptionState extends ConsumerState<HistoryDescription> {
                          children: [
                            SvgPicture.asset("assets/icon/CookingMethod.svg"),
                            SizedBox(width: Sizes(context).GetWidth() * 1),
-                           GradientText(widget: Text("Cooking details")),
+                           GradientText(widget: Text(TextLanguage().GetWord("تفاصيل الطبخ"))),
                          ],
                        ),
                        SizedBox(height: Sizes(context).GetHeight() * 2),

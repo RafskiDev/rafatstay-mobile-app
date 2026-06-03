@@ -261,6 +261,7 @@ class Account extends ConsumerWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          SizedBox(height: Sizes(context).GetHeight() * 2),
                           SvgPicture.asset("assets/icon/LogOuts.svg",),
                           SizedBox(height: Sizes(context).GetHeight() * 2),
                           Text(textLanguage.GetWord("هل أنت متأكد أنك تريد تسجيل الخروج؟")),
@@ -268,14 +269,14 @@ class Account extends ConsumerWidget {
                           WidgetButton(
                             isCircular: true,
                             context: context,
-                            buttonText: "Cancel",
+                            buttonText:textLanguage.GetWord("يلغي"),
                             backgroundColor: Themes().GetColor("primaryA"),
                             textColor:  Themes().GetColor("textPrimary"),
                             onPressed: () {
                               Navigator.of(context).pop(); // إغلاق الدايلوج
                             },
                           ),
-                          SizedBox(height: Sizes(context).GetHeight() * 2),
+                          SizedBox(height: Sizes(context).GetHeight() * 1),
                           WidgetButton(
                             isCircular: true,
                             context: context,
@@ -312,6 +313,7 @@ class Account extends ConsumerWidget {
                       child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
+                          SizedBox(height: Sizes(context).GetHeight() * 2),
                           SvgPicture.asset("assets/icon/DeleteAccount_.svg",),
                           SizedBox(height: Sizes(context).GetHeight() * 2),
                           Text(textLanguage.GetWord("هل أنت متأكد أنك تريد حذف حسابك؟")),
@@ -319,14 +321,14 @@ class Account extends ConsumerWidget {
                           WidgetButton(
                             isCircular: true,
                             context: context,
-                            buttonText: "Cancel",
+                            buttonText:textLanguage.GetWord("يلغي"),
                             backgroundColor: Themes().GetColor("primaryA"),
                             textColor:  Themes().GetColor("textPrimary"),
                             onPressed: () {
                               Navigator.of(context).pop();
                             },
                           ),
-                          SizedBox(height: Sizes(context).GetHeight() * 2),
+                          SizedBox(height: Sizes(context).GetHeight() * 1),
                           WidgetButton(
                             isCircular: true,
                             context: context,

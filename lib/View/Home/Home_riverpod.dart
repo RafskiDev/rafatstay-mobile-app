@@ -210,6 +210,7 @@ class PageNotifier extends Notifier<int> {
       }
     }
 
+
     // ─── Status ───
     final statusItems = statusResponse?['data'];
     if (statusItems is List) statuses = List<Map<String, dynamic>>.from(statusItems);
@@ -220,7 +221,6 @@ class PageNotifier extends Notifier<int> {
     if (offerItems is List) {
       offers = List<Map<String, dynamic>>.from(offerItems);
     }
-
     // ─── Top Picks ───
     final topItems = topResponse?['data']?['items'];
     if (topItems is List) {
@@ -234,7 +234,6 @@ class PageNotifier extends Notifier<int> {
     favoriteStatus.clear();
     if (favResponse?['success'] == true &&
         favResponse?['data']?['items'] is List) {
-
       for (var item in favResponse['data']['items']) {
         favorite.add({...item, "liked": true});
 
@@ -405,6 +404,7 @@ class PageNotifier extends Notifier<int> {
         if (item is Map) filters.add(Map<String, dynamic>.from(item));
       }
     }
+
     cardsCarouselIndex = 0;
     mainCarouselIndex = 0;
     ref.notifyListeners();
@@ -471,7 +471,6 @@ class PageNotifier extends Notifier<int> {
         final String image = (itemData["image"] ?? itemData["image_url"] ?? "").toString();
 
          */
-
         favorite.insert(0, {
           ...itemData,
           "item_id": itemId,
@@ -480,12 +479,13 @@ class PageNotifier extends Notifier<int> {
           "item": {
             "id": itemId,
             "business_name": itemData["business_name"] ?? itemData["name"] ?? itemData["title"] ?? "",
-            "image": itemData["image"] ?? itemData["image_url"] ?? "",
+            "image": fixImage(itemData["image"] ?? itemData["image_url"]),
           },
           "distance_km": itemData["distance_km"],
           "eta_minutes": itemData["eta_minutes"],
           "min_price": itemData["min_price"],
         });
+        print(favorite);
       }
     } else {
       favorite.removeWhere((element) {
@@ -524,6 +524,7 @@ class PageNotifier extends Notifier<int> {
     final response = await ApiService().post(
       "v1/$roles/favorites/toggle", {"item_id": itemId, "type": type}, context,
     );
+    print(response);
     if (response != null && response['success'] == true) return response;
 
     final fallbackType = type == "branch" ? "menu_item" : "branch";
@@ -608,7 +609,14 @@ class PageNotifier extends Notifier<int> {
     showLanguage = !showLanguage;
     ref.notifyListeners();
   }
-
 }
 
+String fixImage(String? url) {
+  if (url == null || url.isEmpty) return "";
+
+  return url.replaceFirst(
+    "https://api.rafatstay.com/uploads/https://api.rafatstay.com/uploads/",
+    "https://api.rafatstay.com/uploads/",
+  );
+}
 final Home_riverpod = NotifierProvider<PageNotifier, int>(PageNotifier.new);

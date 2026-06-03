@@ -46,7 +46,6 @@ class PageNotifier extends Notifier<int> {
 
   Future<void> fetchOfferDetails(BuildContext context, int offerId) async {
     ApiService api = ApiService();
-
     final res = await api.get(
       "v1/guest/offers/$offerId",
       {},
@@ -55,16 +54,13 @@ class PageNotifier extends Notifier<int> {
 
     if (res?["success"] == true) {
       offerData = res["data"];
-
       carouselItems = [];
       items = [];
-
       if (offerData?["image_url"] != null) {
         carouselItems = [
           {"image": offerData!["image_url"]}
         ];
       }
-
       if (offerData?["included_items"] != null) {
         items = List<Map<String, dynamic>>.from(
           offerData!["included_items"].map(
@@ -74,14 +70,15 @@ class PageNotifier extends Notifier<int> {
       }
       ref.notifyListeners();
     } else {
-      ToastMessages(
-        context,
-        res?["message"] ?? "خطأ في جلب تفاصيل العرض",
-        Themes().GetColor("error"),
-        Themes().GetColor("white"),
-      );
+      // ✅ نظف البيانات وأعلم الـ UI
+      offerData = null;
+      carouselItems = [];
+      items = [];
+      ref.notifyListeners();
+
     }
   }
+
 
 }
 

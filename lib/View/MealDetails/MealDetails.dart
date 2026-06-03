@@ -166,76 +166,70 @@ class _MealDetailsState extends ConsumerState<MealDetails> {
                         padding: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 2),
                         child: Column(
                           children: [
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                SquareButton(
-                                    width: sizes.GetWidth()*25,
-                                    height: Sizes(context).GetHeight()*5.5,
-                                    backgroundColor:Themes().GetColor("secondary"),
-                                    borderRadius:sizes.GetWidth()*10,
-                                    onTap: () {
-                                      print('تم الضغط على الزر');
-                                    },
-                                    child:Row(
+                            SingleChildScrollView(
+                              scrollDirection: Axis.horizontal,
+                              child: Row(
+                                children: [
+                                  SquareButton(
+                                    width: sizes.GetWidth() * 25,
+                                    height: sizes.GetHeight() * 5.5,
+                                    backgroundColor: Themes().GetColor("secondary"),
+                                    borderRadius: sizes.GetWidth() * 10,
+                                    onTap: () {},
+                                    child: Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         SvgPicture.asset("assets/icon/Kcal.svg"),
-                                        SizedBox(width: Sizes(context).GetWidth()*1),
-                                        Text(
-                                          '${mealData["calories"]??0} ${textLanguage.GetWord("سعرات حرارية")}',
-                                          style: TextStyle(
-                                            color:Themes().GetColor("textPrimary"),
+                                        SizedBox(width: sizes.GetWidth() * 1),
+                                        Flexible(
+                                          child: Text(
+                                            '${mealData["calories"] ?? 0} ${textLanguage.GetWord("سعرات حرارية")}',
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
                                           ),
                                         ),
                                       ],
-                                    )
-                                ),
-                                SquareButton(
-                                    width: sizes.GetWidth()*30,
-                                    height: Sizes(context).GetHeight()*5.5,
-                                    backgroundColor:Themes().GetColor("secondary"),
-                                    borderRadius: Sizes(context).GetWidth()*10,
-                                    onTap: () {
-                                      print('تم الضغط على الزر');
-                                    },
-                                    child:Row(
+                                    ),
+                                  ),
+                                  SizedBox(width: sizes.GetWidth() * 2),
+                                  SquareButton(
+                                    width: sizes.GetWidth() * 30,
+                                    height: sizes.GetHeight() * 5.5,
+                                    backgroundColor: Themes().GetColor("secondary"),
+                                    borderRadius: sizes.GetWidth() * 10,
+                                    onTap: () {},
+                                    child: Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         SvgPicture.asset("assets/icon/MealTime.svg"),
-                                        SizedBox(width: Sizes(context).GetWidth()*1),
-                                        Text(
-                                          mealTimeText(mealData, textLanguage),
-                                          style: TextStyle(
-                                            color:Themes().GetColor("textPrimary"),
-                                          ),
-                                        ),
+                                        SizedBox(width: sizes.GetWidth() * 1),
+                                        Text(mealTimeText(mealData, textLanguage)),
                                       ],
-                                    )
-                                ),
-                                SquareButton(
-                                    width: sizes.GetWidth()*30,
-                                    height: Sizes(context).GetHeight()*5.5,
-                                    backgroundColor:Themes().GetColor("secondary"),
-                                    borderRadius: Sizes(context).GetWidth()*10,
-                                    onTap: () {
-                                      print('تم الضغط على الزر');
-                                    },
-                                    child:Row(
+                                    ),
+                                  ),
+
+                                  SizedBox(width: sizes.GetWidth() * 2),
+
+                                  SquareButton(
+                                    width: sizes.GetWidth() * 30,
+                                    height: sizes.GetHeight() * 5.5,
+                                    backgroundColor: Themes().GetColor("secondary"),
+                                    borderRadius: sizes.GetWidth() * 10,
+                                    onTap: () {},
+                                    child: Row(
                                       mainAxisAlignment: MainAxisAlignment.center,
                                       children: [
                                         SvgPicture.asset("assets/icon/serves.svg"),
-                                        SizedBox(width: Sizes(context).GetWidth()*1),
+                                        SizedBox(width: sizes.GetWidth() * 1),
                                         Text(
-                                          mealData?["serves"]?.toString() ??textLanguage.GetWord("الخدمات"),
-                                          style: TextStyle(
-                                            color:Themes().GetColor("textPrimary"),
-                                          ),
+                                          mealData["serves"]?.toString() ??
+                                              textLanguage.GetWord("الخدمات"),
                                         ),
                                       ],
-                                    )
-                                ),
-                              ],
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                             SizedBox(height: sizes.GetHeight() * 2),
                             Row(

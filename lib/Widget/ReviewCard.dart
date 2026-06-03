@@ -56,7 +56,7 @@ class ReviewCard extends StatelessWidget {
                 onTap: onAvatarTap ?? () {},
                 child: ClipOval(
                   child: CachedNetworkImage(
-                    imageUrl: "$showImage$image",
+                    imageUrl: image,
                     width: sizes.GetHeight() * 7,
                     height: sizes.GetHeight() * 7,
                     fit: BoxFit.cover,

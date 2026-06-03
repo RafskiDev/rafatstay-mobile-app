@@ -40,9 +40,8 @@ class _SearchState extends ConsumerState<Search> {
     Themes theme = Themes();
     TextLanguage textLanguage = TextLanguage();
     final notifier = ref.watch(Search_riverpod.notifier);
-
     return Scaffold(
-        appBar: buildCustomAppBar(context, "Search"),
+        appBar: buildCustomAppBar(context,textLanguage.GetWord("بحث")),
         backgroundColor: theme.GetColor("background"),
         body: ValueListenableBuilder<bool>(
             valueListenable: LoadingService.isLoading,
@@ -153,7 +152,7 @@ class _SearchState extends ConsumerState<Search> {
                                                     PageRouteBuilder(
                                                       pageBuilder: (_, __, ___) => RestaurantDetalis(
                                                         title: (restaurantData["business_name"] ?? restaurantData["name"]).toString(),
-                                                        branchId: restaurantData["business_id"],
+                                                        branchId: restaurantData["id"],
                                                       ),
                                                       transitionDuration: Duration.zero,
                                                       reverseTransitionDuration: Duration.zero,
@@ -213,8 +212,7 @@ class _SearchState extends ConsumerState<Search> {
                                   final item = notifier.searchResults[index];
                                   return InkWell(
                                     onTap: () async {
-                                      final branchId = item["business_id"];
-                                      print(branchId);
+                                      final branchId = item["id"];
                                       final title = (item["business_name"] ?? item["name"]).toString();
                                       await Navigator.push(
                                         context,
@@ -244,7 +242,7 @@ class _SearchState extends ConsumerState<Search> {
                                                 SizedBox(width: sizes.GetWidth() * 1),
                                                 Expanded(
                                                   child: Text(
-                                                    item["name"] ?? "",
+                                                    item["business_name"] ?? "",
                                                     style: TextStyle(color: theme.GetColor("textSecondary")),
                                                     overflow: TextOverflow.ellipsis,
                                                   ),

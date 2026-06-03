@@ -16,20 +16,44 @@ class PageNotifier extends Notifier<int> {
   FocusNode focusNodeBirthday = FocusNode();
   int? selectedGender;// 1 = male, 2 = female
   // ✅ overall_rating + atmosphere_rating
-  final ratings = [
-    {"title": "Overall rating", "icon": "assets/icon/restaurant.svg", "rate": 0},
-    {"title": "Atmosphere", "icon": "assets/icon/Atmosphere.svg", "rate": 0},
-    {"title": "Layout", "icon": "assets/icon/Layout.svg", "rate": 0},
-    {"title": "Value for money", "icon": "assets/icon/ValueForMoney.svg", "rate": 0},
-  ];
 
-  // ✅ food_rating + service_rating
-  final services = [
-    {"title": "Food Quality", "icon": "assets/icon/FoodQuality.svg", "rate": 0},
-    {"title": "Service Speed", "icon": "assets/icon/ServiceSpeed.svg", "rate": 0},
-    {"title": "Staff Behavior", "icon": "assets/icon/StaffBehavior.svg", "rate": 0},
-    {"title": "Cleanliness", "icon": "assets/icon/Cleanliness.svg", "rate": 0},
-  ];
+  late final List<Map<String, dynamic>> ratings;
+  late final List<Map<String, dynamic>> services;
+  late final List<Map<String, dynamic>> reviews;
+
+  @override
+  int build() {
+    ratings = [
+      {"title": "التقييم العام", "icon": "assets/icon/restaurant.svg", "rate": 0},
+      {"title": "الأجواء", "icon": "assets/icon/Atmosphere.svg", "rate": 0},
+      {"title": "التصميم", "icon": "assets/icon/Layout.svg", "rate": 0},
+      {"title": "القيمة مقابل السعر", "icon": "assets/icon/ValueForMoney.svg", "rate": 0},
+    ];
+
+    services = [
+      {"title": "جودة الطعام", "icon": "assets/icon/FoodQuality.svg", "rate": 0},
+      {"title": "سرعة الخدمة", "icon": "assets/icon/ServiceSpeed.svg", "rate": 0},
+      {"title": "سلوك الموظفين", "icon": "assets/icon/StaffBehavior.svg", "rate": 0},
+      {"title": "النظافة", "icon": "assets/icon/Cleanliness.svg", "rate": 0},
+    ];
+
+    reviews = [
+      {"title": "الموقف", "icon": "assets/icon/Attitude.svg", "rate": 0},
+      {"title": "الاهتمام بالتفاصيل", "icon": "assets/icon/AttentionToDetail.svg", "rate": 0},
+      {"title": "الاحترافية", "icon": "assets/icon/Professionalism.svg", "rate": 0},
+    ];
+
+    ref.onDispose(() {
+      controller.dispose();
+      focusNodeController.dispose();
+      birthday.dispose();
+      focusNodeBirthday.dispose();
+      comment.dispose();
+      focusNodeComment.dispose();
+    });
+
+    return 0;
+  }
 
 
   List<Map<String, dynamic>> employeeList = [];
@@ -46,26 +70,10 @@ class PageNotifier extends Notifier<int> {
     }
   }
 
-   final reviews = [
-     {"title": "Attitude", "icon": "assets/icon/Attitude.svg", "rate": 0},
-     {"title": "Attention to Detail", "icon": "assets/icon/AttentionToDetail.svg", "rate": 0},
-     {"title": "Professionalism", "icon": "assets/icon/Professionalism.svg", "rate": 0},
-   ];
 
   final Set<int> selectedPersonIndexes = {};
 
-  @override
-  int build() {
-    ref.onDispose(() {
-      controller.dispose();
-      focusNodeController.dispose();
-      birthday.dispose();
-      focusNodeBirthday.dispose();
-      comment.dispose();
-      focusNodeComment.dispose();
-    });
-    return 0;
-  }
+
 
   void reset() => state = 0;
 

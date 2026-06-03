@@ -9,10 +9,11 @@ import '../../../Widget/ShowLoading.dart';
 import '../../../Widget/WidgetButton.dart';
 import '../../EmployeeDetails/EmployeeDetails.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-Widget Employees(List myDataList,int branchId,BuildContext context){
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../MakeItYourWay/MakeItYourWay_riverpod.dart';
+Widget Employees(List myDataList,int branchId,BuildContext context,WidgetRef ref){
   final sizes = Sizes(context);
   final theme = Themes();
-
   return GridView.builder(
     physics: NeverScrollableScrollPhysics(),
     shrinkWrap: true,
@@ -108,7 +109,9 @@ Widget Employees(List myDataList,int branchId,BuildContext context){
                   borderWidth: 2.0,
                   child: Center(
                     child: ClipOval(
-                      child: SvgPicture.asset("assets/icon/arrow.svg",height:sizes.GetHeight()*2,color:theme.GetColor("white")),
+                      child:Transform.flip(
+                          flipX: ref.read(MakeItYourWay_riverpod.notifier).storage.read("Language") == 1,
+                          child: SvgPicture.asset("assets/icon/arrow.svg",height:sizes.GetHeight()*2,color:theme.GetColor("white"))),
                     ),
                   ),
                 ),

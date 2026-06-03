@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:rafatstay/Utils/Sizes.dart';
 
+import '../../../Utils/TextLanguage.dart';
 import '../../../Utils/Them.dart';
 
 class ParkingInfoCard extends StatelessWidget {
@@ -22,6 +23,7 @@ class ParkingInfoCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    TextLanguage textLanguage = TextLanguage();
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 12),
@@ -35,7 +37,7 @@ class ParkingInfoCard extends StatelessWidget {
           // Title
           _InfoChip(
             svgIcon: 'assets/icon/Parking.svg',
-            text: 'Parking',
+            text:textLanguage.GetWord("موقف سيارات"),
             textStyle: const TextStyle(
               fontWeight: FontWeight.w700,
             ),
@@ -47,7 +49,7 @@ class ParkingInfoCard extends StatelessWidget {
             runSpacing: 6,
             children: [
               _InfoChip(svgIcon_: 'assets/icon/SAR.svg',iconSize:Sizes(context).GetHeight() * 2,svgIcon:'assets/icon/dollar.svg',text:'$price'),
-              _InfoChip(svgIcon:'assets/icon/time.svg',text:'$hours hours'),
+              _InfoChip(svgIcon:'assets/icon/time.svg',text:'$hours ${textLanguage.GetWord("ساعة")}'),
               _InfoChip(svgIcon:'assets/icon/LocationTable.svg',text:location),
               _InfoChip(svgIcon:'assets/icon/ABC.svg',text:plateNumber),
               _InfoChip(svgIcon:'assets/icon/CarColor.svg',text:carColor),

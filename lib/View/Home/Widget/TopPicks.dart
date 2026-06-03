@@ -90,11 +90,6 @@ class Toppicks extends ConsumerWidget {
                                   title: textLanguage.GetWord(
                                       "أفضل الخيارات بالقرب منك"),
                                 section: RestaurantSection.topPicks,sectionKey:ref.read(Home_riverpod.notifier).getTopPicksKey(),
-                                filters: filters.isNotEmpty && filters[0]["sections"]?["filters"] is List
-                                    ? (filters[0]["sections"]["filters"] as List)
-                                    .whereType<Map<String, dynamic>>()
-                                    .toList()
-                                    : [],
                                ),
                           transitionDuration:
                           Duration.zero,

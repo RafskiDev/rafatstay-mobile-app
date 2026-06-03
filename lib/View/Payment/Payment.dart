@@ -152,13 +152,11 @@ class Payment extends ConsumerWidget {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             SvgPicture.asset("assets/icon/cash_payment.svg"),
-                            /*
                             Text(
                               textAlign: TextAlign.center,
                               style: TextStyle(fontSize: Sizes(context).GetHeight() * 2.2),
-                              textLanguage.GetWord('سيتم إضافة رسوم خدمة بنسبة 5% عند اختيار الدفع النقدي.'),
+                              textLanguage.GetWord('سيتم إضافة رسوم خدمة بقيمة 5 ﷼ عند اختيار الدفع النقدي.'),
                             ),
-                             */
                             SizedBox(height: Sizes(context).GetHeight() * 2),
                             SquareButton(
                               width: sizes.GetWidth() * 50,
@@ -170,11 +168,8 @@ class Payment extends ConsumerWidget {
                             ),
                             SizedBox(height: Sizes(context).GetHeight() * 2),
                             SquareButton(
-
                               width: sizes.GetWidth() * 50,
-
                               height: sizes.GetHeight() * 5,
-
                               onTap: () async {
                                 Navigator.pop(context);
                                 final success = await notifier.payBooking(

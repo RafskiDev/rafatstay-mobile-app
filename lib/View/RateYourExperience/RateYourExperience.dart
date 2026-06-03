@@ -80,7 +80,7 @@ class _State extends ConsumerState<RateYourExperience> {
                       padding: EdgeInsets.only(right: sizes.GetWidth() * 2),
                       child: evaluation(
                         context,
-                        ratings[index]["title"] as String,
+                        textLanguage.GetWord(ratings[index]["title"] as String),
                         ratings[index]["icon"] as String,
                         ratings[index]["rate"] as int,
                             (value) => notifier.updateRating(index, value),
