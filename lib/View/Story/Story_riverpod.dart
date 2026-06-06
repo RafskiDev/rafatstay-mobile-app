@@ -45,16 +45,28 @@ class PageNotifier extends Notifier<int> {
   final Map<int, int> dislikesCount = {};
   final Map<int, String?> userReactions = {}; // أضف هذا
 
-  Future<void> toggleReaction(BuildContext context, int statusId, String type, bool isCurrentlyActive, int currentCount) async {
-    // Optimistic update
+  Future<void> toggleReaction(BuildContext context, int statusId, String type,
+      bool isCurrentlyActive, int currentCount) async {
+    final String? prevReaction = userReactions[statusId];
+    final int prevLikes = likesCount[statusId] ?? 0;
+    final int prevDislikes = dislikesCount[statusId] ?? 0;
+
+    // ─── Optimistic Update ───
     if (type == "like") {
       likesCount[statusId] = isCurrentlyActive ? currentCount - 1 : currentCount + 1;
+      if (prevReaction == "dislike") {
+        dislikesCount[statusId] = (prevDislikes - 1).clamp(0, 999);
+      }
     } else {
-      dislikesCount[statusId] = isCurrentlyActive ? currentCount - 1 : currentCount + 1;
+      dislikesCount[statusId] = isCurrentlyActive ? prevDislikes - 1 : prevDislikes + 1;
+      if (prevReaction == "like") {
+        likesCount[statusId] = (currentCount - 1).clamp(0, 999);
+      }
     }
-    userReactions[statusId] = isCurrentlyActive ? null : type; // optimistic
+    userReactions[statusId] = isCurrentlyActive ? null : type;
     state++;
 
+    // ─── API Call ───
     final res = await ApiService().post(
       "v1/guest/statuses/$statusId/react",
       {"reaction_type": type},
@@ -62,51 +74,29 @@ class PageNotifier extends Notifier<int> {
     );
 
     if (res?['success'] == true) {
-      final action = res?['data']?['action'];
-      final reaction = res?['data']?['reaction'];
+      // ✅ نأخذ القيم الحقيقية من السيرفر
+      final reactions = res?['data']?['reactions'];
 
-      // الحالة الحقيقية من السيرفر
-      userReactions[statusId] = action == "created" ? reaction : null;
+      likesCount[statusId] =
+          int.tryParse(reactions?['likes_count']?.toString() ?? '0') ?? 0;
+      dislikesCount[statusId] =
+          int.tryParse(reactions?['dislikes_count']?.toString() ?? '0') ?? 0;
 
-      if (type == "like") {
-        likesCount[statusId] = action == "created" ? currentCount + 1 : currentCount - 1;
-      } else {
-        dislikesCount[statusId] = action == "created" ? currentCount + 1 : currentCount - 1;
-      }
+      // ✅ is_liked / is_disliked بدل user_reaction
+      final bool isLiked = reactions?['is_liked'] == true;
+      final bool isDisliked = reactions?['is_disliked'] == true;
+      userReactions[statusId] = isLiked ? "like" : isDisliked ? "dislike" : null;
+
       state++;
     } else {
-      // تراجع
-      userReactions[statusId] = isCurrentlyActive ? type : null;
-      if (type == "like") likesCount[statusId] = currentCount;
-      else dislikesCount[statusId] = currentCount;
-      state--;
+      // ─── Rollback ───
+      userReactions[statusId] = prevReaction;
+      likesCount[statusId] = prevLikes;
+      dislikesCount[statusId] = prevDislikes;
+      state++;
     }
   }
-  // 1. تبديل حالة المفضلة (مع تحديث لحظي للواجهة)
-  void toggleLike(int itemId, String type, BuildContext context) async {
-    bool isLiked = favoriteStatus[itemId] ?? false;
 
-    // 1. تحديث الحالة فوراً داخلياً
-    favoriteStatus[itemId] = !isLiked;
-
-    // 2. تحديث الـ State الخاص بالـ Notifier لإجبار الواجهة على التغيير المباشر
-    state = state + 1; // تغيير الحالة لعمل تريجر لإعادة البناء اللحظي
-    ref.notifyListeners();
-
-    // 3. إرسال الطلب في الخلفية
-    final res = await ApiService().post(
-        "v1/$roles/favorites/toggle",
-        {"item_id": itemId, "type": "status"},
-        context
-    );
-    print(res);
-    // 4. التراجع الذكي في حال فشل الـ API لـ أي سبب
-    if (res?['success'] != true) {
-      favoriteStatus[itemId] = isLiked; // إرجاع الحالة السابقة
-      state = state - 1;
-      ref.notifyListeners();
-    }
-  }
   Future<void> toggleFavorite(BuildContext context, int branchId) async {
     bool currentStatus = favoriteStatus[branchId] ?? false;
 
@@ -120,7 +110,6 @@ class PageNotifier extends Notifier<int> {
         {"item_id": branchId, "type": "branch"},
         context
     );
-
     if (res?['success'] != true) {
       favoriteStatus[branchId] = currentStatus; // تراجع في حال الخطأ
       state--;

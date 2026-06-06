@@ -223,7 +223,7 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                           MaterialPageRoute(
                             builder: (_) => OffersDetails(
                               title: textLanguage.GetWord("تفاصيل العروض"),
-                              offerId: offer["branch_id"] ?? 0,
+                              offerId: offer["id"] ?? 0,
                             ),
                           ),
                         );

@@ -59,7 +59,6 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-
       // استدعاء دالة واحدة نظيفة تقوم بجلب كل شيء بالتوازي
       ref.read(RestaurantDetalis_riverpod.notifier).fetchAllBranchData(context, widget.branchId);
     });
@@ -123,8 +122,8 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
         notifier.branches[0]["interest_count"]?.toString() ?? "0") ??
         0)
         : 0;
-  //  print("branches: $branches");
-   // print(notifier.branches[0]);
+    bool isInterested = notifier.branches.isNotEmpty && (notifier.branches[0]['is_interested'] == true);
+    print(isInterested);
     final textLanguage = TextLanguage();
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
@@ -280,7 +279,9 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                               child: Row(
                                 children: [
                                   SvgPicture.asset(
-                                    "assets/icon/interest.svg",
+                                    isInterested
+                                        ? "assets/icon/uninterest.svg"
+                                        : "assets/icon/interest.svg",
                                     height: sizes.GetHeight() * 2,
                                   ),
                                   SizedBox(width: sizes.GetWidth() * 1),

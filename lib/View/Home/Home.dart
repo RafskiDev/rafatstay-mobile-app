@@ -477,6 +477,8 @@ class _HomeState extends ConsumerState<Home> {
                             ),
                           ),
                         ],
+                        /*
+                        //تم هملها تعليقها مكانها ليس هنا
                         // ─── Favorites ────────────────────────────────
                         if (favorite.isNotEmpty) ...[
                           SizedBox(height: sizes.GetHeight() * 2),
@@ -510,7 +512,7 @@ class _HomeState extends ConsumerState<Home> {
                           SizedBox(height: sizes.GetHeight() * 2),
                           Favorites(favorite: favorite),
                         ],
-
+                         */
                         // ─── A New Dish to Try / Flavor of the Day ─────────────────
                         if (dish.isNotEmpty) ...[
                           SizedBox(height: sizes.GetHeight() * 2),
@@ -554,7 +556,8 @@ class _HomeState extends ConsumerState<Home> {
                                 final dynamic rawId = dishs["id"] ?? dishs["item"]?["id"] ?? dishs["branch_id"];
                                 final int itemId = int.tryParse(rawId?.toString() ?? "0") ?? 0;
                               //  final bool isLiked = ref.watch(Home_riverpod.notifier).favoriteStatus[itemId] ?? false;
-                                final bool is_featured = dishs["is_favorited"];
+                                final bool is_featured = ref.watch(Home_riverpod.notifier).favoriteStatus[itemId]
+                                    ?? (dishs["is_favorited"] as bool? ?? false);
                                 return Padding(
                                   padding: EdgeInsets.only(right: sizes.GetWidth() * 1),
                                   child: ContentCard(

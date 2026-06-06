@@ -5,14 +5,20 @@ import '../Utils/Sizes.dart';
 import '../Utils/Them.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get_storage/get_storage.dart';
+import 'dart:async';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
 class CustomOtpWidget extends StatefulWidget {
   final int fieldCount;
-  final Future<bool> Function(String) onVerify;
+  final ValueChanged<String> onChanged; // تم التغيير هنا ليصبح ممرراً للنص فقط
+  final bool isArabic;
 
   const CustomOtpWidget({
     super.key,
     required this.fieldCount,
-    required this.onVerify,
+    required this.onChanged,
+    this.isArabic = false,
   });
 
   @override
@@ -26,78 +32,105 @@ class _CustomOtpWidgetState extends State<CustomOtpWidget> {
   @override
   void initState() {
     super.initState();
-    controllers =
-        List.generate(widget.fieldCount, (_) => TextEditingController());
-    focusNodes = List.generate(widget.fieldCount, (_) => FocusNode());
+    controllers = List.generate(widget.fieldCount, (_) => TextEditingController());
+
+    focusNodes = List.generate(widget.fieldCount, (index) {
+      final node = FocusNode();
+      node.onKeyEvent = (node, event) {
+        if (event is KeyDownEvent && event.logicalKey == LogicalKeyboardKey.backspace) {
+          if (controllers[index].text.isEmpty && index > 0) {
+            controllers[index - 1].clear();
+            FocusScope.of(context).requestFocus(focusNodes[index - 1]);
+            widget.onChanged(getOtp()); // تحديث النص عند الحذف
+            setState(() {});
+            return KeyEventResult.handled;
+          }
+        }
+        return KeyEventResult.ignored;
+      };
+      return node;
+    });
+
+    Future.delayed(const Duration(milliseconds: 300), () {
+      if (mounted) FocusScope.of(context).requestFocus(focusNodes[0]);
+    });
   }
 
-  String getOtp() => controllers.map((c) => c.text).join();
+  @override
+  void dispose() {
+    for (var c in controllers) c.dispose();
+    for (var f in focusNodes) f.dispose();
+    super.dispose();
+  }
 
-  void handleChange(int index, String value) {
+  String getOtp() => controllers.map((e) => e.text).join();
+
+  void _handleInput(int index, String value) {
     if (value.isNotEmpty) {
       if (index < widget.fieldCount - 1) {
-        focusNodes[index + 1].requestFocus();
+        FocusScope.of(context).requestFocus(focusNodes[index + 1]);
       } else {
-        widget.onVerify(getOtp());
-      }
-    } else {
-      if (index > 0) {
-        focusNodes[index - 1].requestFocus();
+        FocusScope.of(context).unfocus(); // يغلق الكيبورد فقط عند الاكتمال ولا يتحقق تلقائياً
       }
     }
-
+    widget.onChanged(getOtp()); // تحديث النص في الصفحة الأب عند الإدخال
     setState(() {});
+  }
+
+  int _getTargetFocusIndex() {
+    for (int i = 0; i < widget.fieldCount; i++) {
+      if (controllers[i].text.isEmpty) return i;
+    }
+    return widget.fieldCount - 1;
   }
 
   @override
   Widget build(BuildContext context) {
     Themes theme = Themes();
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(widget.fieldCount, (index) {
-        bool filled = controllers[index].text.isNotEmpty;
+    final size = Sizes(context);
 
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          width: 66,
-          height: 55,
-          margin: const EdgeInsets.symmetric(horizontal: 6),
-          decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            color: theme.GetColor("background"),
-            border: Border.all(
-              color: theme.GetColor("primary"),
-              width: 1,
-            ),
-          ),
-          child: Center(
-            child: TextField(
-              maxLength: 1,
-              cursorColor: theme.GetColor("primary"),
-              controller: controllers[index],
-              focusNode: focusNodes[index],
-              textAlign: TextAlign.center,
-              keyboardType: TextInputType.number,
-             // style: const TextStyle(fontSize: 22),
-              decoration: const InputDecoration(
-                counterText: "",
-                border: InputBorder.none,
+    return Directionality(
+      textDirection: widget.isArabic ? TextDirection.rtl : TextDirection.ltr,
+      child: GestureDetector(
+        onTap: () {
+          FocusScope.of(context).requestFocus(focusNodes[_getTargetFocusIndex()]);
+        },
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(widget.fieldCount, (index) {
+            return AbsorbPointer(
+              absorbing: true,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                width: size.GetWidth() * 13,
+                height: size.GetWidth() * 13,
+                margin: const EdgeInsets.symmetric(horizontal: 3),
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: theme.GetColor("background"),
+                  border: Border.all(color: theme.GetColor("primary"), width: 1),
+                ),
+                child: Center(
+                  child: TextField(
+                    controller: controllers[index],
+                    focusNode: focusNodes[index],
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    maxLength: 1,
+                    showCursor: true,
+                    enableInteractiveSelection: false,
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                    decoration: const InputDecoration(counterText: "", border: InputBorder.none),
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    onChanged: (value) => _handleInput(index, value),
+                  ),
+                ),
               ),
-              inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-
-              // 🔥 هنا منع الكتابة قبل ملء الخانة السابقة
-              onChanged: (v) {
-                if (index > 0 && controllers[index - 1].text.isEmpty) {
-                  controllers[index].clear();
-                  focusNodes[index - 1].requestFocus();
-                  return;
-                }
-                handleChange(index, v);
-              },
-            ),
-          ),
-        );
-      }),
+            );
+          }),
+        ),
+      ),
     );
   }
 }

@@ -21,7 +21,6 @@ class PageNotifier extends Notifier<int> {
       data,
       context,
     );
-    print(response);
     if(response["success"]==true){
       Navigator.push(
         context,

@@ -214,7 +214,7 @@ class PageNotifier extends Notifier<int> {
     // ─── Status ───
     final statusItems = statusResponse?['data'];
     if (statusItems is List) statuses = List<Map<String, dynamic>>.from(statusItems);
-
+   //print(statuses);
 
     // ─── Offers ───
     final offerItems = offersResponse?['data']?['items'];

@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:rafatstay/Utils/Sizes.dart';
 import 'package:rafatstay/Utils/Them.dart';
 import 'package:flutter_svg/svg.dart';
+import '../../Utils/TextLanguage.dart';
+import '../../Widget/ShowLoading.dart';
 import '../../Widget/WidgetButton.dart';
 import 'Story_riverpod.dart';
 import 'Widget/StoryCommentsSheet.dart';
@@ -47,10 +49,21 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
     WidgetsBinding.instance.addPostFrameCallback((_) {
       for (final status in statuses) {
         final id = int.tryParse(status["id"]?.toString() ?? "0") ?? 0;
-        final userReaction = status["reactions"]?["user_reaction"]?.toString();
-        if (id != 0) {
-          ref.read(Story_riverpod.notifier).userReactions[id] = userReaction;
-        }
+        if (id == 0) continue;
+
+        final reactions = status["reactions"];
+
+        // ✅ العدادات
+        ref.read(Story_riverpod.notifier).likesCount[id] =
+            int.tryParse(reactions?["likes_count"]?.toString() ?? "0") ?? 0;
+        ref.read(Story_riverpod.notifier).dislikesCount[id] =
+            int.tryParse(reactions?["dislikes_count"]?.toString() ?? "0") ?? 0;
+
+        // ✅ حالة المستخدم — من is_liked / is_disliked بدل user_reaction
+        final bool isLiked = reactions?["is_liked"] == true;
+        final bool isDisliked = reactions?["is_disliked"] == true;
+        ref.read(Story_riverpod.notifier).userReactions[id] =
+        isLiked ? "like" : isDisliked ? "dislike" : null;
       }
       ref.read(Story_riverpod.notifier).ref.notifyListeners();
     });
@@ -206,13 +219,12 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
   @override
   Widget build(BuildContext context) {
     ref.watch(Story_riverpod);
-
     if (statuses.isEmpty) {
-      return const Scaffold(
+      return  Scaffold(
         backgroundColor: Colors.black,
         body: Center(
           child: Text(
-            "لا توجد ستوريات متوفرة",
+            TextLanguage().GetWord("لا توجد ستوريات متوفرة"),
             style: TextStyle(color: Colors.white),
           ),
         ),
@@ -229,19 +241,16 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
     final String timeAgo = widget.branchData["updated_ago"] ?? item["time_ago"] ?? "";
     final bool isFavorited = ref.read(Story_riverpod.notifier).favoriteStatus[branchId] ?? false;
 
-    final int likesCountVal = ref.read(Story_riverpod.notifier).likesCount[statusId]
+    final int likesCountVal = ref.watch(Story_riverpod.notifier).likesCount[statusId]
         ?? int.tryParse(item["reactions"]?["total_count"]?.toString() ?? "0") ?? 0;
 
-    final int dislikesCountVal = ref.read(Story_riverpod.notifier).dislikesCount[statusId]
+    final int dislikesCountVal = ref.watch(Story_riverpod.notifier).dislikesCount[statusId]
         ?? int.tryParse(item["reactions"]?["dislikes_count"]?.toString() ?? "0") ?? 0;
-
     final String? currentReaction = ref.watch(Story_riverpod.notifier).userReactions[statusId];
-
     return Scaffold(
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          // 1. الصورة أو الخلفية للستوري
           SizedBox.expand(
             child: mediaUrl.isNotEmpty
                 ? Image.network(
@@ -255,33 +264,18 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
                 : Container(color: Colors.grey[900]),
           ),
 
-          // ⭐ 2. مؤشر تحميل الصورة (يظهر أثناء التحميل فقط)
           if (_isLoadingImage && !_imageLoaded)
-            const Positioned.fill(
+             Positioned.fill(
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 3,
-                    ),
-                    SizedBox(height: 12),
-                    Text(
-                      "جاري التحميل...",
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 14,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
+                    showLoading(),
                   ],
                 ),
               ),
             ),
 
-          // 3. مناطق التنقل (يمين ويسار الشاشة للتنقل)
-          // ⭐ نعطل التنقل أثناء تحميل الصورة
           Positioned.fill(
             child: Row(
               children: [
@@ -402,6 +396,104 @@ class _StoryState extends ConsumerState<Story> with SingleTickerProviderStateMix
               ),
             ),
           ),
+          //هذا تبع المفضله وا الاعجاب
+          Positioned(
+            left: Sizes(context).GetWidth() * 3,
+            top: Sizes(context).GetHeight() * 56,
+            child: Column(
+              children: [
+                /*
+                // ✅ زر المفضلة التفاعلي الذي يتعامل بديناميكية تامة الآن
+                CircularButton(
+                  size: Sizes(context).GetHeight() * 5.5,
+                 // backgroundColor: isFavorited ? Themes().GetColor("primary") : Themes().GetColor("backgroundOffWhite"),
+                  borderColor:Colors.transparent,
+                  onTap: () {
+                    ref.read(Story_riverpod.notifier).toggleFavorite(context, branchId);
+                  },
+                  // ✅ هنا يتم تبديل الأيقونة تلقائياً بناءً على حالة المفضلة
+                  child: SvgPicture.asset(
+                    !isFavorited ? "assets/icon/Interested_fav.svg" : "assets/icon/un_Interested_fav.svg",
+                    height: Sizes(context).GetHeight() * 15,
+                  ),
+                ),
+                SizedBox(height: Sizes(context).GetHeight() * 1),
+
+                 */
+                // زر الـ Likes
+                _statChip(
+                  icon: "assets/icon/likes.svg",
+                  value: likesCountVal.toString(),  // ← هنا التغيير
+                  isActive: currentReaction == "like",  // ← استخدم currentReaction من notifier
+                  onTap: () {
+                    final bool wasLiked = currentReaction == "like";
+                    ref.read(Story_riverpod.notifier).toggleReaction(
+                      context,
+                      statusId,
+                      "like",
+                      wasLiked,
+                      likesCountVal,
+                    );
+                  },
+                  context: context,
+                ),
+                SizedBox(height: Sizes(context).GetHeight() * 1),
+
+                // زر الـ Dislikes
+                _statChip(
+                  icon: "assets/icon/dislike.svg",
+                  value: dislikesCountVal.toString(),  // ← من notifier مو من item
+                  isActive: currentReaction == "dislike",
+                  onTap: () {
+                    final bool wasDisliked = currentReaction == "dislike";
+                    ref.read(Story_riverpod.notifier).toggleReaction(
+                      context,
+                      statusId,
+                      "dislike",
+                      wasDisliked,
+                      dislikesCountVal,
+                    );
+                  },
+                  context: context,
+                ),
+              ],
+            ),
+          ),
+          //هذا تبع الكومنتات
+          Positioned(
+            left: Sizes(context).GetWidth() * 3,
+            top: Sizes(context).GetHeight() * 75,
+            child: GestureDetector(
+              onTap: () => showStoryComments(context, item["id"]),
+              child: Column(
+                children: [
+                  CircularButton(
+                    size: Sizes(context).GetHeight() * 5,
+                    backgroundColor: Themes().GetColor("backgroundOffWhite"),
+                    borderColor: Themes().GetColor("backgroundOffWhite"),
+                    onTap: () => showStoryComments(context, item["id"]),
+                    child: SvgPicture.asset("assets/icon/Comment.svg"),
+                  ),
+                  SizedBox(height: Sizes(context).GetHeight() * 0.5),
+                  Container(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: Sizes(context).GetWidth() * 2,
+                      vertical: Sizes(context).GetHeight() * 0.3,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Themes().GetColor("backgroundOffWhite"),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Text(
+                      item["comments_count"]?.toString() ?? "0",
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+
         ],
       ),
     );

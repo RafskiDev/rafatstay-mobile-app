@@ -51,7 +51,6 @@ class PageNotifier extends Notifier<int> {
       {},
       context,
     );
-
     if (res?["success"] == true) {
       offerData = res["data"];
       carouselItems = [];

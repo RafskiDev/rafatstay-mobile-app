@@ -165,8 +165,8 @@ class PageNotifier extends Notifier<int> {
       "sold_count":item["sold_count"],
       "potsEmpty": false,
       "section": sectionName ?? "", // ← للفلترة
-      "time": item["prep_time_minutes"] != null
-          ? "${item["prep_time_minutes"]}"
+      "time": item["ready_time_minutes"] != null
+          ? "${item["ready_time_minutes"]}"
           : null,
     };
   }
@@ -417,7 +417,7 @@ class PageNotifier extends Notifier<int> {
   }
 
   Map<int, bool> favoriteStatus = {};
-
+  Map<int, bool> interestStatus = {};
 // ✅ دالة التفاعل لعمل Interest / Uninterest وتحديث العداد ديناميكياً
   // ✅ دالة التفاعل لعمل Interest / Uninterest وتحديث العداد ديناميكياً وبدون قلب
   Future<void> interest(BuildContext context, int branchId) async {
@@ -432,7 +432,8 @@ class PageNotifier extends Notifier<int> {
     if (res != null && res["success"] == true && res["data"] != null) {
       final bool serverFavorited = res["data"]["is_favorited"] == true;
       favoriteStatus[branchId] = serverFavorited;
-
+      final bool serverInterested = res["data"]["is_interested"] ?? res["data"]["is_favorited"] ?? false;
+      interestStatus[branchId] = serverInterested;
       if (branches.isNotEmpty) {
         int currentCount = int.tryParse(
             branches[0]["interest_count"]?.toString() ?? "0") ?? 0;
@@ -441,8 +442,10 @@ class PageNotifier extends Notifier<int> {
             ? currentCount + 1
             : (currentCount > 0 ? currentCount - 1 : 0);
         branches[0]["is_favorited"] = serverFavorited;
+        // تحديث نفس الحقل الذي يستمع إليه ملف الـ UI بالظبط
+        branches[0]["is_interested"] = serverInterested;
       }
-      ref.notifyListeners();
+      state = state;
     }
   }
 }

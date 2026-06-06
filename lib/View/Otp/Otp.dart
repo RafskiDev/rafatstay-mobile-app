@@ -21,7 +21,7 @@ class Otp extends ConsumerStatefulWidget {
 
 class _OtpState extends ConsumerState<Otp> {
   Timer? _timer;
-
+  String _enteredOtp = "";
   @override
   void initState() {
     super.initState();
@@ -65,11 +65,9 @@ class _OtpState extends ConsumerState<Otp> {
               ),
               SizedBox(height:sizes.GetHeight()*2,),
               CustomOtpWidget(
-                fieldCount: 4,
-                onVerify: (otp) async {
-                  final response = await ref.read(otp_riverpod.notifier)
-                      .verifyOtp(context, widget.email, otp);
-                  return response["success"] == true;
+                fieldCount: 6,
+                onChanged: (otp) {
+                  _enteredOtp = otp; // تحديث قيمة الرمز المدخل
                 },
               ),
               SizedBox(height:sizes.GetHeight()*2,),
@@ -100,6 +98,7 @@ class _OtpState extends ConsumerState<Otp> {
                     buttonText:textLanguage.GetWord("إعادة إرسال الرمز"),
                     borderColor:theme.GetColor("textPrimary"),
                     onPressed: () {
+                      /*
                       Navigator.push(
                         context,
                         PageRouteBuilder(
@@ -109,6 +108,7 @@ class _OtpState extends ConsumerState<Otp> {
                           reverseTransitionDuration: Duration.zero,
                         ),
                       );
+                       */
                     },
                     backgroundColor:theme.GetColor("background"),
                     textColor:theme.GetColor("textPrimary"),
@@ -116,12 +116,59 @@ class _OtpState extends ConsumerState<Otp> {
                   ),
                   WidgetButton(
                     context: context,
-                    buttonText:textLanguage.GetWord("رمز التحقق"),
-                    onPressed: () {
-                      print("تم الضغط على الزر");
+                    buttonText: textLanguage.GetWord("رمز التحقق"),
+                    onPressed: () async {
+                      // 1. التأكد أن المستخدم أدخل الـ 6 أرقام كاملة قبل إرسال الطلب
+                      if (_enteredOtp.length < 6) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text(textLanguage.GetWord("يرجى إدخال رمز التحقق كاملاً المكون من 6 أرقام")),
+                            backgroundColor: Colors.orange,
+                            behavior: SnackBarBehavior.floating,
+                          ),
+                        );
+                        return; // إيقاف العملية
+                      }
+
+                      // 2. بدء عملية التحقق عبر الـ API
+                      final response = await ref.read(otp_riverpod.notifier)
+                          .verifyOtp(context, widget.email, _enteredOtp);
+
+                      if (mounted) {
+                        // 3. إذا كان الرمز صحيحاً (نجاح)
+                        if (response["success"] == true) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(textLanguage.GetWord("تم التحقق بنجاح!")),
+                              backgroundColor: Colors.green,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+
+                          // الانتقال لصفحة تعيين كلمة المرور بعد ثانية تلقائياً
+                          Future.delayed(const Duration(seconds: 1), () {
+                            if (mounted) {
+                              Navigator.pushReplacement(
+                                context,
+                                MaterialPageRoute(builder: (context) =>  ResetYourPassword(email: widget.email, otp: _enteredOtp)),
+                              );
+                            }
+                          });
+                        }
+                        // 4. إذا كان الرمز خاطئاً
+                        else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(textLanguage.GetWord("رمز التحقق غير صحيح، حاول مجدداً")),
+                              backgroundColor: Colors.red,
+                              behavior: SnackBarBehavior.floating,
+                            ),
+                          );
+                        }
+                      }
                     },
-                    backgroundColor:theme.GetColor("primary"),
-                    textColor:theme.GetColor("textPrimary"),
+                    backgroundColor: theme.GetColor("primary"),
+                    textColor: theme.GetColor("textPrimary"),
                     isCircular: true,
                   ),
                 ],

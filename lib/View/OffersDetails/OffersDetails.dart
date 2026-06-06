@@ -168,7 +168,7 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
                           children: [
                             SvgPicture.asset("assets/icon/MealTime.svg", height: sizes.GetHeight() * 2),
                             SizedBox(width: sizes.GetWidth() * 2),
-                            Text(offerData["prep_time_minutes"]?.toString() ?? "0"),
+                            Text(offerData["prep_time_label"]?.toString() ?? "0"),
                           ],
                         ),
                         Row(
@@ -282,7 +282,7 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
                               padding: EdgeInsets.only(right: sizes.GetWidth() * 1),
                               child: ImageWithTitleItem(
                                 imageUrl: item[index]["image"] ?? "",
-                                title: item[index]["title"] ?? "",
+                                title: item[index]["name"] ?? "",
                                 size: sizes.GetHeight() * 11,
                                 backgroundColor: theme.GetColor("background"),
                                 onTap: () {},
@@ -303,12 +303,21 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
                         final branchId = offerData["branch"]?["id"] ?? 0;
                         final title = offerData["title"] ?? "";
                         final includedItems = ref.read(OffersDetails_riverpod.notifier).items;
+                        final selectedMeals = includedItems.map((item) {
+                          final range = item["ready_time_minutes"] ?? "0-0";
+                          final name = item["name"] ?? "0-0";
+                          return {
+                            ...item,
+                            "time": range,
+                            "title":name,
+                          };
+                        }).toList();
                         if (includedItems.isNotEmpty) {
                           Navigator.push(
                             context,
                             PageRouteBuilder(
                               pageBuilder: (context, animation1, animation2) => MakeItYourWay(
-                                selectedMeals: includedItems,
+                                selectedMeals: selectedMeals,
                                 title: title,
                                 businessName: businessName,
                                 branchId: branchId,
@@ -329,7 +338,10 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
                               style: const TextStyle(fontWeight: FontWeight.bold),
                             ),
                             SizedBox(width: sizes.GetWidth() * 2),
-                            SvgPicture.asset("assets/icon/arrow.svg"),
+                                 Transform.flip(
+                                 flipX: notifier.box.read("Language") == 1,
+                                 child: SvgPicture.asset("assets/icon/arrow.svg"),
+                            ),
                           ],
                         ),
                       ),
@@ -366,8 +378,6 @@ class ImageWithTitleItem extends StatelessWidget {
   Widget build(BuildContext context) {
     Themes theme = Themes();
     final sizes = Sizes(context);
-    final isSvg = imageUrl.toLowerCase().endsWith('.svg') || imageUrl.startsWith('assets/');
-
     return GestureDetector(
       onTap: onTap,
       child: Container(
@@ -383,16 +393,19 @@ class ImageWithTitleItem extends StatelessWidget {
           mainAxisSize: MainAxisSize.min,
           children: [
             Expanded(
-              child: isSvg
-                  ? SvgPicture.asset(
-                imageUrl.isEmpty ? "assets/icon/MealTime.svg" : imageUrl,
-                width: sizes.GetHeight() * 6,
-              )
-                  : CachedNetworkImage(
-                imageUrl: imageUrl,
-                fit: BoxFit.contain,
-                placeholder: (context, url) => const CircularProgressIndicator(strokeWidth: 2),
-                errorWidget: (context, url, error) => const Icon(Icons.fastfood, size: 30),
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: CachedNetworkImage(
+                  imageUrl: imageUrl,
+                  fit: BoxFit.contain,
+                  placeholder: (context, url) =>
+                  const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                  errorWidget: (context, url, error) =>
+                  const Icon(Icons.fastfood, size: 30),
+                ),
               ),
             ),
             SizedBox(height: sizes.GetHeight() * 1),

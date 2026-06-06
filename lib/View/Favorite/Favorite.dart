@@ -119,7 +119,7 @@ class _FavoriteState extends ConsumerState<Favorite> {
                                 SizedBox(height: sizes.GetHeight() * 1),
                                 Row(
                                   children: [
-                                    SvgPicture.asset("assets/icon/Viewers.svg"),
+                                    SvgPicture.asset("assets/icon/evaluation.svg"),
                                     SizedBox(width: sizes.GetWidth() * 0.4),
                                     Text("${item["rating"]?.toString() ?? "0"} (${item["reviews_count"]?.toString() ?? "0"} ${textLanguage.GetWord("التقييمات")})", style: const TextStyle(fontSize: 10)),
                                   ],
@@ -127,7 +127,7 @@ class _FavoriteState extends ConsumerState<Favorite> {
                                 SizedBox(height: sizes.GetHeight() * 1),
                                 Row(
                                   children: [
-                                    SvgPicture.asset("assets/icon/evaluation.svg"),
+                                    SvgPicture.asset("assets/icon/Viewers.svg"),
                                     SizedBox(width: sizes.GetWidth() * 0.4),
                                     Text(visits, style: const TextStyle(fontSize: 10)),
                                     SizedBox(width: sizes.GetWidth() * 0.4),
@@ -245,7 +245,6 @@ class _FavoriteState extends ConsumerState<Favorite> {
                   ),
                   SizedBox(height: sizes.GetHeight() * 2),
                 ],
-
                 // ─── قسم الحالات (Status) ───────────────────────────
                 if (branchesWithStories.isNotEmpty) ...[
                   Row(
@@ -261,10 +260,9 @@ class _FavoriteState extends ConsumerState<Favorite> {
                       itemCount: branchesWithStories.length,
                       itemBuilder: (context, i) {
                         final statusItem = branchesWithStories[i];
-                        final String logoUrl = statusItem["logo_url"] ?? "";
+                        final String logoUrl = statusItem["latest_status"]?["media_url"] ?? "";
                         final String businessName = statusItem["business_name"] ?? "";
                         final String statusEndpoint = statusItem["cta"]?["endpoint"] ?? "";
-
                         return GestureDetector(
                           onTap: () {
                             if (statusEndpoint.isEmpty) return;

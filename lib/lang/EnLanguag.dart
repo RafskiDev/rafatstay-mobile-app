@@ -402,5 +402,6 @@ final EnLanguag = {
   "اكتب الرسالة........":"Type message........",
   "نتائج مُفلترة":"Filtered Results",
   "لا توجد بيانات":"No data available",
-  "وجبات دجاج سريعة بنكهة سعودية مميزة.":"Fast food chicken meals with a distinctive Saudi flavor."
+  "وجبات دجاج سريعة بنكهة سعودية مميزة.":"Fast food chicken meals with a distinctive Saudi flavor.",
+  "لا توجد ستوريات متوفرة":"No stories available",
 };

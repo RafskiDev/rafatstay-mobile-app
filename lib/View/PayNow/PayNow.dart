@@ -216,6 +216,7 @@ class PayNow extends ConsumerWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           SizedBox(height: Sizes(context).GetHeight() * 2),
+          /*
           CustomOtpWidget(
             fieldCount: 4, // عدد خانات OTP
             onVerify: (otp) async {
@@ -228,6 +229,8 @@ class PayNow extends ConsumerWidget {
               return false;
             },
           ),
+
+           */
 
           SizedBox(height: Sizes(context).GetHeight() * 2),
           Text(
