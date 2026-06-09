@@ -193,7 +193,7 @@ class BookingDetail extends StatelessWidget {
           ),
 
         ],
-
+        if(booking?["branch"]?['latitude'] != null && booking?["branch"]?['longitude'] != null)...[
           SizedBox(height: Sizes(context).GetHeight() * 1),
           WidgetButton(
             width: sizes.GetWidth() * 50,
@@ -206,20 +206,21 @@ class BookingDetail extends StatelessWidget {
               final restaurantLat = booking?["branch"]?['latitude'];
               final restaurantLng = booking?['branch']?['longitude'];
               if (restaurantLat != null && restaurantLng != null) {
-              Navigator.push(
-                context,
-                PageRouteBuilder(
-                  pageBuilder: (context, animation1, animation2) =>
-                      Maps(restaurantLat: restaurantLat, restaurantLng: restaurantLng),
-                  transitionDuration: Duration.zero,
-                  reverseTransitionDuration: Duration.zero,
-                ),
-              );
-            }
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation1, animation2) =>
+                        Maps(restaurantLat: restaurantLat, restaurantLng: restaurantLng),
+                    transitionDuration: Duration.zero,
+                    reverseTransitionDuration: Duration.zero,
+                  ),
+                );
+              }
 
             },
             backgroundColor: Themes().GetColor("primary"),
           ),
+        ],
         WidgetButton(
           width: sizes.GetWidth() * 50,
           isCircular: true,
@@ -229,7 +230,6 @@ class BookingDetail extends StatelessWidget {
           buttonText: TextLanguage().GetWord("إلغاء الحجز"),
           onPressed: () {
             dialogue(context,ref);
-            print("تم الضغط على الزر");
           },
           backgroundColor: Themes().GetColor("background"),
         ),

@@ -33,6 +33,7 @@ class _BookingDetailsState extends ConsumerState<BookingDetails> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
+      print(widget.bookingData);
       ref.read(BookingDetails_riverpod.notifier).loadFromBookingData(widget.bookingData);
      // ref.read(BookingDetails_riverpod.notifier).fetchBookingDetails(context, widget.bookingData["id"]);
     });
@@ -196,7 +197,7 @@ class _BookingDetailsState extends ConsumerState<BookingDetails> {
                     sizes: sizes,
                     theme: theme,
                     title:item["title"].toString(),
-                    price:item["price"].toString(),
+                    price:item["price"]??"0",
                     priceSvg: "assets/icon/dollar.svg",
                     currencySvg: "assets/icon/SAR.svg",
                     mealsSvg: "assets/icon/MealDetails.svg",

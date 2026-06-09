@@ -125,7 +125,6 @@ class PageNotifier extends Notifier<int> {
       'service_mode_translated': translatedMode, // (هذا المفتاح الجديد المترجم للواجهات)
       'businessName':businessName,
     };
-    print(bookingData);
     /*
         "booking_date": "2026-03-24",
       "start_time": "18:30",

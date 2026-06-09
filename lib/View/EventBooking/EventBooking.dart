@@ -331,13 +331,11 @@ class _EventBookingState extends ConsumerState<EventBooking> {
                               );
                               return; // إيقاف العملية ومنع الانتقال
                             }
-                           // final payload = bookingNotifier.bookingPayload;
                             final selectedMeals = bookingNotifier.currentItems.where((meal) {
                               final itemId = int.tryParse(meal["id"].toString()) ?? 0;
                               final count = bookingNotifier.itemCounts[itemId] ?? 0;
                               return bookingNotifier.selectedItemIds.contains(itemId) && count >= 1;
                             }).toList();
-
                             if (bookingNotifier.selectedItemIds.isEmpty) {
                               ToastMessages(
                                 context,
@@ -357,6 +355,7 @@ class _EventBookingState extends ConsumerState<EventBooking> {
                               );
                               return;
                             }
+
                             Navigator.push(
                               context,
                               PageRouteBuilder(

@@ -598,10 +598,13 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                                   sizes: sizes,
                                   theme: theme,
                                   onTap: () {
-                                    if (meal["potsEmpty"] == true) {
+                                    /*
+                                    if (meal["potsEmpty"] == false) {
                                       showCustomDialog(context);
                                       return;
                                     }
+                                     */
+                                    
                                     ref
                                         .read(
                                         RestaurantDetalis_riverpod.notifier)

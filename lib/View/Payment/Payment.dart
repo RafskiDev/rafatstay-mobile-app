@@ -10,6 +10,7 @@ import '../../Widget/CheckBox.dart';
 import '../../Widget/WidgetAppBar.dart';
 import '../../Widget/WidgetButton.dart';
 import '../../Widget/WidgetCustomDialog.dart';
+import '../BottomBar/BottomBar.dart';
 import '../Credit/Credit.dart';
 import '../Home/Home_riverpod.dart';
 import '../MakeItYourWay/MakeItYourWay_riverpod.dart';
@@ -178,8 +179,13 @@ class Payment extends ConsumerWidget {
                                   paymentMethod: "cash",
                                 );
                                 if (success) {
+                                  ToastMessages(
+                                    context,
+                                    textLanguage.GetWord("تمت عملية الدفع بنجاح"),
+                                    Themes().GetColor("success"),
+                                    Themes().GetColor("white"),
+                                  );
                                   final id = restaurantDetails?["id"];
-
                                   final restaurantDetalis = ref.read(RestaurantDetalis_riverpod.notifier);
 
                                   if (restaurantDetalis.branches.isEmpty) return;
@@ -206,6 +212,12 @@ class Payment extends ConsumerWidget {
                                           transitionDuration: Duration.zero,
                                           reverseTransitionDuration: Duration.zero,
                                       ),
+                                    );
+                                  } else {
+                                    Navigator.pushAndRemoveUntil(
+                                      context,
+                                      MaterialPageRoute(builder: (context) => BottomBar(initialIndex: 3)),
+                                          (route) => false,
                                     );
                                   }
                                 }
@@ -255,7 +267,6 @@ class Payment extends ConsumerWidget {
                         "menuItems": [{"id": eventItem["id"], "title": eventItem["name"]}],
                       },
                     );
-
                     if (booking != null) {
                       finalBookingId = booking["data"]["id"];
                     }

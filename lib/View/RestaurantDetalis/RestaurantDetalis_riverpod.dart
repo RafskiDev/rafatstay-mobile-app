@@ -163,7 +163,7 @@ class PageNotifier extends Notifier<int> {
       "count": 0,
       "is_spicy": item["is_spicy"], // ← تأكد موجود
       "sold_count":item["sold_count"],
-      "potsEmpty": false,
+      "potsEmpty": true,
       "section": sectionName ?? "", // ← للفلترة
       "time": item["ready_time_minutes"] != null
           ? "${item["ready_time_minutes"]}"

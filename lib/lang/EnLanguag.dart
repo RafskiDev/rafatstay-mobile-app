@@ -409,4 +409,7 @@ final EnLanguag = {
   "الرجاء اختيار وجبة واحدة على الأقل":"Please select at least one meal.",
   "أو":"OR",
   "لقد قمت بتقييم هذا الفرع مسبقاً، يمكنك التقييم مجدداً بعد 30 يوماً":"I have already reviewed this branch, you can review it again after 30 days.",
+  "سيتم إضافة رسوم خدمة بقيمة 5 ﷼ عند اختيار الدفع النقدي.":"A fee of 5 riyals was added when choosing the cash amount.",
+  "تم إرسال طلب المساعدة بنجاح":"The request for assistance has been successfully submitted.",
+  "فشل إرسال الطلب":"Request failed"
 };

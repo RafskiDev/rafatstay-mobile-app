@@ -115,7 +115,7 @@ class Ticket extends StatelessWidget {
                             : [
                           Flexible(
                             child: Text(
-                              "${textLanguage.GetWord("رقم الحجز")} $bookingNumber ${textLanguage.GetWord("ادفع")} $payAmount",
+                              "${textLanguage.GetWord("رقم الحجز")} $bookingNumber ${textLanguage.GetWord("الدفع")} $payAmount",
                               style: TextStyle(
                                 fontSize: sizes.GetHeight() * 2,
                                 fontWeight: FontWeight.bold,

@@ -370,7 +370,7 @@ class MealCard extends StatelessWidget {
                       ),
                     ),
                   ),
-                  item["price"]!=null?InfoRow(
+                  item["price"]!=null && item["isEvent"]==null?InfoRow(
                     icon: "assets/icon/dollar.svg",
                     text: "${textLanguage.GetWord("سعر")}: ${item["price"]}",
                     sizes: sizes,

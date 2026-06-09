@@ -363,6 +363,7 @@ class _OnSiteState extends ConsumerState<OnSite> {
 
         return Consumer(
           builder: (context, ref, _) {
+            ref.watch(Booking_riverpod);
             final selectedIndex = ref.watch(Booking_riverpod.notifier).selectedAssistanceIndex;
             return Container(
              padding:EdgeInsets.all(8.0),
@@ -447,7 +448,7 @@ class _OnSiteState extends ConsumerState<OnSite> {
                                 if (!mounted) return;
                                 ToastMessages(
                                   context,
-                                  "تم إرسال طلب المساعدة بنجاح",
+                                  textLanguage.GetWord("تم إرسال طلب المساعدة بنجاح"),
                                   Themes().GetColor("success"),
                                   Themes().GetColor("white"),
                                 );
@@ -455,7 +456,7 @@ class _OnSiteState extends ConsumerState<OnSite> {
                               },
                               onError: () {
                                 if (!mounted) return;
-                                ToastMessages(context, "فشل إرسال الطلب",
+                                ToastMessages(context,textLanguage.GetWord("فشل إرسال الطلب"),
                                     Themes().GetColor("error"), Themes().GetColor("white"));
                                 Navigator.pop(context);
                               },

@@ -41,6 +41,8 @@ class PageNotifier extends Notifier<int> {
         "is_spicy": item["is_spicy"] ?? false,
         "potsEmpty": true,
         "count": itemCounts[id] ?? 0,
+        "price": item["price"]?.toString() ?? "0",
+        "isEvent":true
       };
     }).toList();
   }

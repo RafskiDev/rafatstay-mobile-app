@@ -73,7 +73,7 @@ class _MakeItYourWayState extends ConsumerState<MakeItYourWay> {
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: 3,
                         crossAxisSpacing: sizes.GetWidth() * 1,
-                        childAspectRatio:widget.bookingType=="eventBooking"? 0.62:0.55,
+                        childAspectRatio:widget.bookingType=="eventBooking"? 0.63:0.55,
                       ),
                       itemCount: menuItems.length,
                       itemBuilder: (context, index) {
