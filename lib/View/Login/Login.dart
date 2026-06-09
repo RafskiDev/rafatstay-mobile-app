@@ -247,6 +247,7 @@ class Login extends ConsumerWidget {
     );
   }
 }
+
 Widget orDivider(BuildContext context) {
   Themes theme = Themes();
   return Row(
@@ -260,7 +261,7 @@ Widget orDivider(BuildContext context) {
       Padding(
         padding: const EdgeInsets.symmetric(horizontal: 8.0),
         child: Text(
-          "OR",
+          TextLanguage().GetWord("أو"),
           style: TextStyle(
             color: theme.GetColor("textSecondary"),
             fontFamily: "Cairo",

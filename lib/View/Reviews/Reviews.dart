@@ -1,20 +1,13 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import '../../Service/LoadingService.dart';
 import '../../Utils/DateTimeHelper.dart';
 import '../../Utils/Sizes.dart';
 import '../../Utils/TextLanguage.dart';
 import '../../Utils/Them.dart';
-import '../../Widget/CheckBox.dart';
 import '../../Widget/ReviewCard.dart';
 import '../../Widget/ShowLoading.dart';
-import '../../Widget/VideoImageCard.dart';
 import '../../Widget/WidgetAppBar.dart';
-import '../../Widget/WidgetButton.dart';
-import '../../Widget/WidgetTextField.dart';
-import '../Payment/Payment.dart';
 import 'Reviews_riverpod.dart';
 
 class Reviews extends ConsumerStatefulWidget {
@@ -27,17 +20,14 @@ class Reviews extends ConsumerStatefulWidget {
 
 class _ReviewsState extends ConsumerState<Reviews> {
   final ScrollController _scrollController = ScrollController();
-  late PageNotifier _notifier;
 
   @override
   void initState() {
     super.initState();
-    _notifier = ref.read(Reviews_riverpod.notifier);
-
     _scrollController.addListener(_onScroll);
-
+    // استدعاء التحميل الأول عند بناء الصفحة
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _notifier.fetchReviews(context, widget.branchId);
+      ref.read(reviewsRiverpod.notifier).fetchReviews(context, widget.branchId);
     });
   }
 
@@ -45,10 +35,10 @@ class _ReviewsState extends ConsumerState<Reviews> {
     if (!_scrollController.hasClients) return;
 
     final threshold = 200;
-
+    // التأكد من وصول المستخدم لقرب نهاية القائمة
     if (_scrollController.position.pixels >=
         _scrollController.position.maxScrollExtent - threshold) {
-      _notifier.fetchReviews(
+      ref.read(reviewsRiverpod.notifier).fetchReviews(
         context,
         widget.branchId,
         loadMore: true,
@@ -65,41 +55,50 @@ class _ReviewsState extends ConsumerState<Reviews> {
 
   @override
   Widget build(BuildContext context) {
-    ref.watch(Reviews_riverpod);
-    final notifier = ref.read(Reviews_riverpod.notifier);
+    // مراقبة الستيت بالكامل، أي تغيير هنا سيحدث الواجهة فوراً بشكل آمن
+    final reviewState = ref.watch(reviewsRiverpod);
     final sizes = Sizes(context);
     final theme = Themes();
-    final reviews = notifier.reviews;
+    final reviews = reviewState.reviews;
 
     return Scaffold(
       appBar: buildCustomAppBar(context, TextLanguage().GetWord("التقييمات")),
       backgroundColor: theme.GetColor("background"),
-      body: ValueListenableBuilder<bool>(
-        valueListenable: LoadingService.isLoading,
-        builder: (context, isLoading, child) {
-          if (reviews.isEmpty && notifier.currentPage == 1) {
-            return showLoading();
+      body: Builder(
+        builder: (context) {
+          // إذا كان أول تحميل والقائمة فارغة، اعرض مؤشر التحميل الرئيسي
+          if (reviewState.isLoadingFirstTime && reviews.isEmpty) {
+            return Center(child: showLoading());
           }
+
+          // إذا انتهى التحميل ولا يوجد بيانات
+          if (reviews.isEmpty) {
+            return Center(
+              child: Text(
+                TextLanguage().GetWord("لا توجد تقييمات حالياً"),
+                style: TextStyle(color: theme.GetColor("text"), fontSize: 16),
+              ),
+            );
+          }
+
           return Column(
             children: [
               Expanded(
                 child: ListView.builder(
                   controller: _scrollController,
-                  padding: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 2, vertical: sizes.GetHeight() * 2),
-                  itemCount: reviews.length + 1, // +1 للـ loading
+                  padding: EdgeInsets.symmetric(
+                    horizontal: sizes.GetWidth() * 2,
+                    vertical: sizes.GetHeight() * 2,
+                  ),
+                  // زيادة 1 لعرض الـ Loader بالأسفل عند جلب بيانات إضافية
+                  itemCount: reviews.length + 1,
                   itemBuilder: (context, index) {
+                    // إذا وصلنا للعنصر الأخير (الـ Loader السفلي)
                     if (index == reviews.length) {
-                      if (notifier.isLoadingMore) {
-                        return Column(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Center(
-                                child: showLoading(),
-                              ),
-                            ),
-                            SizedBox(height: sizes.GetHeight() * 2),
-                          ],
+                      if (reviewState.isLoadingMore) {
+                        return Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Center(child: showLoading()),
                         );
                       } else {
                         return const SizedBox.shrink();
@@ -107,16 +106,15 @@ class _ReviewsState extends ConsumerState<Reviews> {
                     }
 
                     final item = reviews[index];
-
-
-                    // ✅ استخراج روابط الميديا بشكل آمن وصحيح
                     final mediaList = item["media"] as List? ?? [];
+                    // استخراج روابط الميديا بشكل آمن
+                    final imageMedia = mediaList.firstWhere(
+                          (m) => m["media_type"] == "image",
+                      orElse: () => null,
+                    );
 
-
-
-                    // ✅ تأمين جلب أول مسار صورة للتقييم بدون استخدام الترتيب الخارجي (index) لمنع الكراش
-                    final String imageOnlyUrl = mediaList.isNotEmpty && mediaList[0]["media_url"] != null
-                        ? "${mediaList[0]["media_url"]}"
+                    final String imageUrl = imageMedia != null
+                        ? (imageMedia["media_url"]?.toString() ?? "")
                         : "";
                     return Padding(
                       padding: EdgeInsets.only(bottom: sizes.GetHeight() * 2),
@@ -125,11 +123,9 @@ class _ReviewsState extends ConsumerState<Reviews> {
                         date: DateTimeHelper.extractTime(item["created_at"]),
                         comment: item["comment"]?.toString() ?? "",
                         rating: item["overall_rating"] ?? 0,
-                        // ✅ تأمين قراءة بيانات الأفاتار للمستخدم حتى لو كانت القيمة لست نصية مباشرة
-                        image:item["user"]["avatar_url"]?.toString()??"",
+                        image: item["user"]?["avatar_url"]?.toString() ?? "",
                         video: null,
-                        // ✅ تمرير مسار الصورة المصلح والآمن هنا
-                        imageOnly: imageOnlyUrl,
+                        imageOnly: imageUrl,
                         sizes: sizes,
                         theme: theme,
                         mediaItems: List<dynamic>.from(mediaList),
@@ -141,7 +137,6 @@ class _ReviewsState extends ConsumerState<Reviews> {
                   },
                 ),
               ),
-              SizedBox(height: sizes.GetHeight() * 2),
             ],
           );
         },

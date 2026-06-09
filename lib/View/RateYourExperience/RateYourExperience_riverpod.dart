@@ -64,6 +64,7 @@ class PageNotifier extends Notifier<int> {
       {},
       context,
     );
+    print(branchId);
     if (res?["success"] == true) {
       employeeList = List<Map<String, dynamic>>.from(res["data"] ?? []);
       state++;
@@ -72,7 +73,6 @@ class PageNotifier extends Notifier<int> {
 
 
   final Set<int> selectedPersonIndexes = {};
-
 
 
   void reset() => state = 0;
@@ -86,7 +86,6 @@ class PageNotifier extends Notifier<int> {
     services[index]["rate"] = newRate;
     state++;
   }
-
 
    void updateReviewRating(int index, int newRate) {
      reviews[index]["rate"] = newRate;
@@ -116,44 +115,60 @@ class PageNotifier extends Notifier<int> {
   Map<String, dynamic> buildReviewBody({required int branchId}) {
     final genderMap = {1: "male", 2: "female"};
 
-    final overallRating    = (ratings[0]["rate"] as int?) ?? 0;
-    final atmosphereRating = (ratings[1]["rate"] as int?) ?? 0;
-    final layoutRating     = (ratings[2]["rate"] as int?) ?? 0;
-    final valueRating      = (ratings[3]["rate"] as int?) ?? 0;
+    final overallRating         = (ratings[0]["rate"] as int?) ?? 0;
+    final atmosphereRating      = (ratings[1]["rate"] as int?) ?? 0;
+    final layoutRating          = (ratings[2]["rate"] as int?) ?? 0;
+    final valueRating           = (ratings[3]["rate"] as int?) ?? 0;
 
-    final foodRating          = (services[0]["rate"] as int?) ?? 0;
-    final serviceRating       = (services[1]["rate"] as int?) ?? 0;
-    final staffBehaviorRating = (services[2]["rate"] as int?) ?? 0;
-    final cleanlinessRating   = (services[3]["rate"] as int?) ?? 0;
+    final foodRating            = (services[0]["rate"] as int?) ?? 0;
+    final serviceRating         = (services[1]["rate"] as int?) ?? 0;
+    final staffBehaviorRating   = (services[2]["rate"] as int?) ?? 0;
+    final cleanlinessRating     = (services[3]["rate"] as int?) ?? 0;
 
-    final attitudeRating      = (reviews[0]["rate"] as int?) ?? 0;
-    final attentionRating     = (reviews[1]["rate"] as int?) ?? 0;
+    final attitudeRating        = (reviews[0]["rate"] as int?) ?? 0;
+    final attentionRating       = (reviews[1]["rate"] as int?) ?? 0;
     final professionalismRating = (reviews[2]["rate"] as int?) ?? 0;
 
     final hasEmployee = selectedPersonIndexes.isNotEmpty && employeeList.isNotEmpty;
 
+    final tipText = controller.text.trim();
+    final tipAmount = tipText.isNotEmpty ? double.tryParse(tipText) : null;
+    final epm = selectedPersonIndexes
+        .map((i) => employeeList[i]["id"])
+        .toList();
+    print(epm);
     return {
       "branch_id": branchId,
-      if (overallRating > 0)       "overall_rating": overallRating,
-      if (atmosphereRating > 0)    "atmosphere_rating": atmosphereRating,
-      if (layoutRating > 0)        "layout_rating": layoutRating,
-      if (valueRating > 0)         "value_rating": valueRating,
-      if (foodRating > 0)          "food_rating": foodRating,
-      if (serviceRating > 0)       "service_rating": serviceRating,
-      if (staffBehaviorRating > 0) "staff_behavior_rating": staffBehaviorRating,
-      if (cleanlinessRating > 0)   "cleanliness_rating": cleanlinessRating,
-      if (comment.text.isNotEmpty) "comment": comment.text.trim(),
-      if (controller.text.isNotEmpty) "tip_amount": double.tryParse(controller.text),
-      if (birthday.text.isNotEmpty)   "birthday": _formatBirthday(birthday.text),
-      if (hasEmployee) "best_employee_id": employeeList[selectedPersonIndexes.first]["id"],
-      if (hasEmployee && attitudeRating > 0)       "attitude_rating": attitudeRating,
-      if (hasEmployee && attentionRating > 0)      "attention_rating": attentionRating,
-      if (hasEmployee && professionalismRating > 0) "professionalism_rating": professionalismRating,
+      if (overallRating > 0)         "overall_rating": overallRating,
+      if (atmosphereRating > 0)      "atmosphere_rating": atmosphereRating,
+      if (layoutRating > 0)          "layout_rating": layoutRating,
+      if (valueRating > 0)           "value_rating": valueRating,
+      if (foodRating > 0)            "food_rating": foodRating,
+      if (serviceRating > 0)         "service_rating": serviceRating,
+      if (staffBehaviorRating > 0)   "staff_behavior_rating": staffBehaviorRating,
+      if (cleanlinessRating > 0)     "cleanliness_rating": cleanlinessRating,
+      if (comment.text.isNotEmpty)   "comment": comment.text.trim(),
+      if (tipAmount != null)         "tip_amount": tipAmount,
+      if (birthday.text.isNotEmpty)  "birthday": _formatBirthday(birthday.text),
+      if (hasEmployee) "best_employee_ids":epm,
+      if (hasEmployee && attitudeRating > 0)          "attitude_rating": attitudeRating,
+      if (hasEmployee && attentionRating > 0)         "attention_rating": attentionRating,
+      if (hasEmployee && professionalismRating > 0)   "professionalism_rating": professionalismRating,
       if (selectedGender != null) "gender": genderMap[selectedGender],
     };
   }
 
   Future<void> submitReview({required int branchId, required BuildContext context}) async {
+    final error = validateBeforeSubmit();
+    if (error != null) {
+      ToastMessages(
+        context,
+        error,
+        Themes().GetColor("error"),
+        Themes().GetColor("white"),
+      );
+      return;
+    }
     final body = buildReviewBody(branchId: branchId);
     final response = await ApiService().postMultipart(
       "v1/guest/reviews",
@@ -162,6 +177,7 @@ class PageNotifier extends Notifier<int> {
       fileField: "media[]",
       context: context,
     );
+    print(response);
     if (!context.mounted) return;
     if (response['success'] == true) {
       resetForm();
@@ -172,13 +188,27 @@ class PageNotifier extends Notifier<int> {
         Themes().GetColor("white"),
       );
     }else{
+      final errors = response["errors"] as Map<String, dynamic>?;
+      final branchError = (errors?["branch_id"] as List?)?.first?.toString() ?? "";
+      final is30DaysError = branchError.contains("30");
+
+      final message = is30DaysError
+          ? TextLanguage().GetWord("لقد قمت بتقييم هذا الفرع مسبقاً، يمكنك التقييم مجدداً بعد 30 يوماً")
+          : response["message"] ?? TextLanguage().GetWord("حدث خطأ، حاول مجدداً");
       ToastMessages(
         context,
-        response["message"],
+        message,
         Themes().GetColor("error"),
         Themes().GetColor("white"),
       );
     }
+  }
+
+  String? validateBeforeSubmit() {
+    if (selectedGender == null) {
+      return TextLanguage().GetWord("يرجى تحديد الجنس");
+    }
+    return null;
   }
 
   String _formatBirthday(String text) {

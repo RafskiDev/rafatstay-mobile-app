@@ -49,6 +49,7 @@ class _EventBookingState extends ConsumerState<EventBooking> {
     final menuItems = ref.watch(EventBooking_riverpod.notifier).menuItems;
     final notifier = ref.watch(EventBooking_riverpod.notifier);
     final event = notifier.eventData;
+   // print("event: $event");
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
       body:ValueListenableBuilder<bool>(
@@ -67,8 +68,10 @@ class _EventBookingState extends ConsumerState<EventBooking> {
                         bottomRight: Radius.circular(20),
                       ),
                       child: Image.network(
-                        "${showImage}${widget.eventBooking["image"]}",
-                        fit: BoxFit.cover,
+                        widget.eventBooking["image"] ?? "",
+                      //  fit: BoxFit.fill,
+                        width: double.infinity,
+                        height: sizes.GetHeight() * 28,
                         errorBuilder: (_, __, ___) => Image.asset(
                           "assets/images/1c07e950ad312fdaaef1bdd4e1882d79f25c9233.png",
                           width: double.infinity,
@@ -119,7 +122,7 @@ class _EventBookingState extends ConsumerState<EventBooking> {
                                     child: Row(
                                       children: [
                                         Text(
-                                            event["price"] ?? "",
+                                            event["price"] ?? "0",
                                             style: TextStyle(
                                                 color: theme.GetColor(
                                                     "secondaryPrimary"))
@@ -177,7 +180,7 @@ class _EventBookingState extends ConsumerState<EventBooking> {
                           children: [
                             GradientText(
                                 widget: Text(
-                                    "About Event",
+                                    textLanguage.GetWord("نبذة عن الفعالية"),
                                     style: TextStyle(
                                       fontSize: sizes.GetHeight() * 2.8,
                                       fontWeight: FontWeight.w500,
@@ -213,7 +216,6 @@ class _EventBookingState extends ConsumerState<EventBooking> {
                           SizedBox(height: sizes.GetHeight() * 3),
                         ],
                         Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: List.generate(
                             menuItems.length,
                                 (index) =>
@@ -240,20 +242,21 @@ class _EventBookingState extends ConsumerState<EventBooking> {
                             mainAxisSpacing: sizes.GetWidth() * 2,
                             mainAxisExtent: sizes.GetHeight() * 25,
                           ),
-                          itemCount: menuItems.length,
+                          itemCount: notifier.currentItems.length,
                           itemBuilder: (context, index) {
-                            if (index >= menuItems.length) return SizedBox();
-                            final meal = menuItems[index];
+                            if (index >= notifier.currentItems.length) return SizedBox();
+                            final meal = notifier.currentItems[index];
                             return MealCard(
                                 item: meal,
                                 sizes: sizes,
                                 theme: theme,
                                 onTap: () {
                                   final itemId = int.tryParse(meal["id"].toString()) ?? 0;
-                                  ref.read(EventBooking_riverpod.notifier).toggleItem(itemId);
+                                  ref.read(EventBooking_riverpod.notifier).incrementItem(itemId);
                                 },
                                 onTapDelete: () {
-                                  //   ref.read(EventBooking_riverpod.notifier).deleteMeal(index,context);
+                                  final itemId = int.tryParse(meal["id"].toString()) ?? 0;
+                                  ref.read(EventBooking_riverpod.notifier).decrementItem(itemId);
                                 }
                             );
                           },
@@ -329,11 +332,22 @@ class _EventBookingState extends ConsumerState<EventBooking> {
                               return; // إيقاف العملية ومنع الانتقال
                             }
                            // final payload = bookingNotifier.bookingPayload;
-                            final selectedMeals = bookingNotifier.menuItems.where((meal) {
+                            final selectedMeals = bookingNotifier.currentItems.where((meal) {
                               final itemId = int.tryParse(meal["id"].toString()) ?? 0;
-                              final count = int.tryParse(meal["count"].toString()) ?? 0;
+                              final count = bookingNotifier.itemCounts[itemId] ?? 0;
                               return bookingNotifier.selectedItemIds.contains(itemId) && count >= 1;
                             }).toList();
+
+                            if (bookingNotifier.selectedItemIds.isEmpty) {
+                              ToastMessages(
+                                context,
+                                textLanguage.GetWord("الرجاء اختيار وجبة واحدة على الأقل"),
+                                Colors.red,
+                                Colors.white,
+                              );
+                              return;
+                            }
+
                             if (selectedMeals.isEmpty) {
                               ToastMessages(
                                 context,
@@ -374,13 +388,22 @@ class _EventBookingState extends ConsumerState<EventBooking> {
                              */
                           },
                           backgroundColor: theme.GetColor("primaryA"),
-                          child: Row(
+                          child:Row(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
                               Text(
                                 textLanguage.GetWord("احجز الآن"),
                               ),
-                              SvgPicture.asset("assets/icon/arrow.svg"),
+                              Transform(
+                                alignment: Alignment.center,
+                                transform: Matrix4.identity()
+                                  ..scale(
+                                      Directionality.of(context) == TextDirection.rtl
+                                          ? -1.0
+                                          : 1.0,
+                                      1.0),
+                                  child: SvgPicture.asset("assets/icon/arrow.svg"),
+                              ),
                             ],
                           ),
                         ),
@@ -395,6 +418,7 @@ class _EventBookingState extends ConsumerState<EventBooking> {
     );
   }
 }
+
 Widget _buildJoinedSection(Sizes sizes, Map<String, dynamic> data) {
   double overlapWidth = 25.0;
   double avatarSize = 45.0;
@@ -423,9 +447,8 @@ Widget _buildJoinedSection(Sizes sizes, Map<String, dynamic> data) {
       Builder(
         builder: (context) {
           int count = data["participants_count"] ?? 0;
-
           return Text(
-            "${count > 99 ? "+$count" : count} people joined this event",
+            "${count > 99 ? "+$count" : count} ${TextLanguage().GetWord("انضم الناس إلى هذا الحدث")}",
             style: TextStyle(
               color: const Color(0xFF0F2D37),
               fontSize: sizes.GetHeight() * 1.8,
@@ -446,10 +469,16 @@ Widget _buildAvatar(int index, String imagePath, double size, double overlap) {
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        border: Border.all(color: const Color(0xFFF5EEDB), width: 2), // الإطار البيج حول الصورة
-        image: DecorationImage(
-          image: AssetImage(imagePath),
+        border: Border.all(color: const Color(0xFFF5EEDB), width: 2),
+      ),
+      child: ClipOval(
+        child: Image.network(
+          "${imagePath}",
           fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => Image.asset(
+            "assets/images/38a2a034cbe4ac063cad704f0bc1eb89da98ec7f.png",
+            fit: BoxFit.cover,
+          ),
         ),
       ),
     ),

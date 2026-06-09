@@ -198,11 +198,14 @@ class _OnSiteState extends ConsumerState<OnSite> {
                         SizedBox(width: sizes.GetWidth() * 1),
                         Text(textLanguage.GetWord('طلب المساعدة')),
                         SizedBox(width: sizes.GetWidth() * 3),
-                        SvgPicture.asset(
-                          height: sizes.GetHeight() * 2.5,
-                          ref.read(Booking_riverpod.notifier).requestAssistance
-                              ? "assets/icon/DownArrow.svg"
-                              : "assets/icon/Arrow_one.svg",
+                        Transform.flip(
+                          flipX: TextLanguage().storage.read("Language") ==1,
+                          child: SvgPicture.asset(
+                            height: sizes.GetHeight() * 2.5,
+                            ref.read(Booking_riverpod.notifier).requestAssistance
+                                ? "assets/icon/DownArrow.svg"
+                                : "assets/icon/Arrow_one.svg",
+                          ),
                         ),
                       ],
                     ),
@@ -245,7 +248,13 @@ class _OnSiteState extends ConsumerState<OnSite> {
                   SizedBox(width: sizes.GetWidth() * 1),
                   Text(textLanguage.GetWord('إضافة طلب جديد')),
                   SizedBox(width: sizes.GetWidth() * 10),
-                  SvgPicture.asset(height:sizes.GetHeight()*2.5,"assets/icon/Arrow_one.svg"),
+                  Transform.flip(
+                      flipX: TextLanguage().storage.read("Language") ==1,
+                      child:SvgPicture.asset(
+                          height:sizes.GetHeight()*2.5,
+                          "assets/icon/Arrow_one.svg",
+                       ),
+                    ),
                 ],
               ),
             ),

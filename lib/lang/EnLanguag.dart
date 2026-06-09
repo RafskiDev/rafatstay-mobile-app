@@ -404,4 +404,9 @@ final EnLanguag = {
   "لا توجد بيانات":"No data available",
   "وجبات دجاج سريعة بنكهة سعودية مميزة.":"Fast food chicken meals with a distinctive Saudi flavor.",
   "لا توجد ستوريات متوفرة":"No stories available",
+  "نبذة عن الفعالية":"About Event",
+  "انضم الناس إلى هذا الحدث":"People joined this event",
+  "الرجاء اختيار وجبة واحدة على الأقل":"Please select at least one meal.",
+  "أو":"OR",
+  "لقد قمت بتقييم هذا الفرع مسبقاً، يمكنك التقييم مجدداً بعد 30 يوماً":"I have already reviewed this branch, you can review it again after 30 days.",
 };

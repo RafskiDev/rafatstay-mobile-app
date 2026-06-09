@@ -4,34 +4,79 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../Service/ApiService.dart';
 import '../../Utils/Them.dart';
 import '../../Utils/ToastMessage.dart';
+
 class PageNotifier extends Notifier<int> {
   @override
   int build() => 0;
+
   void resetBooking() {
     selectedItemIds = [];
     selectedTableIndex = null;
     eventData = {};
     menuItems = [];
     tables = [];
+    itemCounts = {};
     state = 0;
     ref.notifyListeners();
   }
-  List<String> get tabTitles =>
-      menuItems.map((m) => m["name"]?.toString() ?? "").toList();
-  Map<String, dynamic> eventData = {};
+
   List<dynamic> menuItems = [];
   List<dynamic> tables = [];
+  Map<String, dynamic> eventData = {};
+  Map<int, int> itemCounts = {}; // ← id : count
+
+  List<String> get tabTitles =>
+      menuItems.map((m) => m["name"]?.toString() ?? "").toList();
+
+  List<dynamic> get currentItems {
+    if (menuItems.isEmpty) return [];
+    final items = menuItems[state]["items"] as List? ?? [];
+    return items.map((item) {
+      final id = item["id"] as int? ?? 0;
+      return {
+        "id": id,
+        "title": item["name"] ?? "",
+        "time": (item["prep_time"] ?? "0").toString().replaceAll(RegExp(r'[^0-9-]'), ''),
+        "image": fixImageUrl(item["image"]?.toString()),
+        "is_spicy": item["is_spicy"] ?? false,
+        "potsEmpty": true,
+        "count": itemCounts[id] ?? 0,
+      };
+    }).toList();
+  }
 
   void changePage(int index) {
     state = index;
   }
 
   List<int> selectedItemIds = [];
+
+  void incrementItem(int itemId) {
+    itemCounts[itemId] = (itemCounts[itemId] ?? 0) + 1;
+    if (!selectedItemIds.contains(itemId)) {
+      selectedItemIds.add(itemId);
+    }
+    ref.notifyListeners();
+  }
+
+  void decrementItem(int itemId) {
+    final current = itemCounts[itemId] ?? 0;
+    if (current <= 1) {
+      itemCounts.remove(itemId);
+      selectedItemIds.remove(itemId);
+    } else {
+      itemCounts[itemId] = current - 1;
+    }
+    ref.notifyListeners();
+  }
+
   void toggleItem(int itemId) {
     if (selectedItemIds.contains(itemId)) {
       selectedItemIds.remove(itemId);
+      itemCounts.remove(itemId);
     } else {
       selectedItemIds.add(itemId);
+      itemCounts[itemId] = 1;
     }
     ref.notifyListeners();
   }
@@ -58,6 +103,7 @@ class PageNotifier extends Notifier<int> {
   };
 
   int? selectedTableIndex;
+
   void selectTable(int index, bool? isAvailable) {
     if (isAvailable == false) return;
     if (selectedTableIndex == index) {
@@ -70,15 +116,15 @@ class PageNotifier extends Notifier<int> {
 
   Future<void> event(BuildContext context, int branchId) async {
     ApiService api = ApiService();
-
     final res = await api.get(
       "v1/$roles/events/${branchId}",
       {},
       context,
     );
+    //print(branchId);
     if (res?["success"] == true) {
       final data = res["data"] as Map<String, dynamic>;
-      eventData = data;                        // ✅ كل بيانات الـ event
+      eventData = data;
       menuItems = data["menus"] ?? [];
       tables = data["tables"] ?? [];
       ref.notifyListeners();
@@ -90,6 +136,14 @@ class PageNotifier extends Notifier<int> {
         Themes().GetColor("white"),
       );
     }
+  }
+  String fixImageUrl(String? url) {
+    if (url == null || url.isEmpty) return "";
+    const base = "https://api.rafatstay.com/uploads/";
+    if (url.contains("$base$base")) {
+      return url.replaceFirst(base, "");
+    }
+    return url;
   }
 }
 

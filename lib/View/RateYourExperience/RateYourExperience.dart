@@ -26,15 +26,18 @@ class _State extends ConsumerState<RateYourExperience> {
   void initState() {
     super.initState();
     Future.microtask(() {
-      ref.read(RateYourExperience_riverpod.notifier)
-          .loadEmployees(context, widget.branchId);
+      Future.microtask(() {
+        ref.read(RateYourExperience_riverpod.notifier).resetForm();
+        ref.read(RateYourExperience_riverpod.notifier)
+            .loadEmployees(context, widget.branchId);
+      });
     });
   }
 
   @override
   Widget build(BuildContext context) {
     ref.watch(RateYourExperience_riverpod);
-    final selectedGender = ref.watch(RateYourExperience_riverpod);
+    final selectedGender = ref.watch(RateYourExperience_riverpod.notifier).selectedGender;
     final sizes = Sizes(context);
     Themes theme = Themes();
     TextLanguage textLanguage = TextLanguage();

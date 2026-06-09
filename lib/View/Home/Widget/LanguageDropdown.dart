@@ -33,7 +33,7 @@ class LanguageDropdown extends StatelessWidget {
           children: [
             SvgPicture.asset("assets/icon/language.svg",height:sizes.GetHeight()*2.2),
             SizedBox(width:sizes.GetWidth()*1),
-            Text("${ref.read(Home_riverpod.notifier).box.read("user")["preferred_language"]??" English "}",),
+            Text("${ref.read(Home_riverpod.notifier).box.read("Language")==1?"عربي":"English"}",),
             SizedBox(width:sizes.GetWidth()*1),
             Transform.rotate(
               angle: lang == 0 ? 0 : 3.14,

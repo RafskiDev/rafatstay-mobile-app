@@ -118,12 +118,10 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
     }
 
     final int interestCount = notifier.branches.isNotEmpty
-        ? (int.tryParse(
-        notifier.branches[0]["interest_count"]?.toString() ?? "0") ??
-        0)
+        ? (int.tryParse(notifier.branches[0]["interest_count"]?.toString() ?? "0") ?? 0)
         : 0;
+   // print("branches: ${notifier.branches[0]}");
     bool isInterested = notifier.branches.isNotEmpty && (notifier.branches[0]['is_interested'] == true);
-    print(isInterested);
     final textLanguage = TextLanguage();
     return Scaffold(
       backgroundColor: theme.GetColor("background"),

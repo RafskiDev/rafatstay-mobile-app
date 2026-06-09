@@ -22,7 +22,11 @@ class PageNotifier extends Notifier<int> {
   @override
   int build() {
     final saved = storage.read("Language");
-    return (saved is int) ? saved : 0;
+    if (saved is int) return saved;
+    if (saved is String) {
+      return languages.indexWhere((l) => l["code"] == saved);
+    }
+    return 0;
   }
 
   void selectIndex(int index) {
@@ -34,8 +38,8 @@ class PageNotifier extends Notifier<int> {
     ApiService api = ApiService();
     final Map<String, dynamic> data = {
       "preferred_language":language,
-      "latitude": 30.30,
-      "longitude": 30.30,
+      "latitude": 00.00,
+      "longitude": 00.00,
     };
     final response = await api.post(
       "auth/preferences",

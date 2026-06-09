@@ -291,7 +291,6 @@ class MealCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.max,
         children: [
-
           Stack(
             children: [
               ClipRRect(
@@ -395,8 +394,8 @@ class MealCard extends StatelessWidget {
                         Flexible(
                           child: Text(
                             item["time"] != null
-                                ? "${item["time"]} mins"
-                                : "0-0 mins",
+                                ? "${item["time"]} ${textLanguage.GetWord("دقائق")}"
+                                : "0-0 ${textLanguage.GetWord("دقائق")}",
                             style: TextStyle(fontSize: sizes.GetHeight() * 1.5),
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,

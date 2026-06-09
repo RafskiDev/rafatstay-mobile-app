@@ -8,7 +8,7 @@ import '../../../Widget/WidgetTextField.dart';
 import '../RateYourExperience_riverpod.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-Widget celebrate(BuildContext context,WidgetRef ref,int selectedGender){
+Widget celebrate(BuildContext context,WidgetRef ref,int? selectedGender){
   String text=TextLanguage().GetWord("ساعدنا في الاحتفال بك");
   List<String> parts = text.split(" ");
   String firstText = text.split(" ")[0];
@@ -104,7 +104,7 @@ Widget celebrate(BuildContext context,WidgetRef ref,int selectedGender){
                     value: TextLanguage().GetWord('ذكر'),
                     groupValue: selectedGender == 1 ? TextLanguage().GetWord('ذكر') : "", // إذا كانت state=1 فهي Male
                     onChanged: (val) {
-                      ref.read(RateYourExperience_riverpod.notifier).state = 1; // 1 = Male
+                      ref.read(RateYourExperience_riverpod.notifier).setGender(1);
                     },
                     width: Sizes(context).GetWidth()*5,
                     height: Sizes(context).GetHeight()*5,
@@ -124,7 +124,7 @@ Widget celebrate(BuildContext context,WidgetRef ref,int selectedGender){
                     value:TextLanguage().GetWord('أنثى'),
                     groupValue: selectedGender == 2 ? TextLanguage().GetWord('أنثى'): "",
                     onChanged: (val) {
-                      ref.read(RateYourExperience_riverpod.notifier).state = 2; // 2 = Female
+                      ref.read(RateYourExperience_riverpod.notifier).setGender(2);
                     },
                     width: Sizes(context).GetWidth()*5,
                     height: Sizes(context).GetHeight()*5,

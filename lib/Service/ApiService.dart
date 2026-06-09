@@ -70,7 +70,7 @@ class ApiService {
           'Authorization':'Bearer $myToken',
         },
       );
-      // print(myToken);
+     // print(myToken);
       final responseData = json.decode(response.body);
       if (response.statusCode == 200) {
         return responseData;
@@ -221,7 +221,15 @@ class ApiService {
 
       // أضف الحقول النصية
       data.forEach((key, value) {
-        if (value != null) {
+        if (value == null) return;
+        if (value is List) {
+          // ← هذا الجديد — يرسل كل عنصر كـ field منفصل
+          for (final item in value) {
+            request.files.add(
+              http.MultipartFile.fromString('${key}[]', item.toString()),
+            );
+          }
+        } else {
           request.fields[key] = value.toString();
         }
       });

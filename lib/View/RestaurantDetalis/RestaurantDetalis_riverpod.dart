@@ -428,24 +428,22 @@ class PageNotifier extends Notifier<int> {
       {"item_id": branchId.toString(), "type": "interest"},
       context,
     );
-
     if (res != null && res["success"] == true && res["data"] != null) {
+      final data = res["data"];
       final bool serverFavorited = res["data"]["is_favorited"] == true;
       favoriteStatus[branchId] = serverFavorited;
       final bool serverInterested = res["data"]["is_interested"] ?? res["data"]["is_favorited"] ?? false;
       interestStatus[branchId] = serverInterested;
       if (branches.isNotEmpty) {
-        int currentCount = int.tryParse(
-            branches[0]["interest_count"]?.toString() ?? "0") ?? 0;
-        // إضافة أو إزالة بناءً على رد السيرفر
-        branches[0]["interest_count"] = serverFavorited
+        final bool serverInterested = data["is_favorited"] == true;
+        final int currentCount = int.tryParse(branches[0]["interest_count"]?.toString() ?? "0") ?? 0;
+        branches[0]["interest_count"] = serverInterested
             ? currentCount + 1
             : (currentCount > 0 ? currentCount - 1 : 0);
-        branches[0]["is_favorited"] = serverFavorited;
-        // تحديث نفس الحقل الذي يستمع إليه ملف الـ UI بالظبط
         branches[0]["is_interested"] = serverInterested;
+        branches[0]["is_favorited"] = serverInterested;
       }
-      state = state;
+      state++;
     }
   }
 }

@@ -101,7 +101,6 @@ class Events extends ConsumerWidget {
                       event: item,
                       //item["image"]
                       imagePath:events[index]["image"]??"",
-
                       title:item["title"],
                       date:date,
                       time:processedTime,
@@ -197,7 +196,7 @@ class CustomCard extends StatelessWidget {
             borderRadius:
             const BorderRadius.vertical(top: Radius.circular(12)),
             child:Image.network(
-              "${showImage}${imagePath}",
+              imagePath,
               width: double.infinity,
               height: sizes.GetHeight() * 18,
               fit: BoxFit.cover,
