@@ -411,5 +411,11 @@ final EnLanguag = {
   "لقد قمت بتقييم هذا الفرع مسبقاً، يمكنك التقييم مجدداً بعد 30 يوماً":"I have already reviewed this branch, you can review it again after 30 days.",
   "سيتم إضافة رسوم خدمة بقيمة 5 ﷼ عند اختيار الدفع النقدي.":"A fee of 5 riyals was added when choosing the cash amount.",
   "تم إرسال طلب المساعدة بنجاح":"The request for assistance has been successfully submitted.",
-  "فشل إرسال الطلب":"Request failed"
+  "فشل إرسال الطلب":"Request failed",
+  "لا توجد حجوزات مكتملة":"No Reservations Completed",
+  "لا توجد حجوزات ملغية":"No Cancelled Bookings",
+  "لا توجد حجوزات قادمة":"No Upcoming Bookings",
+  "لا توجد حجوزات نشطة":"No Active Bookings",
+  "اختر فترة الوجبة":"Select Meal Period",
+  "لا تتوفر وجبات لهذه الفترة حالياً":"No meals are currently available for this period."
 };

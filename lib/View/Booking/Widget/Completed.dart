@@ -60,11 +60,28 @@ class _CompletedState extends ConsumerState<Completed> {
     final bookCompleted = notifier.bookingsData;
 
     if (notifier.isLoading && bookCompleted.isEmpty) {
-      return showLoading();
+      return SizedBox(
+        height: MediaQuery.of(context).size.height * 0.7,
+        child: Center(child: showLoading()),
+      );
     }
 
     if (bookCompleted.isEmpty) {
-      return const SizedBox.shrink();
+      return SizedBox(
+        height: MediaQuery.of(context).size.height * 0.7,
+        child: Center(
+          child: Material(
+            color: Colors.transparent,
+            child: Text(
+              TextLanguage().GetWord("لا توجد حجوزات مكتملة"),
+              style: TextStyle(
+                color: Themes().GetColor("textSecondary"),
+                fontSize: Sizes(context).GetHeight() * 2,
+              ),
+            ),
+          ),
+        ),
+      );
     }
 
     return SizedBox(
@@ -81,7 +98,6 @@ class _CompletedState extends ConsumerState<Completed> {
           }
           final booking = bookCompleted[index];
           final branch = booking["branch"] ?? {};
-          print(branch["image"]);
           return Padding(
             padding: EdgeInsets.only(bottom: Sizes(context).GetHeight() * 1),
             child: BookingCard(

@@ -55,9 +55,28 @@ class _UpcomingState extends ConsumerState<Upcoming> {
         valueListenable: LoadingService.isLoading,
         builder: (context, isLoading, child) {
           return  isLoading
-              ? showLoading()
+              ? SizedBox(
+             height: MediaQuery.of(context).size.height * 0.7,
+             child: Center(child: showLoading()),
+              )
               : !hasData
-              ? SizedBox.shrink()
+              ? SizedBox(
+                height: MediaQuery.of(context).size.height * 0.7,
+                child: Center(
+                child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    textLanguage.GetWord("لا توجد حجوزات قادمة"),
+                    style: TextStyle(
+                      color: Themes().GetColor("textSecondary"),
+                      fontSize: sizes.GetHeight() * 2,
+                    ),
+                  ),
+                ],
+               ),
+              ),
+              )
               :Column(
             children: [
               Row(

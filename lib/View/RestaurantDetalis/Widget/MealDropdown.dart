@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rafatstay/Utils/TextLanguage.dart';
 
 import '../../../Utils/Sizes.dart';
 import '../../../Utils/Them.dart';
@@ -24,7 +25,7 @@ class MealDropdown extends ConsumerWidget {
             children: [
               Text(
                 notifier.selectedMealIndex == -1
-                    ? 'Select Menu'
+                    ? TextLanguage().GetWord("اختر فترة الوجبة")
                     : notifier.mealCategoriesUi[notifier.selectedMealIndex],
                 style: const TextStyle(color: Color(0xFFC5A358), fontSize: 16, fontWeight: FontWeight.bold),
               ),

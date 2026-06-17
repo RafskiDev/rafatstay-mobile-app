@@ -9,6 +9,7 @@ import '../../../Utils/Sizes.dart';
 import '../../../Utils/TextLanguage.dart';
 import '../../../Utils/Them.dart';
 import '../../../Utils/ToastMessage.dart';
+import '../../../Widget/ShowLoading.dart';
 import '../../../Widget/Ticket.dart';
 import '../../../Widget/WidgetButton.dart';
 import '../../BookingDetails/BookingDetails.dart';
@@ -53,10 +54,27 @@ class _OnSiteState extends ConsumerState<OnSite> {
     final sizes = Sizes(context);
     final theme = Themes();
     final textLanguage = TextLanguage();
+    final notifier = ref.watch(Booking_riverpod.notifier);
     final bookingsData = ref.read(Booking_riverpod.notifier).bookingsData;
     final booking = bookingsData.isNotEmpty ? bookingsData[0] : null;
-
-    if (booking == null) return const SizedBox.shrink();
+    if (notifier.isLoading && booking == null) {
+      return SizedBox(
+        height: MediaQuery.of(context).size.height * 0.7,
+        child: Center(child: showLoading()),
+      );
+    }
+    if (booking == null) return  SizedBox(
+      height: MediaQuery.of(context).size.height * 0.7,
+      child: Center(
+        child: Text(
+          TextLanguage().GetWord("لا توجد حجوزات نشطة"),
+          style: TextStyle(
+            color: Themes().GetColor("textSecondary"),
+            fontSize: Sizes(context).GetHeight() * 2,
+          ),
+        ),
+      ),
+    );
     final GlobalKey ticketKey = GlobalKey();
     return  Column(
       children: [

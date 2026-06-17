@@ -61,47 +61,64 @@ class _CancelledState extends ConsumerState<Cancelled> {
   Widget build(BuildContext context) {
     final notifier = ref.watch(cancelledBookingProvider.notifier);
     final bookCancelled = notifier.bookingsData;
+    return ValueListenableBuilder<bool>(
+      valueListenable: LoadingService.isLoading,
+      builder: (context, isLoading, child) {
+        if (isLoading && bookCancelled.isEmpty) {
+          return SizedBox(
+            height: MediaQuery.of(context).size.height * 0.7,
+            child: Center(child: showLoading()),
+          );
+        }
 
-
-    // ✅ loading أول تحميل فقط
-    if (notifier.isLoading && bookCancelled.isEmpty) {
-      return showLoading();
-    }
-
-    if (bookCancelled.isEmpty) {
-      return const Center(child: SizedBox.shrink());
-    }
-
-    return SizedBox(
-      height: Sizes(context).GetHeight() * 68,
-      child: ListView.builder(
-        controller: _scrollController,
-        itemCount: bookCancelled.length + (notifier.isFetchingMore ? 1 : 0),
-        itemBuilder: (context, index) {
-          if (index >= bookCancelled.length) {
-            return  Padding(
-              padding: EdgeInsets.all(16),
-              child: Center(child: showLoading()),
-            );
-          }
-          final booking = bookCancelled[index];
-          print(booking);
-          return Padding(
-            padding: EdgeInsets.only(bottom: Sizes(context).GetHeight() * 2),
-            child: BookingCard(
-              booking: booking,
-              mainImage:booking["branch"]["image"]??"",
-              bookingNumber: booking["id"]?.toString() ?? "",
-              paymentMethod: '',
-              restaurantName: booking["business"]?["name"] ?? "",
-              restaurantLocation: "",//نضع هنا نوع الدفع ان كان كاش او لا اي بوابه دفع
-              restaurantLogo: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
-              date: booking["booking_date"] ?? "",
-              time:booking["display_time"] ?? booking["start_time"],
+        if (bookCancelled.isEmpty) {
+          return SizedBox(
+            height: MediaQuery.of(context).size.height * 0.7,
+            child: Center(
+              child: Material(
+                color: Colors.transparent,
+                child: Text(
+                  TextLanguage().GetWord("لا توجد حجوزات ملغية"),
+                  style: TextStyle(
+                    color: Themes().GetColor("textSecondary"),
+                    fontSize: Sizes(context).GetHeight() * 2,
+                  ),
+                ),
+              ),
             ),
           );
-        },
-      ),
+        }
+        return SizedBox(
+          height: Sizes(context).GetHeight() * 68,
+          child: ListView.builder(
+            controller: _scrollController,
+            itemCount: bookCancelled.length + (notifier.isFetchingMore ? 1 : 0),
+            itemBuilder: (context, index) {
+              if (index >= bookCancelled.length) {
+                return  Padding(
+                  padding: EdgeInsets.all(16),
+                  child: Center(child: showLoading()),
+                );
+              }
+              final booking = bookCancelled[index];
+              return Padding(
+                padding: EdgeInsets.only(bottom: Sizes(context).GetHeight() * 2),
+                child: BookingCard(
+                  booking: booking,
+                  mainImage:booking["branch"]["image"]??"",
+                  bookingNumber: booking["id"]?.toString() ?? "",
+                  paymentMethod: '',
+                  restaurantName: booking["business"]?["name"] ?? "",
+                  restaurantLocation: "",//نضع هنا نوع الدفع ان كان كاش او لا اي بوابه دفع
+                  restaurantLogo: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
+                  date: booking["booking_date"] ?? "",
+                  time:booking["display_time"] ?? booking["start_time"],
+                ),
+              );
+            },
+          ),
+        );
+      }
     );
   }
 }

@@ -29,7 +29,7 @@ class PageNotifier extends Notifier<int> {
         employees(context, branchId),
         reviews(context, branchId),
         branche(context, branchId),
-        menus(context, branchId),
+        menus(context, branchId, mealPeriod: "breakfast"),
         branchPolicies(context, branchId),
         garages(context, branchId),
         superGuests_(context, branchId),
@@ -172,17 +172,16 @@ class PageNotifier extends Notifier<int> {
   }
   List<String> mealCategoriesBackend = ["Breakfast", "Lunch", "Dinner"];
   List<dynamic> allMeals = [];
-  Future<void> menus(BuildContext context, int branchId) async {
+  Future<void> menus(BuildContext context, int branchId,{String? mealPeriod}) async {
     ApiService api = ApiService();
-
-
     final res = await api.get(
       "v1/guest/branches/$branchId/menus",
       {
-     //   "meal_period":"Lunch"
+        if (mealPeriod != null) "meal_period": mealPeriod,
       },
       context,
     );
+    print("menus: $res");
     if (res?["success"] == true) {
       menu = List<Map<String, dynamic>>.from(res["data"] ?? []);
       supportsTakeaway =
@@ -233,10 +232,11 @@ class PageNotifier extends Notifier<int> {
   }
 
   /// إعادة عرض كل الوجبات
-  void resetMenu() {
+  void resetMenu(BuildContext context, int branchId) {
     isSelectedMenu = -1;
-    meals = allMeals;
+    selectedMealIndex = 0;
     ref.notifyListeners();
+    menus(context, branchId, mealPeriod: "breakfast");
   }
 
   int? currentOrderId;
@@ -369,12 +369,17 @@ class PageNotifier extends Notifier<int> {
   }
 
   void increaseCount(Map<String, dynamic> item, BuildContext context, int branchId) {
+    /*
     if (item['potsEmpty'] == false) {
       item['count'] = (item['count'] ?? 0) + 1;
       ref.notifyListeners();
     } else {
       showCustomDialog(context);
     }
+
+     */
+    item['count'] = (item['count'] ?? 0) + 1;
+    ref.notifyListeners();
   }
 
   void deleteMeal(int index, BuildContext context) {
@@ -413,7 +418,11 @@ class PageNotifier extends Notifier<int> {
     selectedMealIndex = index;
     isMenuExpanded = false;
     ref.notifyListeners();
-    menus(context, branchId);
+
+    final periodMap = {0: "breakfast", 1: "lunch", 2: "dinner"};
+    final selectedPeriod = periodMap[index];
+
+    menus(context, branchId, mealPeriod: selectedPeriod);
   }
 
   Map<int, bool> favoriteStatus = {};

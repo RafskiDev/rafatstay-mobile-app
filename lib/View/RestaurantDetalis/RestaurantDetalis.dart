@@ -61,6 +61,7 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
       if (!mounted) return;
       // استدعاء دالة واحدة نظيفة تقوم بجلب كل شيء بالتوازي
       ref.read(RestaurantDetalis_riverpod.notifier).fetchAllBranchData(context, widget.branchId);
+      ref.read(RestaurantDetalis_riverpod.notifier).selectedMealIndex = 0;
     });
     /*
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -498,28 +499,27 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                             ],
                           ),
                         ],
+                        SizedBox(height: sizes.GetHeight() * 2),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                SvgPicture.asset(
+                                  "assets/icon/Menu.svg",
+                                  height: sizes.GetHeight() * 2,
+                                ),
+                                SizedBox(width: sizes.GetWidth() * 1),
+                                Text(textLanguage.GetWord("قائمة طعام"),
+                                    style: TextStyle(fontWeight: FontWeight.bold,
+                                        fontSize: sizes.GetHeight() * 2.5)),
+                              ],
+                            ),
+                            MealDropdown(branchId: widget.branchId),
+                          ],
+                        ),
                         if(ref.read(RestaurantDetalis_riverpod.notifier).allMeals.isNotEmpty)...[
-                          SizedBox(height: sizes.GetHeight() * 2),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  SvgPicture.asset(
-                                    "assets/icon/Menu.svg",
-                                    height: sizes.GetHeight() * 2,
-                                  ),
-                                  SizedBox(width: sizes.GetWidth() * 1),
-                                  Text(textLanguage.GetWord("قائمة طعام"),
-                                      style: TextStyle(fontWeight: FontWeight.bold,
-                                          fontSize: sizes.GetHeight() * 2.5)),
-                                ],
-                              ),
-                             //قريبا
-                             // MealDropdown(branchId: widget.branchId),
-                            ],
-                          ),
                           SizedBox(height: sizes.GetHeight() * 2),
                           Container(
                             width: double.infinity,
@@ -546,7 +546,7 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                                 return GestureDetector(
                                   onTap: () {
                                     if (isAll) {
-                                      ref.read(RestaurantDetalis_riverpod.notifier).resetMenu();
+                                      ref.read(RestaurantDetalis_riverpod.notifier).resetMenu(context, widget.branchId);
                                     } else {
                                       ref.read(RestaurantDetalis_riverpod.notifier).changeMenu(index - 1);
                                     }
@@ -598,13 +598,6 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                                   sizes: sizes,
                                   theme: theme,
                                   onTap: () {
-                                    /*
-                                    if (meal["potsEmpty"] == false) {
-                                      showCustomDialog(context);
-                                      return;
-                                    }
-                                     */
-                                    
                                     ref
                                         .read(
                                         RestaurantDetalis_riverpod.notifier)
@@ -705,6 +698,22 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                               ):SizedBox.shrink(),
                             ],
                           ),
+                        ]else ...[
+                          SizedBox(height: sizes.GetHeight() * 3),
+                          Center(
+                            child: Column(
+                              children: [
+                                Text(
+                                  textLanguage.GetWord("لا تتوفر وجبات لهذه الفترة حالياً"),
+                                  style: TextStyle(
+                                    color: theme.GetColor("textSecondary"),
+                                    fontSize: sizes.GetHeight() * 2,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          SizedBox(height: sizes.GetHeight() * 3),
                         ],
                         hasSelectedMeals?SizedBox(height: sizes.GetHeight() * 2):SizedBox.shrink(),
                         if (ref
