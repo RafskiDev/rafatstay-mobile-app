@@ -67,6 +67,23 @@ Widget celebrate(BuildContext context,WidgetRef ref,int? selectedGender){
                 initialDate: DateTime(1995),
                 firstDate: DateTime(1900),
                 lastDate: DateTime.now().subtract(const Duration(days: 1)), // ✅ قبل اليوم
+                builder: (context, child) {
+                  return Theme(
+                    data: Theme.of(context).copyWith(
+                      colorScheme:  ColorScheme.light(
+                        primary: Themes().GetColor("primary"),      // لون الهيدر والأزرار
+                     //   onPrimary: Themes().GetColor("background"),  // نص الهيدر
+                        onSurface: Colors.black,  // نص الأيام
+                      ),
+                      textButtonTheme: TextButtonThemeData(
+                        style: TextButton.styleFrom(
+                          foregroundColor:Themes().GetColor("primary"), // OK / CANCEL
+                        ),
+                      ),
+                    ),
+                    child: child!,
+                  );
+                },
               );
               if (picked != null) {
                 final formatted =

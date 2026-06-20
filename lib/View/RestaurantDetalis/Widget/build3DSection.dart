@@ -11,12 +11,14 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import '../../WebView3DViewer/WebView3DViewer.dart';
 Widget build3DSection(Map<String, dynamic>? scene, Sizes sizes, Themes theme, TextLanguage textLanguage,BuildContext context) {
-  if (scene == null) {
+  if (scene == null || scene.isEmpty) {
     return const SizedBox.shrink();
   }
 
   final String status = scene['status'] ?? 'pending';
-
+  if (status != 'pending' && status != 'completed') {
+    return const SizedBox.shrink();
+  }
   return Column(
     crossAxisAlignment: CrossAxisAlignment.start,
     children: [

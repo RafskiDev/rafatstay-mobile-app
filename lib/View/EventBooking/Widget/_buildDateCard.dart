@@ -11,7 +11,8 @@ Widget buildDateCard({
   required String title_1,
   required String title_2,
   String? title_3,
-  bool underline=false
+  bool underline=false,
+  VoidCallback? onTap,
 }) {
   return Container(
     width: sizes.GetWidth() * 47,
@@ -63,20 +64,23 @@ Widget buildDateCard({
         ),
         SizedBox(height: sizes.GetHeight() * 1),
           Expanded(
-            child: Text(
-              title_2,
-              textAlign: TextAlign.center,
-              style: underline?TextStyle(
-                color: Colors.grey[500],
-                fontSize: sizes.GetHeight() * 1.8,
-                fontWeight: FontWeight.w400,
-                decoration: TextDecoration.underline, // ← هذا يضيف الخط تحت النص
-                decorationColor: Colors.grey, // لون الخط (اختياري)
-                decorationThickness: 1.5, // سماكة الخط (اختياري)
-              ):TextStyle(
-                color: Colors.grey[500],
-                fontSize: sizes.GetHeight() * 1.8,
-                fontWeight: FontWeight.w400,
+            child: InkWell(
+              onTap: onTap,
+              child: Text(
+                title_2,
+                textAlign: TextAlign.center,
+                style: underline?TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: sizes.GetHeight() * 1.8,
+                  fontWeight: FontWeight.w400,
+                  decoration: TextDecoration.underline, // ← هذا يضيف الخط تحت النص
+                  decorationColor: Colors.grey, // لون الخط (اختياري)
+                  decorationThickness: 1.5, // سماكة الخط (اختياري)
+                ):TextStyle(
+                  color: Colors.grey[500],
+                  fontSize: sizes.GetHeight() * 1.8,
+                  fontWeight: FontWeight.w400,
+                ),
               ),
             ),
           ),

@@ -7,6 +7,7 @@ import '../../Utils/TextLanguage.dart';
 import '../../Utils/Them.dart';
 import '../../Utils/ToastMessage.dart';
 import '../../Widget/CheckBox.dart';
+import '../../Widget/CountdownText.dart';
 import '../../Widget/GradientText.dart';
 import '../../Widget/WidgetAppBar.dart';
 import '../../Widget/WidgetButton.dart';
@@ -28,12 +29,25 @@ class BookingDetails extends ConsumerStatefulWidget {
 }
 
 class _BookingDetailsState extends ConsumerState<BookingDetails> {
+  int _calcRemainingSeconds() {
+    final dateStr = widget.bookingData["booking_date"]?.toString() ?? "";
+    final startParts = (widget.bookingData["start_time"]?.toString() ?? "").split(":");
+    final dateParts = dateStr.split("-");
+    int year = int.tryParse(dateParts[0]) ?? 0;
+    int month = int.tryParse(dateParts[1]) ?? 0;
+    int day = int.tryParse(dateParts[2]) ?? 0;
+    int startHour = int.tryParse(startParts[0]) ?? 0;
+    int startMin = int.tryParse(startParts[1]) ?? 0;
+
+    final target = DateTime(year, month, day, startHour, startMin);
+    final diff = target.difference(DateTime.now()).inSeconds;
+    return diff > 0 ? diff : 0;
+  }
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
-      print(widget.bookingData);
       ref.read(BookingDetails_riverpod.notifier).loadFromBookingData(widget.bookingData);
      // ref.read(BookingDetails_riverpod.notifier).fetchBookingDetails(context, widget.bookingData["id"]);
     });
@@ -130,7 +144,7 @@ class _BookingDetailsState extends ConsumerState<BookingDetails> {
                   Row(
                     children: [
                       SvgPicture.asset(height:sizes.GetHeight()*2,"assets/icon/SandGlass.svg",color:theme.GetColor("textPrimary"),),
-                      Text(DateTimeHelper().getRemainingTime(widget.bookingData)),
+                      CountdownSeconds(countdownSeconds:_calcRemainingSeconds()),
                     ],
                   ),
                 ],
@@ -167,7 +181,7 @@ class _BookingDetailsState extends ConsumerState<BookingDetails> {
                         ),
                         SizedBox(width: sizes.GetWidth() * 1),
                         Text(
-                          totalPrice.toString(),
+                          totalPrice.toStringAsFixed(2),
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                           ),
@@ -259,7 +273,6 @@ class _BookingDetailsState extends ConsumerState<BookingDetails> {
                               },
                               backgroundColor: Colors.transparent,
                             )
-
                           ],
                         ),
                       if (donenessLevel != null)

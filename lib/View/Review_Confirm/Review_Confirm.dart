@@ -24,6 +24,22 @@ class Review_Confirm extends ConsumerStatefulWidget {
 }
 
 class _Review_ConfirmState extends ConsumerState<Review_Confirm> {
+  int _calcRemainingSeconds() {
+    final dateStr = widget.bookingData["booking_date"]?.toString() ?? "";
+    final startParts = (widget.bookingData["start_time"]?.toString() ?? "").split(":");
+    final dateParts = dateStr.split("-");
+
+    int year = int.tryParse(dateParts[0]) ?? 0;
+    int month = int.tryParse(dateParts[1]) ?? 0;
+    int day = int.tryParse(dateParts[2]) ?? 0;
+    int startHour = int.tryParse(startParts[0]) ?? 0;
+    int startMin = int.tryParse(startParts[1]) ?? 0;
+
+    final target = DateTime(year, month, day, startHour, startMin);
+    final diff = target.difference(DateTime.now()).inSeconds;
+    return diff > 0 ? diff : 0;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -52,7 +68,7 @@ class _Review_ConfirmState extends ConsumerState<Review_Confirm> {
         child:SingleChildScrollView(
           child:Column(
             children: [
-               Row(
+              Row(
                 children: [
                   Container(
                     width: sizes.GetHeight() * 4.2,
@@ -103,7 +119,7 @@ class _Review_ConfirmState extends ConsumerState<Review_Confirm> {
                     children: [
                       SvgPicture.asset(height:sizes.GetHeight()*2,"assets/icon/SandGlass.svg",color:theme.GetColor("textPrimary"),),
                       SizedBox(width:sizes.GetWidth()*1,),
-                      CountdownText(bookingData: widget.bookingData),
+                      CountdownSeconds(countdownSeconds:_calcRemainingSeconds()),
                     ],
                   ),
                 ],

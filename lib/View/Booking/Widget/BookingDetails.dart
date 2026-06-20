@@ -229,7 +229,9 @@ class BookingDetail extends StatelessWidget {
           context: context,
           buttonText: TextLanguage().GetWord("إلغاء الحجز"),
           onPressed: () {
-            dialogue(context,ref);
+            int id=booking?['id']??0;
+            if(id==0)return;
+            dialogue(context,ref,id);
           },
           backgroundColor: Themes().GetColor("background"),
         ),
@@ -263,7 +265,7 @@ class BookingDetail extends StatelessWidget {
       ],
     );
   }
-  void dialogue(BuildContext context,WidgetRef ref) {
+  void dialogue(BuildContext context,WidgetRef ref,int id) {
     WidgetCustomDialog(
       context,
       barrierDismissible: true,
@@ -286,19 +288,19 @@ class BookingDetail extends StatelessWidget {
             buttonText:TextLanguage().GetWord("تأكيد الإلغاء والرسوم"),
             textColor:Themes().GetColor("textPrimary"),
             backgroundColor: Themes().GetColor("primaryA"),
-            onPressed: () {
-              final bookings = ref.read(Booking_riverpod.notifier).bookingsData;
-              if (bookings.isEmpty) return;
-
-              ref.read(Booking_riverpod.notifier).cancelBooking(
-                context: context,
-                bookingId: bookings[0]["id"],
-              ).then((_) {
-                // ← تنظيف بعد الإلغاء
-                ref.read(Booking_riverpod.notifier).bookingsData.clear();
-                ref.read(Booking_riverpod.notifier).ref.notifyListeners();
-              });
+            onPressed: ()async {
               Navigator.of(context).pop();
+              await ref.read(upcomingBookingProvider.notifier).cancelBooking(
+                context: context,
+                bookingId: id,
+              );
+              ref
+                  .read(upcomingBookingProvider.notifier)
+                  .bookingsData
+                  .removeWhere((item) => item['id'] == id);
+              final current = ref.read(upcomingBookingProvider);
+              ref.read(upcomingBookingProvider.notifier).state = -1;
+              ref.read(upcomingBookingProvider.notifier).state = current;
             },
           ),
           SizedBox(height: Sizes(context).GetHeight()*1),
@@ -331,7 +333,7 @@ class RowInkw extends StatelessWidget {
     return  Row(
       mainAxisAlignment:MainAxisAlignment.spaceBetween,
       children: [
-        Text(title),
+        Flexible(child: Text(title)),
         GradientText(
           widget: Row(
             children: [

@@ -3,48 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../Service/ApiService.dart';
 class PageNotifier extends Notifier<int> {
-  List<Map<String, dynamic>> meals = [
-    {
-      "image": "assets/images/f18d37e41e07df9a4a87e64eddacdec9cf63a97f.png",
-      "title": "Meat Dishes",
-      "price": 150,
-      "sold": 50,
-      "time": "15–25 mins",
-      "potsEmpty":true,
-      "count":0,
-      "highTemperature": true,
-    },
-    {
-      "image": "assets/images/f18d37e41e07df9a4a87e64eddacdec9cf63a97f.png",
-      "title": "Meat Dishes",
-      "price": 150,
-      "sold": 50,
-      "time": "15–25 mins",
-      "potsEmpty":true,
-      "count":0,
-      "highTemperature": true,
-    },
-    {
-      "image": "assets/images/f18d37e41e07df9a4a87e64eddacdec9cf63a97f.png",
-      "title": "Meat Dishes",
-      "price": 150,
-      "sold": 50,
-      "time": "15–25 mins",
-      "potsEmpty":true,
-      "count":0,
-      "highTemperature": true,
-    },
-    {
-      "image": "assets/images/f18d37e41e07df9a4a87e64eddacdec9cf63a97f.png",
-      "title": "Meat Dishes",
-      "price": 150,
-      "sold": 50,
-      "time": "15–25 mins",
-      "potsEmpty":false,
-      "count":0,
-      "highTemperature": true,
-    },
-  ];
+  List<Map<String, dynamic>> meals = [];
   int currentIndex=0;
   int slected = 1;
 
@@ -66,6 +25,7 @@ class PageNotifier extends Notifier<int> {
   bool isLoadingMeal = false;
 
   Future<void> fetchMealDetails(BuildContext context, int menuItemId) async {
+    print(menuItemId);
     isLoadingMeal = true;
     state = state + 1;
     final response = await ApiService().get(
@@ -73,8 +33,6 @@ class PageNotifier extends Notifier<int> {
       null,
       context,
     );
-   // print(response);
-
     isLoadingMeal = false;
 
     if (response?["success"] == true) {
@@ -108,7 +66,7 @@ class PageNotifier extends Notifier<int> {
       final photos = branches[0]['photos'];
 
       for (var photo in photos) {
-        print(photo['url']);
+       // print(photo['url']);
       }
     }
     ref.notifyListeners();

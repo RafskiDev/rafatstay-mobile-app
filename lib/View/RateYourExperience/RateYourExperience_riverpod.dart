@@ -64,7 +64,6 @@ class PageNotifier extends Notifier<int> {
       {},
       context,
     );
-    print(branchId);
     if (res?["success"] == true) {
       employeeList = List<Map<String, dynamic>>.from(res["data"] ?? []);
       state++;
@@ -136,7 +135,6 @@ class PageNotifier extends Notifier<int> {
     final epm = selectedPersonIndexes
         .map((i) => employeeList[i]["id"])
         .toList();
-    print(epm);
     return {
       "branch_id": branchId,
       if (overallRating > 0)         "overall_rating": overallRating,
@@ -177,7 +175,6 @@ class PageNotifier extends Notifier<int> {
       fileField: "media[]",
       context: context,
     );
-    print(response);
     if (!context.mounted) return;
     if (response['success'] == true) {
       resetForm();

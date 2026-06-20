@@ -31,6 +31,7 @@ class _CountdownTextState extends State<CountdownText> {
     return Text(DateTimeHelper().getRemainingTime(widget.bookingData));
   }
 }
+
 class CountdownSeconds extends StatefulWidget {
   final int countdownSeconds;
 

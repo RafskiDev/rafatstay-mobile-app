@@ -177,7 +177,7 @@ class PageNotifier extends Notifier<int> {
     ref.notifyListeners();
   }
 
-  Future<void> checkIn({
+  Future<bool> checkIn({
     required BuildContext context,
     required int bookingId,
   }) async {
@@ -189,6 +189,7 @@ class PageNotifier extends Notifier<int> {
     );
     if (response?["success"] == true) {
       ref.notifyListeners();
+      return true; // ← أضفنا هالسطر
     }else{
       final message = response?["message"]?.toString() ?? "حدث خطأ";
       ToastMessages(
@@ -197,6 +198,7 @@ class PageNotifier extends Notifier<int> {
         Themes().GetColor("error"),
         Themes().GetColor("white"),
       );
+      return false;
     }
   }
 

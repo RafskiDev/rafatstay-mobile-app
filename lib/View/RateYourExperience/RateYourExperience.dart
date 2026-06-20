@@ -110,7 +110,7 @@ class _State extends ConsumerState<RateYourExperience> {
                       padding: EdgeInsets.only(right: sizes.GetWidth() * 2),
                       child: evaluation(
                         context,
-                        service[index]["title"] as String,
+                        textLanguage.GetWord(service[index]["title"] as String),
                         service[index]["icon"] as String,
                         service[index]["rate"] as int,
                             (value) => notifier.updateServiceRating(index, value),
@@ -143,7 +143,7 @@ class _State extends ConsumerState<RateYourExperience> {
                           children: [
                             GestureDetector(
                               onTap: () => notifier.pickMedia(context),
-                              child: videoFeedbackCard(context, 'صورك مع الوجبة', ""),
+                              child: videoFeedbackCard(context,textLanguage.GetWord("صورك مع الوجبة"), ""),
                             ),
                           ],
                         )
@@ -231,7 +231,7 @@ class _State extends ConsumerState<RateYourExperience> {
                        padding: EdgeInsets.only(right: sizes.GetWidth() * 2),
                        child: evaluation(
                          context,
-                         review[index]["title"] as String,
+                         textLanguage.GetWord(review[index]["title"] as String),
                          review[index]["icon"] as String,
                          review[index]["rate"] as int,
                          (value) => notifier.updateReviewRating(index, value),

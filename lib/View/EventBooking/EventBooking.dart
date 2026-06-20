@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rafatstay/View/Maps/Maps.dart';
 import '../../Service/ApiService.dart';
 import '../../Service/LoadingService.dart';
 import '../../Utils/Sizes.dart';
@@ -172,6 +173,17 @@ class _EventBookingState extends ConsumerState<EventBooking> {
                                   "",
                               title_2: widget.eventBooking["location"] ?? "",
                               underline: true,
+                              onTap:(){
+                                print(widget.eventBooking);
+                                /*
+                                Navigator.push(context, PageRouteBuilder(
+                                  pageBuilder: (_, __, ___) => Maps(restaurantLat: restaurantLat, restaurantLng: restaurantLng),
+                                  transitionDuration: Duration.zero,
+                                  reverseTransitionDuration: Duration.zero,
+                                ));
+
+                                 */
+                              }
                             ),
                           ],
                         ),
@@ -254,6 +266,7 @@ class _EventBookingState extends ConsumerState<EventBooking> {
                                   final itemId = int.tryParse(meal["id"].toString()) ?? 0;
                                   ref.read(EventBooking_riverpod.notifier).incrementItem(itemId);
                                 },
+                             //   hideQuantityControls:true,
                                 onTapDelete: () {
                                   final itemId = int.tryParse(meal["id"].toString()) ?? 0;
                                   ref.read(EventBooking_riverpod.notifier).decrementItem(itemId);

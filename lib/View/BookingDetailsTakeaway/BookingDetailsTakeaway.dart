@@ -30,6 +30,21 @@ class BookingDetailsTakeaway extends  ConsumerStatefulWidget{
 
 class _BookingDetailsTakeawayState extends ConsumerState<BookingDetailsTakeaway> {
   Timer? _timer;
+  int _calcRemainingSeconds() {
+    final dateStr = widget.bookingData["booking_date"]?.toString() ?? "";
+    final startParts = (widget.bookingData["start_time"]?.toString() ?? "").split(":");
+    final dateParts = dateStr.split("-");
+    int year = int.tryParse(dateParts[0]) ?? 0;
+    int month = int.tryParse(dateParts[1]) ?? 0;
+    int day = int.tryParse(dateParts[2]) ?? 0;
+    int startHour = int.tryParse(startParts[0]) ?? 0;
+    int startMin = int.tryParse(startParts[1]) ?? 0;
+
+    final target = DateTime(year, month, day, startHour, startMin);
+    final diff = target.difference(DateTime.now()).inSeconds;
+    return diff > 0 ? diff : 0;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -151,12 +166,7 @@ class _BookingDetailsTakeawayState extends ConsumerState<BookingDetailsTakeaway>
                                 SvgPicture.asset(height: sizes.GetHeight() * 2,
                                   "assets/icon/SandGlass.svg",
                                   color: theme.GetColor("textPrimary"),),
-                                CountdownText(bookingData: widget.bookingData),
-                                /*
-                                Text(DateTimeHelper().getRemainingTime(
-                                    widget.bookingData)),
-
-                                 */
+                                CountdownSeconds(countdownSeconds:_calcRemainingSeconds()),
                               ],
                             ),
                           ],
@@ -188,7 +198,7 @@ class _BookingDetailsTakeawayState extends ConsumerState<BookingDetailsTakeaway>
                                   ),
                                   SizedBox(width: sizes.GetWidth() * 1),
                                   Text(
-                                    totalPrice.toString(),
+                                    totalPrice.toStringAsFixed(2),
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -664,14 +674,15 @@ class MealInfoRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
         // Title
-        Text(
-          title,
-          style: TextStyle(
-            color: theme.GetColor("textPrimary"),
-            fontWeight: FontWeight.w600,
+        Flexible(
+          child: Text(
+            title,
+            style: TextStyle(
+              color: theme.GetColor("textPrimary"),
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ),
-
         // Price
         GradientText(
           widget: Row(

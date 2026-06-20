@@ -71,7 +71,7 @@ class Payment extends ConsumerWidget {
               SizedBox(height:sizes.GetHeight()*2,),
               (selected != 0 && selected != 1 && selected != 2 && selected != 3)?Container(
                 width:double.infinity,
-                height:sizes.GetHeight()*25,
+                height:sizes.GetHeight()*17,
                 decoration:BoxDecoration(
                   color:Themes().GetColor("backgroundOffWhite"),
                   borderRadius: BorderRadius.circular(sizes.GetWidth()*4),
@@ -86,9 +86,10 @@ class Payment extends ConsumerWidget {
                         ],
                       ),
                       SizedBox(height:sizes.GetHeight()*2,),
+                      //تابي الها api منفصله
                       CheckBoxBox(isSelected: 4, title:textLanguage.GetWord('قطة مخططة'), image: "assets/images/Tabby.png",),
                       SizedBox(height:sizes.GetHeight()*2,),
-                      CheckBoxBox(isSelected: 5, title:textLanguage.GetWord('تامارا'), image: "assets/images/Tamara.png",),
+                   //   CheckBoxBox(isSelected: 5, title:textLanguage.GetWord('تامارا'), image: "assets/images/Tamara.png",),
                     ],
                   ),
                 ),

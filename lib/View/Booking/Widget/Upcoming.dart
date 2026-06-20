@@ -14,6 +14,7 @@ import '../../../Widget/ShowLoading.dart';
 import '../../../Widget/WidgetButton.dart';
 import '../../../Widget/WidgetCustomDialog.dart';
 import '../../BookingDetails/BookingDetails.dart';
+import '../../Maps/Maps.dart';
 import '../Booking_riverpod.dart';
 import 'dart:ui' as ui;
 import 'dart:typed_data';
@@ -153,7 +154,7 @@ class _UpcomingState extends ConsumerState<Upcoming> {
                   Row(
                     children: [
                       Expanded(
-                        child: RepaintBoundary(
+                        child:RepaintBoundary(
                           key: ticketKey,
                           child:Ticket(
                             bookingNumber: bookingsData[0]['booking_number'] ?? 0,
@@ -281,14 +282,41 @@ class _UpcomingState extends ConsumerState<Upcoming> {
                 context: context,
                 buttonText: textLanguage.GetWord('تحقق في'),
                 textColor: Themes().GetColor("textPrimary"),
-                onPressed: () {
+                onPressed: ()async {
                   final bookings = ref.read(upcomingBookingProvider.notifier).bookingsData;
                   if (bookings.isEmpty) return;
-                  ref.read(upcomingBookingProvider.notifier).checkIn(
+                  final booking = bookings[0];
+                  final branch = booking['branch'];
+                  bool isSuccess = await ref.read(upcomingBookingProvider.notifier).checkIn(
                     context: context,
-                    bookingId: bookings[0]['id'] as int,
+                    bookingId: booking['id'] as int,
                   );
-                  bookings.clear();
+                  if (isSuccess) {
+                    ref.read(Booking_riverpod.notifier).setIndex(1);
+                    bookings.removeWhere((item) => item['id'] == booking['id']);
+                    final current = ref.read(upcomingBookingProvider);
+                    ref.read(upcomingBookingProvider.notifier).state = -1;
+                    ref.read(upcomingBookingProvider.notifier).state = current;
+                    if (branch != null &&
+                        branch['latitude'] != null &&
+                        branch['longitude'] != null) {
+
+                      if (context.mounted) {
+                        Navigator.push(
+                          context,
+                          PageRouteBuilder(
+                            pageBuilder: (context, a1, a2) => Maps(
+                              restaurantLat: double.parse(branch['latitude'].toString()),
+                              restaurantLng: double.parse(branch['longitude'].toString()),
+                              data: [{"id": booking['id'], "RouteInfoCard": true}],
+                            ),
+                            transitionDuration: Duration.zero,
+                            reverseTransitionDuration: Duration.zero,
+                          ),
+                        );
+                      }
+                    }
+                  }
                 },
                 backgroundColor: Themes().GetColor("primaryS"),
               ),
@@ -310,12 +338,20 @@ class _UpcomingState extends ConsumerState<Upcoming> {
         }
     );
   }
-  Future<void> shareTicket(BuildContext context,GlobalKey ticketKey) async {
+  Future<void> shareTicket(BuildContext context, GlobalKey ticketKey) async {
     try {
-      final String url = "https://yourapp.com/booking/";
+      final boundary = ticketKey.currentContext!.findRenderObject() as RenderRepaintBoundary;
+      final image = await boundary.toImage(pixelRatio: 3.0);
+      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
+      final pngBytes = byteData!.buffer.asUint8List();
 
-      await Share.share(
-        "تذكرة الحجز رقم \n\nشاهد التفاصيل عبر الرابط:\n$url",
+      final tempDir = await getTemporaryDirectory();
+      final filePath = '${tempDir.path}/ticket_share_${DateTime.now().millisecondsSinceEpoch}.png';
+      final file = await File(filePath).create();
+      await file.writeAsBytes(pngBytes);
+      await Share.shareXFiles(
+        [XFile(filePath)],
+        text: "تذكرة حجزي 🎫\n\nحمل التطبيق: https://play.google.com/store/apps/details?id=com.rsk.rafatstay",
       );
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(

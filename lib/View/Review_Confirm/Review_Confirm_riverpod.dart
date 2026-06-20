@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:rafatstay/Utils/TextLanguage.dart';
 import '../../Service/ApiService.dart';
 import '../../Utils/Them.dart';
 import '../../Utils/ToastMessage.dart';
@@ -31,13 +32,12 @@ class PageNotifier extends Notifier<int> {
       final parts = (data['start_time']?.toString() ?? "").split(":");
       if (parts.length >= 2) formattedTime = "${parts[0]}:${parts[1]}";
     } catch (_) {}
-
     items = [
       {"image": "assets/icon/SiteData.svg", "title": formattedDate},
       {"image": "assets/icon/hour.svg", "title": formattedTime},
       {"image": "assets/icon/user_plus.svg", "title": data['party_size']?.toString() ?? "0"},
       {"image": "assets/icon/children.svg", "title": data['children_count']?.toString() ?? "0"},
-      {"image": "assets/icon/DineIn.svg", "title": data['service_mode_translated']?.toString() ?? ""},
+      {"image": "assets/icon/DineIn.svg", "title":data["service_mode"]=="takeaway"?TextLanguage().GetWord("طلب سفري"):data['service_mode_translated']?.toString()??""},
     ];
     ref.notifyListeners();
   }

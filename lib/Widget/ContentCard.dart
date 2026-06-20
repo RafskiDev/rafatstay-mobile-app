@@ -267,6 +267,7 @@ class MealCard extends StatelessWidget {
   final bool isSelected;
   final VoidCallback? onToggleSelect;
   final bool showCheckbox;
+  final bool hideQuantityControls;
   const MealCard({
     super.key,
     required this.item,
@@ -277,6 +278,7 @@ class MealCard extends StatelessWidget {
     this.isSelected = false,
     this.onToggleSelect,
     this.showCheckbox = false,
+    this.hideQuantityControls = false,
   });
 
   @override
@@ -420,6 +422,7 @@ class MealCard extends StatelessWidget {
                     ),
                   ),
                   SizedBox(height: sizes.GetHeight() * 1),
+                  if (!hideQuantityControls)
                   Container(
                     decoration: BoxDecoration(
                       color: theme.GetColor("backgroundOffWhite"),

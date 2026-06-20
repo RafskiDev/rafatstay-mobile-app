@@ -14,6 +14,7 @@ import '../../../Widget/Ticket.dart';
 import '../../../Widget/WidgetButton.dart';
 import '../../BookingDetails/BookingDetails.dart';
 import '../../Chat/Chat.dart';
+import '../../RateYourExperience/RateYourExperience.dart';
 import '../../RestaurantDetalis/RestaurantDetalis.dart';
 import '../Booking_riverpod.dart';
 import 'package:flutter/rendering.dart';
@@ -291,14 +292,27 @@ class _OnSiteState extends ConsumerState<OnSite> {
               context: context,
               bookingId: bookingId,
               onSuccess: () {
+                final id =booking["branch"]["id"];
                 ToastMessages(
                   context,
                   TextLanguage().GetWord("شكراً لزيارتك! نتطلع لرؤيتك مجدداً"),
                   Themes().GetColor("success"),
                   Themes().GetColor("white"),
                 );
+                Navigator.push(
+                  context,
+                  PageRouteBuilder(
+                    pageBuilder: (context, animation1, animation2) =>
+                        RateYourExperience(branchId:id),
+                    transitionDuration: Duration.zero,
+                    reverseTransitionDuration: Duration.zero,
+                  ),
+                );
               },
             );
+
+
+
           },
           backgroundColor:ref.read(Booking_riverpod.notifier).bookingDetails[0]?Themes().GetColor("primaryS"): Themes().GetColor("primaryA"),
         ),
