@@ -67,13 +67,12 @@ class _MealDetailsState extends ConsumerState<MealDetails> {
     final protein = double.tryParse(mealData["protein"]?.toString().trim() ?? "") ?? 0.0;
     final carbs   = double.tryParse(mealData["carbs"]?.toString().trim()   ?? "") ?? 0.0;
     final fats    = double.tryParse(mealData["fats"]?.toString().trim()    ?? "") ?? 0.0;
-
-    final total = protein + carbs + fats;
+    final allergens = double.tryParse(mealData["allergen_content"]?.toString().trim() ?? "") ?? 0.0;
     const double maxGramLimit = 100.0;
     final double proteinPercent = protein / maxGramLimit;
     final double carbsPercent   = carbs / maxGramLimit;
     final double fatsPercent    = fats / maxGramLimit;
-    final allergens = mealData["allergens"] as List? ?? [];
+    final double allergenPercent =  allergens /maxGramLimit;
      return  Scaffold(
       backgroundColor: theme.GetColor("background"),
       body:ValueListenableBuilder<bool>(
@@ -257,9 +256,9 @@ class _MealDetailsState extends ConsumerState<MealDetails> {
                                 ),
                                 SizedBox(width: sizes.GetWidth() * 2),
                                 NutrientCard(
-                                  label:textLanguage.GetWord("مسببات الحساسية"),
-                                  percentage: allergenPercentage(allergens),
-                                  weight: allergenText(allergens, textLanguage),
+                                  label: textLanguage.GetWord("مسببات الحساسية"),
+                                  percentage: allergenPercent.clamp(0.0, 1.0),
+                                  weight: '${allergens.toInt()} g',
                                   primaryColor: Themes().GetColor('secondaryPrimary'),
                                 ),
                               ],
@@ -288,7 +287,6 @@ class _MealDetailsState extends ConsumerState<MealDetails> {
                                       ),
                                     ),
                                   ),
-
                                   GestureDetector(
                                     onTap: () {
                                       ref.read(MealDetails_riverpod.notifier).changeSelected(1);
@@ -302,7 +300,6 @@ class _MealDetailsState extends ConsumerState<MealDetails> {
                                       ),
                                     ),
                                   ),
-
                                   GestureDetector(
                                     onTap: () {
                                       ref.read(MealDetails_riverpod.notifier).changeSelected(2);
@@ -379,12 +376,13 @@ class _MealDetailsState extends ConsumerState<MealDetails> {
     // نضمن بقاء القيمة محصورة بين 0% و 85% كحد أقصى مريح للعين ولا تقفل الدائرة بالكامل
     return calculatedProgress.clamp(0.0, 0.85);
   }
-  String allergenText(List allergens, TextLanguage lang) {
-    if (allergens.isEmpty) {
+  String allergenText(double allergens, TextLanguage lang) {
+    if (allergens==0) {
       return "0 g";
     }
-    return "${allergens.length}";
+    return "${allergens.toString()}";
   }
+
   String mealTimeText(Map<String, dynamic>? mealData, TextLanguage lang) {
     final prep = mealData?["prep_time_minutes"];
     final ready = mealData?["ready_time_minutes"];
@@ -401,6 +399,7 @@ class _MealDetailsState extends ConsumerState<MealDetails> {
     return "$minutes ${lang.GetWord('دقائق')}";
   }
 }
+
 class Description extends StatelessWidget {
   final WidgetRef ref;
   const Description({super.key, required this.ref});
@@ -424,10 +423,14 @@ class Ingredients extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mealData = ref.watch(MealDetails_riverpod.notifier).mealData;
-    final ingredients = List<String>.from(mealData?["ingredients"] ?? []);
     final sizes = Sizes(context);
-
+    final mealData = ref.watch(MealDetails_riverpod.notifier).mealData;
+    final rawIngredients = mealData?["ingredients"] as List? ?? [];
+    final ingredients = rawIngredients
+        .expand((item) => item.toString().split(RegExp(r'\r\n|\n')))
+        .map((e) => e.trim())
+        .where((e) => e.isNotEmpty)
+        .toList();
     if (ingredients.isEmpty) return SizedBox.shrink();
 
     return SizedBox(
@@ -436,11 +439,14 @@ class Ingredients extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         itemCount: ingredients.length,
         itemBuilder: (context, index) {
+          final parts = ingredients[index].split(':');
+          final name = parts.isNotEmpty ? parts[0].trim() : ingredients[index];
+          final weight = parts.length > 1 ? parts[1].trim() : '';
           return Padding(
             padding: EdgeInsets.only(right: sizes.GetWidth() * 1.5),
             child: FoodItemCard(
-              label: ingredients[index],
-              weight: '',
+              label: name,
+              weight: weight,
               imageTitle: "assets/icon/SpaghettiPasta.svg",
               imageSubTitle: "assets/icon/kitchenScale.svg",
             ),
@@ -580,6 +586,7 @@ class NutrientCard extends StatelessWidget {
     );
   }
 }
+
 class FoodItemCard extends StatelessWidget {
   final String label;
   final String weight;

@@ -119,7 +119,7 @@ class PageNotifier extends Notifier<int> {
     final body = <String, dynamic>{
       "payment_method": paymentMethod,
       if (paymentMethod != "cash")
-        "redirect_url": redirectUrl ?? "https://api.rafatstay.com/payment/callback",
+        "redirect_url": redirectUrl ?? "https://api.com/payment/callback",
     };
 
     final response = await ApiService().post(
@@ -131,7 +131,7 @@ class PageNotifier extends Notifier<int> {
       final data = response["data"];
       if (data["type"] == "cash") {
         return true;
-      } else if (data["type"] == "digital") {
+      } else if (data["type"] == "digital" || data["type"] == "tabby") {
         return data["redirect_url"];
       }
       return true;

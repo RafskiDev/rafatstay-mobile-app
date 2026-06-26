@@ -43,7 +43,8 @@ class _HomeState extends ConsumerState<Home> {
   void initState() {
     if (mounted) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        ref.read(Home_riverpod.notifier).restaurants(context);
+        // ✅ تغيير: restaurants -> fetchHomeData
+        ref.read(Home_riverpod.notifier).fetchHomeData(context);
       });
     }
     super.initState();
@@ -55,23 +56,38 @@ class _HomeState extends ConsumerState<Home> {
     final sizes           = Sizes(context);
     final textLanguage    = TextLanguage();
     final theme           = Themes();
-    final favorite        = ref.watch(Home_riverpod.notifier).favorite;
-    final dish            = ref.watch(Home_riverpod.notifier).dish;
+
+    // ✅ تغيير: favorite -> favoriteItems
+    final favoriteItems   = ref.watch(Home_riverpod.notifier).favoriteItems;
+
+    // ✅ تغيير: dish -> dishOrFlavorItems
+    final dishOrFlavorItems = ref.watch(Home_riverpod.notifier).dishOrFlavorItems;
+
     final events          = ref.watch(Home_riverpod.notifier).events;
     final selectedIndex   = ref.watch(Home_riverpod.notifier).selectedIndex;
-    final homes           = ref.read(Home_riverpod.notifier).home;
+
+    // ✅ تغيير: home -> homeData
+    final homes           = ref.read(Home_riverpod.notifier).homeData;
+
     final box             = ref.watch(Home_riverpod.notifier).box;
-    final event           = ref.watch(Home_riverpod.notifier).event;
-    final offers          = ref.watch(Home_riverpod.notifier).offers;
+
+    // ✅ تغيير: event -> eventItems
+    final eventItems      = ref.watch(Home_riverpod.notifier).eventItems;
+
+    // ✅ تغيير: offers -> offerItems
+    final offerItems      = ref.watch(Home_riverpod.notifier).offerItems;
+
     final closestCheapest = ref.watch(Home_riverpod.notifier).closestCheapest;
     final mostOrdered     = ref.watch(Home_riverpod.notifier).mostOrdered;
     final statuses        = ref.watch(Home_riverpod.notifier).statuses;
-  //  final String statusKey = ref.read(Home_riverpod.notifier).getStatusKey();
+
+    // ✅ تغيير: filters -> filteredItems
+    final filteredItems   = ref.watch(Home_riverpod.notifier).filteredItems;
+
     final user = ref.read(Home_riverpod.notifier).box.read("user");
     final avatarPath = user?["avatar_url"];
-    final avatarUrl = avatarPath != null
-        ? "$avatarPath"
-        : null;
+    final avatarUrl = avatarPath != null ? "$avatarPath" : null;
+
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
       body: SafeArea(
@@ -103,18 +119,21 @@ class _HomeState extends ConsumerState<Home> {
                       child: Row(
                         children: [
                           ClipOval(
-                            child:avatarUrl!=null? Image.network(
+                            child: avatarUrl != null
+                                ? Image.network(
                               avatarUrl,
                               width: sizes.GetHeight() * 5,
                               height: sizes.GetHeight() * 5,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) => Image.asset(
-                                "assets/images/38a2a034cbe4ac063cad704f0bc1eb89da98ec7f.png",
-                                width: sizes.GetHeight() * 5,
-                                height: sizes.GetHeight() * 5,
-                                fit: BoxFit.cover,
-                              ),
-                            ):Image.asset(
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Image.asset(
+                                    "assets/images/38a2a034cbe4ac063cad704f0bc1eb89da98ec7f.png",
+                                    width: sizes.GetHeight() * 5,
+                                    height: sizes.GetHeight() * 5,
+                                    fit: BoxFit.cover,
+                                  ),
+                            )
+                                : Image.asset(
                               "assets/images/38a2a034cbe4ac063cad704f0bc1eb89da98ec7f.png",
                               width: sizes.GetHeight() * 5,
                               height: sizes.GetHeight() * 5,
@@ -134,25 +153,46 @@ class _HomeState extends ConsumerState<Home> {
                     ),
                     Row(
                       children: [
-                        _iconButton("assets/icon/Settings.svg",iconColor:ref.read(Home_riverpod.notifier).showLanguage?theme.GetColor("white"):theme.GetColor("textPrimary"),sizes,backgroundColor:ref.read(Home_riverpod.notifier).showLanguage?theme.GetColor("primary"):theme.GetColor("backgroundOffWhite"), onTap: () {
-                          ref.read(Home_riverpod.notifier).toggleLanguage();
-                        }),
+                        _iconButton(
+                          "assets/icon/Settings.svg",
+                          sizes,
+                          iconColor: ref.read(Home_riverpod.notifier).showLanguage
+                              ? theme.GetColor("white")
+                              : theme.GetColor("textPrimary"),
+                          backgroundColor: ref.read(Home_riverpod.notifier).showLanguage
+                              ? theme.GetColor("primary")
+                              : theme.GetColor("backgroundOffWhite"),
+                          onTap: () {
+                            ref.read(Home_riverpod.notifier).toggleLanguage();
+                          },
+                        ),
                         SizedBox(width: sizes.GetWidth() * 2),
-                        _iconButton("assets/icon/notifications.svg",iconColor:theme.GetColor("textPrimary"),sizes,backgroundColor:theme.GetColor("backgroundOffWhite"), onTap: () {
-                          Navigator.push(context, PageRouteBuilder(
-                            pageBuilder: (_, __, ___) => notifications(),
-                            transitionDuration: Duration.zero,
-                            reverseTransitionDuration: Duration.zero,
-                          ));
-                        }),
+                        _iconButton(
+                          "assets/icon/notifications.svg",
+                          sizes,
+                          iconColor: theme.GetColor("textPrimary"),
+                          backgroundColor: theme.GetColor("backgroundOffWhite"),
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              PageRouteBuilder(
+                                pageBuilder: (_, __, ___) => notifications(),
+                                transitionDuration: Duration.zero,
+                                reverseTransitionDuration: Duration.zero,
+                              ),
+                            );
+                          },
+                        ),
                       ],
                     ),
                   ],
                 ),
-                if(ref.read(Home_riverpod.notifier).showLanguage)
-                LanguageDropdown(ref:ref),
-                if(ref.read(Home_riverpod.notifier).showLanguage==false)
-                SizedBox(height: sizes.GetHeight() * 2),
+
+                if (ref.read(Home_riverpod.notifier).showLanguage)
+                  LanguageDropdown(ref: ref),
+                if (ref.read(Home_riverpod.notifier).showLanguage == false)
+                  SizedBox(height: sizes.GetHeight() * 2),
+
                 // ─── Tabs (Restaurants / Lounges / Cafes / Order to Go) ───
                 Row(
                   children: [
@@ -169,7 +209,8 @@ class _HomeState extends ConsumerState<Home> {
                               child: GestureDetector(
                                 onTap: () {
                                   ref.read(Home_riverpod.notifier).select(index);
-                                  ref.read(Home_riverpod.notifier).restaurants(context);
+                                  // ✅ تغيير: restaurants -> fetchHomeData
+                                  ref.read(Home_riverpod.notifier).fetchHomeData(context);
                                 },
                                 child: IconBox(
                                   iconKey: events[index]["key"].toString(),
@@ -187,47 +228,82 @@ class _HomeState extends ConsumerState<Home> {
                     ),
                   ],
                 ),
+
                 ValueListenableBuilder<bool>(
                   valueListenable: LoadingService.isLoading,
                   builder: (context, isLoading, child) {
                     return isLoading
                         ? SizedBox(
                       height: sizes.GetHeight() * 60,
-                      child: Center(
-                        child: showLoading(),
-                         ),
-                        )
+                      child: Center(child: showLoading()),
+                    )
                         : Column(
                       children: [
                         SizedBox(height: sizes.GetHeight() * 2),
 
                         // ─── Filters ─────────────────────────────────
                         Visibility(
-                          visible: homes.isNotEmpty && homes[0]["sections"]?["filters"] != null,
+                          visible: homes.isNotEmpty &&
+                              homes[0]["sections"]?["filters"] != null,
                           child: SizedBox(
                             height: sizes.GetHeight() * 5,
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
-                              itemCount: homes.isNotEmpty && homes[0]["sections"]?["filters"] != null
+                              itemCount: homes.isNotEmpty &&
+                                  homes[0]["sections"]?["filters"] != null
                                   ? homes[0]["sections"]["filters"].length
                                   : 0,
                               itemBuilder: (context, index) {
-                                final language = ref.read(Home_riverpod.notifier).box.read("Language");
-                                final filterItem = homes[0]["sections"]["filters"][index];
-                               // final String category = (filterItem["label_en"] ?? filterItem["label"] ?? filterItem["key"] ?? "").toString();
+                                final language = ref
+                                    .read(Home_riverpod.notifier)
+                                    .box
+                                    .read("Language");
+                                final filterItem =
+                                homes[0]["sections"]["filters"][index];
                                 final String category = language == 0
-                                    ? (filterItem["label_en"] ?? filterItem["key"] ?? "").toString()
-                                    : (filterItem["label"] ?? filterItem["label_en"] ?? filterItem["key"] ?? "").toString();
-                                final String filterKey = (filterItem["key"] ?? category).toString().toLowerCase().replaceAll(" ", "_");
-                                final isSelected = ref.watch(Home_riverpod.notifier).selectedCategoryIndex == index;
+                                    ? (filterItem["label_en"] ??
+                                    filterItem["key"] ??
+                                    "")
+                                    .toString()
+                                    : (filterItem["label"] ??
+                                    filterItem["label_en"] ??
+                                    filterItem["key"] ??
+                                    "")
+                                    .toString();
+                                final String filterKey = (filterItem["key"] ??
+                                    category)
+                                    .toString()
+                                    .toLowerCase()
+                                    .replaceAll(" ", "_");
+                                final isSelected = ref
+                                    .watch(Home_riverpod.notifier)
+                                    .selectedCategoryIndex ==
+                                    index;
                                 return GestureDetector(
                                   onTap: () {
-                                    ref.read(Home_riverpod.notifier).selectCategory(index);
+                                    ref
+                                        .read(Home_riverpod.notifier)
+                                        .selectCategory(index);
                                     if (index == 0) {
-                                      ref.read(Home_riverpod.notifier).filters.clear();
-                                      ref.read(Home_riverpod.notifier).ref.notifyListeners();
+                                      // ✅ تغيير: filters.clear -> filteredItems.clear
+                                      ref
+                                          .read(
+                                          Home_riverpod.notifier)
+                                          .filteredItems
+                                          .clear();
+                                      ref
+                                          .read(
+                                          Home_riverpod.notifier)
+                                          .ref
+                                          .notifyListeners();
                                     } else {
-                                      ref.read(Home_riverpod.notifier).filter(context, filter: filterKey);
+                                      ref
+                                          .read(
+                                          Home_riverpod.notifier)
+                                          .filter(
+                                        context,
+                                        filter: filterKey,
+                                      );
                                     }
                                   },
                                   child: Container(
@@ -235,12 +311,19 @@ class _HomeState extends ConsumerState<Home> {
                                       horizontal: sizes.GetWidth() * 4,
                                       vertical: sizes.GetHeight() * 1,
                                     ),
-                                    margin: EdgeInsets.symmetric(horizontal: sizes.GetWidth() * 1.5),
+                                    margin: EdgeInsets.symmetric(
+                                        horizontal:
+                                        sizes.GetWidth() * 1.5),
                                     decoration: BoxDecoration(
-                                      color: isSelected ? Color(0xFFA56C0B) : Color(0xFFF4EBD7),
-                                      borderRadius: BorderRadius.circular(30),
+                                      color: isSelected
+                                          ? Color(0xFFA56C0B)
+                                          : Color(0xFFF4EBD7),
+                                      borderRadius:
+                                      BorderRadius.circular(30),
                                       border: Border.all(
-                                        color: isSelected ? Color(0xFFA56C0B) : Color(0xFFD4B896),
+                                        color: isSelected
+                                            ? Color(0xFFA56C0B)
+                                            : Color(0xFFD4B896),
                                         width: 1,
                                       ),
                                     ),
@@ -248,9 +331,13 @@ class _HomeState extends ConsumerState<Home> {
                                     child: Text(
                                       category,
                                       style: TextStyle(
-                                        color: isSelected ? Colors.white : Color(0xFFA56C0B),
+                                        color: isSelected
+                                            ? Colors.white
+                                            : Color(0xFFA56C0B),
                                         fontSize: 12,
-                                        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                        fontWeight: isSelected
+                                            ? FontWeight.bold
+                                            : FontWeight.normal,
                                       ),
                                     ),
                                   ),
@@ -259,139 +346,220 @@ class _HomeState extends ConsumerState<Home> {
                             ),
                           ),
                         ),
-                        homes.isNotEmpty && homes[0]["sections"]?["filters"] != null? SizedBox(height: sizes.GetHeight() * 2):SizedBox.shrink(),
+                        homes.isNotEmpty &&
+                            homes[0]["sections"]?["filters"] != null
+                            ? SizedBox(height: sizes.GetHeight() * 2)
+                            : SizedBox.shrink(),
+
                         // ─── Search ───────────────────────────────────
                         Row(
                           children: [
                             Expanded(
                               child: WidgetTextField(
                                 borderColor: theme.GetColor("primary"),
-                                Controller: ref.read(Home_riverpod.notifier).searchController,
-                                hintTextColor: theme.GetColor("textPrimary"),
+                                Controller: ref
+                                    .read(Home_riverpod.notifier)
+                                    .searchController,
+                                hintTextColor:
+                                theme.GetColor("textPrimary"),
                                 HintText: textLanguage.w("بحث"),
                                 iconData: "assets/icon/Search.svg",
-                                iconColor: theme.GetColor("textPrimary"),
+                                iconColor:
+                                theme.GetColor("textPrimary"),
                                 Horizontal: sizes.GetWidth() * 2,
-                                focusNode: ref.read(Home_riverpod.notifier).searchNode,
+                                focusNode: ref
+                                    .read(Home_riverpod.notifier)
+                                    .searchNode,
                                 isReadOnly: true,
                                 onTap: () async {
-                                  final res = await Navigator.push(context, PageRouteBuilder(
-                                    pageBuilder: (_, __, ___) => Search(),
-                                    transitionDuration: Duration.zero,
-                                    reverseTransitionDuration: Duration.zero,
-                                  ));
-                                  if (res != null) ref.read(Home_riverpod.notifier).restaurants(context);
+                                  final res = await Navigator.push(
+                                    context,
+                                    PageRouteBuilder(
+                                      pageBuilder: (_, __, ___) =>
+                                          Search(),
+                                      transitionDuration: Duration.zero,
+                                      reverseTransitionDuration:
+                                      Duration.zero,
+                                    ),
+                                  );
+                                  // ✅ تغيير: restaurants -> fetchHomeData
+                                  if (res != null)
+                                    ref
+                                        .read(Home_riverpod.notifier)
+                                        .fetchHomeData(context);
                                 },
                               ),
                             ),
                             SizedBox(width: sizes.GetWidth() * 2),
                             CircularButton(
                               size: Sizes(context).GetWidth() * 13,
-                              onTap: ()async {
-                                final res = await Navigator.push(context, PageRouteBuilder(
-                                  pageBuilder: (_, __, ___) => Filters(),
-                                  transitionDuration: Duration.zero,
-                                  reverseTransitionDuration: Duration.zero,
-                                ));
-                                if (res != null) ref.read(Home_riverpod.notifier).restaurants(context,showLoader: false);
+                              onTap: () async {
+                                final res = await Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                    pageBuilder: (_, __, ___) =>
+                                        Filters(),
+                                    transitionDuration: Duration.zero,
+                                    reverseTransitionDuration:
+                                    Duration.zero,
+                                  ),
+                                );
+                                // ✅ تغيير: restaurants -> fetchHomeData
+                                if (res != null)
+                                  ref
+                                      .read(Home_riverpod.notifier)
+                                      .fetchHomeData(context);
                               },
-                              child: SvgPicture.asset("assets/icon/Filters.svg"),
+                              child: SvgPicture.asset(
+                                  "assets/icon/Filters.svg"),
                               borderColor: theme.GetColor("primary"),
                             ),
                           ],
                         ),
+
                         // ─── Events (مطاعم فقط) ───────────────────────
                         if (selectedIndex == 0) ...[
-                          if (event.isNotEmpty) SizedBox(height: sizes.GetHeight() * 2),
-                          Events(events: event),
+                          if (eventItems.isNotEmpty)
+                            SizedBox(height: sizes.GetHeight() * 2),
+                          // ✅ تغيير: event -> eventItems
+                          Events(events: eventItems),
                         ],
 
                         // ─── Status ───────────────────────────────────
-                        if(statuses.isNotEmpty) ...[
+                        if (statuses.isNotEmpty) ...[
                           SizedBox(height: sizes.GetHeight() * 2),
                           _sectionHeader(
                             title: _getStatusTitle(homes),
                             onSeeAll: () {
-                              Navigator.push(context, PageRouteBuilder(
-                                pageBuilder: (_, __, ___) => SeeAll(
-                                  title: textLanguage.w("حالة المطاعم"),
-                                  section: RestaurantSection.status,
-                                  sectionKey: ref.read(Home_riverpod.notifier).getTopPicksKey(),
+                              Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                  pageBuilder: (_, __, ___) => SeeAll(
+                                    title: textLanguage.w("حالة المطاعم"),
+                                    section: RestaurantSection.status,
+                                    sectionKey: ref
+                                        .read(Home_riverpod.notifier)
+                                        .getCategorySlug(),
+                                  ),
+                                  transitionDuration: Duration.zero,
+                                  reverseTransitionDuration:
+                                  Duration.zero,
                                 ),
-                                transitionDuration: Duration.zero,
-                                reverseTransitionDuration: Duration.zero,
-                              ));
+                              );
                             },
-                            sizes: sizes, theme: theme, textLanguage: textLanguage,
+                            sizes: sizes,
+                            theme: theme,
+                            textLanguage: textLanguage,
                           ),
                           SizedBox(height: sizes.GetHeight() * 2),
-                          Row(children: [Expanded(child: Status())]),
+                          Row(children: [
+                            Expanded(child: Status())
+                          ]),
                         ],
-                        statuses.isEmpty?SizedBox(height: sizes.GetHeight() * 2):SizedBox.shrink(),
+                        statuses.isEmpty
+                            ? SizedBox(height: sizes.GetHeight() * 2)
+                            : SizedBox.shrink(),
 
                         // ─── Offers ───────────────────────────────────
-                        if (offers.isNotEmpty) ...[
+                        if (offerItems.isNotEmpty) ...[
                           _sectionHeader(
                             title: textLanguage.w("عروض اليوم"),
                             onSeeAll: () {
-                               Navigator.push(context, PageRouteBuilder(
-                                pageBuilder: (_, __, ___) => SeeAll(
-                                  title: textLanguage.w("عروض اليوم"),
-                                  section: RestaurantSection.offers,
-                                  sectionKey: ref.read(Home_riverpod.notifier).getTopPicksKey(),
+
+                              Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                  pageBuilder: (_, __, ___) => SeeAll(
+                                    title: textLanguage.w("عروض اليوم"),
+                                    section: RestaurantSection.offers,
+                                    sectionKey: ref
+                                        .read(Home_riverpod.notifier)
+                                        .getCategorySlug(),
+                                  ),
+                                  transitionDuration: Duration.zero,
+                                  reverseTransitionDuration:
+                                  Duration.zero,
                                 ),
-                                transitionDuration: Duration.zero,
-                                reverseTransitionDuration: Duration.zero,
-                              ));
+                              );
+
                             },
-                            sizes: sizes, theme: theme, textLanguage: textLanguage,
+                            sizes: sizes,
+                            theme: theme,
+                            textLanguage: textLanguage,
                           ),
                           SizedBox(height: sizes.GetHeight() * 2),
                           CustomCarousel(
-                            items: offers,
-                            currentIndex: ref.watch(Home_riverpod.notifier).mainCarouselIndex,
+                            // ✅ تغيير: offers -> offerItems
+                            items: offerItems,
+                            currentIndex: ref
+                                .watch(Home_riverpod.notifier)
+                                .mainCarouselIndex,
                             onTap: () {
-                              final currentIndex = ref.watch(Home_riverpod.notifier).mainCarouselIndex;
-
-                              final selectedOffer = offers[currentIndex];
-                              final int offerId = int.tryParse(selectedOffer["id"]?.toString() ?? "0") ?? 0;
-                           //  print(selectedOffer);
-                              Navigator.push(context, PageRouteBuilder(
-                                pageBuilder: (_, __, ___) => OffersDetails(
-                                  title: textLanguage.w("تفاصيل العروض"),
-                                  offerId: offerId,
+                              final currentIndex = ref
+                                  .watch(Home_riverpod.notifier)
+                                  .mainCarouselIndex;
+                              // ✅ تغيير: offers -> offerItems
+                              final selectedOffer =
+                              offerItems[currentIndex];
+                              final int offerId =
+                                  int.tryParse(selectedOffer["id"]
+                                      ?.toString() ??
+                                      "0") ??
+                                      0;
+                              Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                  pageBuilder: (_, __, ___) =>
+                                      OffersDetails(
+                                        title:
+                                        textLanguage.w("تفاصيل العروض"),
+                                        offerId: offerId,
+                                      ),
+                                  transitionDuration: Duration.zero,
+                                  reverseTransitionDuration:
+                                  Duration.zero,
                                 ),
-                                transitionDuration: Duration.zero,
-                                reverseTransitionDuration: Duration.zero,
-                              ));
+                              );
                             },
-                            onPageChanged: (index) => ref.read(Home_riverpod.notifier).changeMainCarousel(index),
+                            onPageChanged: (index) => ref
+                                .read(Home_riverpod.notifier)
+                                .changeMainCarousel(index),
                             height: sizes.GetHeight() * 18,
                             activeColor: theme.GetColor("primary"),
                             inactiveColor: Color(0xFFD3E9F8),
                           ),
                           SizedBox(height: sizes.GetHeight() * 2),
                         ],
+
                         // ─── Top Picks ────────────────────────────────
-                          if (ref.read(Home_riverpod.notifier).displayItems.isNotEmpty)
+                        if (ref
+                            .read(Home_riverpod.notifier)
+                            .displayItems
+                            .isNotEmpty)
                           Toppicks(
-                          homes: [{"items": ref.watch(Home_riverpod.notifier).displayItems}],
-                          filters: homes,
-                        ),
+                            homes: [
+                              {
+                                "items": ref
+                                    .watch(Home_riverpod.notifier)
+                                    .displayItems
+                              }
+                            ],
+                            filters: homes,
+                          ),
 
                         // ─── Closest & Cheapest (Order to Go فقط) ────
-                        if (selectedIndex == 3 && closestCheapest.isNotEmpty) ...[
+                        if (selectedIndex == 3 &&
+                            closestCheapest.isNotEmpty) ...[
                           SizedBox(height: sizes.GetHeight() * 2),
                           _sectionHeader(
                             title: "الأقرب والأرخص",
                             onSeeAll: () {},
-                            sizes: sizes, theme: theme, textLanguage: textLanguage,
+                            sizes: sizes,
+                            theme: theme,
+                            textLanguage: textLanguage,
                           ),
                           SizedBox(height: sizes.GetHeight() * 1),
-
-                          // Sort Buttons
                           _buildSortButtons(sizes, theme, textLanguage),
-
                           SizedBox(height: sizes.GetHeight() * 2),
                           SizedBox(
                             height: sizes.GetHeight() * 30,
@@ -400,36 +568,68 @@ class _HomeState extends ConsumerState<Home> {
                               itemCount: closestCheapest.length,
                               itemBuilder: (context, i) {
                                 final item = closestCheapest[i];
-                                final int itemId = int.tryParse(item["id"]?.toString() ?? "0") ?? 0;
+                                final int itemId =
+                                    int.tryParse(item["id"]
+                                        ?.toString() ??
+                                        "0") ??
+                                        0;
                                 return Padding(
-                                  padding: EdgeInsets.only(right: sizes.GetWidth() * 2),
+                                  padding: EdgeInsets.only(
+                                      right: sizes.GetWidth() * 2),
                                   child: ContentCard(
-                                    imagePath: "assets/images/image6.png",
+                                    imagePath:
+                                    "assets/images/image6.png",
                                     title: item["business_name"] ?? "",
                                     description: item["name"] ?? "",
                                     showIcon: true,
-                                    circleImagePath: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
-                                    buttonText: textLanguage.w("اطلب الآن"),
+                                    circleImagePath:
+                                    "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
+                                    buttonText:
+                                    textLanguage.w("اطلب الآن"),
                                     onButtonTap: () {},
                                     width: sizes.GetWidth() * 50,
                                     height: sizes.GetHeight() * 40,
-                                    liked: ref.watch(Home_riverpod.notifier).favoriteStatus[itemId] ?? false,
-                                    onLikeTap: () => ref.read(Home_riverpod.notifier).toggleLike(itemId, i, context),
+                                    liked: ref
+                                        .watch(Home_riverpod
+                                        .notifier)
+                                        .favoriteStatus[itemId] ??
+                                        false,
+                                    onLikeTap: () => ref
+                                        .read(
+                                        Home_riverpod.notifier)
+                                        .toggleLike(
+                                        itemId, i, context),
                                     additionalInfo: Column(
                                       children: [
                                         Row(children: [
-                                          SvgPicture.asset("assets/icon/LikePrice.svg"),
-                                          SizedBox(width: sizes.GetWidth() * 1),
+                                          SvgPicture.asset(
+                                              "assets/icon/LikePrice.svg"),
+                                          SizedBox(
+                                              width:
+                                              sizes.GetWidth() * 1),
                                           Text(
                                             "${item["min_price"] ?? "0"} SAR",
-                                            style: TextStyle(color: theme.GetColor("secondaryPrimary"), fontSize: 10),
+                                            style: TextStyle(
+                                                color: theme.GetColor(
+                                                    "secondaryPrimary"),
+                                                fontSize: 10),
                                           ),
                                         ]),
                                         if (item["distance_km"] != null)
                                           Row(children: [
-                                            SvgPicture.asset("assets/icon/site.svg", height: sizes.GetHeight() * 1.7),
-                                            SizedBox(width: sizes.GetWidth() * 1),
-                                            Text("${item["distance_km"]} KM", style: TextStyle(fontSize: 10)),
+                                            SvgPicture.asset(
+                                              "assets/icon/site.svg",
+                                              height:
+                                              sizes.GetHeight() * 1.7,
+                                            ),
+                                            SizedBox(
+                                                width:
+                                                sizes.GetWidth() * 1),
+                                            Text(
+                                              "${item["distance_km"]} KM",
+                                              style:
+                                              TextStyle(fontSize: 10),
+                                            ),
                                           ]),
                                       ],
                                     ),
@@ -440,13 +640,17 @@ class _HomeState extends ConsumerState<Home> {
                             ),
                           ),
                         ],
+
                         // ─── Most Ordered (Order to Go فقط) ──────────
-                        if (selectedIndex == 3 && mostOrdered.isNotEmpty) ...[
+                        if (selectedIndex == 3 &&
+                            mostOrdered.isNotEmpty) ...[
                           SizedBox(height: sizes.GetHeight() * 2),
                           _sectionHeader(
                             title: textLanguage.w("الأكثر طلباً"),
                             onSeeAll: () {},
-                            sizes: sizes, theme: theme, textLanguage: textLanguage,
+                            sizes: sizes,
+                            theme: theme,
+                            textLanguage: textLanguage,
                           ),
                           SizedBox(height: sizes.GetHeight() * 2),
                           SizedBox(
@@ -456,21 +660,37 @@ class _HomeState extends ConsumerState<Home> {
                               itemCount: mostOrdered.length,
                               itemBuilder: (context, i) {
                                 final item = mostOrdered[i];
-                                final int itemId = int.tryParse(item["id"]?.toString() ?? "0") ?? 0;
+                                final int itemId =
+                                    int.tryParse(item["id"]
+                                        ?.toString() ??
+                                        "0") ??
+                                        0;
                                 return Padding(
-                                  padding: EdgeInsets.only(right: sizes.GetWidth() * 2),
+                                  padding: EdgeInsets.only(
+                                      right: sizes.GetWidth() * 2),
                                   child: ContentCard(
-                                    imagePath: "assets/images/image6.png",
+                                    imagePath:
+                                    "assets/images/image6.png",
                                     title: item["business_name"] ?? "",
                                     description: item["name"] ?? "",
                                     showIcon: true,
-                                    circleImagePath: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
-                                    buttonText: textLanguage.w("اطلب الآن"),
+                                    circleImagePath:
+                                    "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
+                                    buttonText:
+                                    textLanguage.w("اطلب الآن"),
                                     onButtonTap: () {},
                                     width: sizes.GetWidth() * 50,
                                     height: sizes.GetHeight() * 40,
-                                    liked: ref.watch(Home_riverpod.notifier).favoriteStatus[itemId] ?? false,
-                                    onLikeTap: () => ref.read(Home_riverpod.notifier).toggleLike(itemId, i, context),
+                                    liked: ref
+                                        .watch(Home_riverpod
+                                        .notifier)
+                                        .favoriteStatus[itemId] ??
+                                        false,
+                                    onLikeTap: () => ref
+                                        .read(
+                                        Home_riverpod.notifier)
+                                        .toggleLike(
+                                        itemId, i, context),
                                     additionalInfo: SizedBox.shrink(),
                                     menuItemId: item['id'],
                                   ),
@@ -479,120 +699,174 @@ class _HomeState extends ConsumerState<Home> {
                             ),
                           ),
                         ],
+
                         /*
-                        //تم هملها تعليقها مكانها ليس هنا
-                        // ─── Favorites ────────────────────────────────
-                        if (favorite.isNotEmpty) ...[
-                          SizedBox(height: sizes.GetHeight() * 2),
-                          _sectionHeader(
-                            title: textLanguage.w("اختيارات المستخدمين المفضلة"),
-                            onSeeAll: ()async {
-                            final res=await Navigator.push(context, PageRouteBuilder(
-                                pageBuilder: (_, __, ___) => SeeAll(
+                              // تم إهمالها - مكانها ليس هنا
+                              // ─── Favorites ────────────────────────────────
+                              if (favoriteItems.isNotEmpty) ...[
+                                SizedBox(height: sizes.GetHeight() * 2),
+                                _sectionHeader(
                                   title: textLanguage.w("اختيارات المستخدمين المفضلة"),
-                                  section: RestaurantSection.favorites,
-                                  /*
-                                  filters: homes.isNotEmpty && homes[0]["sections"]?["filters"] is List
-                                      ? (homes[0]["sections"]["filters"] as List)
-                                      .whereType<Map<String, dynamic>>()
-                                      .toList()
-                                      : [],
-
-                                   */
+                                  onSeeAll: () async {
+                                    final res = await Navigator.push(context, PageRouteBuilder(
+                                      pageBuilder: (_, __, ___) => SeeAll(
+                                        title: textLanguage.w("اختيارات المستخدمين المفضلة"),
+                                        section: RestaurantSection.favorites,
+                                      ),
+                                      transitionDuration: Duration.zero,
+                                      reverseTransitionDuration: Duration.zero,
+                                    ));
+                                    if (res != null) {
+                                      ref.read(Home_riverpod.notifier).fetchHomeData(context);
+                                    }
+                                  },
+                                  sizes: sizes, theme: theme, textLanguage: textLanguage,
                                 ),
-                                transitionDuration: Duration.zero,
-                                reverseTransitionDuration: Duration.zero,
-                              ));
+                                SizedBox(height: sizes.GetHeight() * 2),
+                                // ✅ تغيير: favorite -> favoriteItems
+                                Favorites(favorite: favoriteItems),
+                              ],
+                              */
 
-                              if(res!=null){
-                                ref.read(Home_riverpod.notifier).restaurants(context);
-                              }
-
-                            },
-                            sizes: sizes, theme: theme, textLanguage: textLanguage,
-                          ),
-                          SizedBox(height: sizes.GetHeight() * 2),
-                          Favorites(favorite: favorite),
-                        ],
-                         */
-                        // ─── A New Dish to Try / Flavor of the Day ─────────────────
-                        if (dish.isNotEmpty) ...[
+                        // ─── A New Dish to Try / Flavor of the Day ────
+                        if (dishOrFlavorItems.isNotEmpty) ...[
                           SizedBox(height: sizes.GetHeight() * 2),
                           _sectionHeader(
-                            title:selectedIndex ==0? textLanguage.w("طبق جديد لتجربته"):textLanguage.w("نكهة اليوم"),
-                            onSeeAll: ()async {
-                            final res=await Navigator.push(context, PageRouteBuilder(
-                                pageBuilder: (_, __, ___) => SeeAll(
-                                  title:selectedIndex ==0? textLanguage.w("طبق جديد لتجربته"):textLanguage.w("نكهة اليوم"),
-                                  section: RestaurantSection.dishOfTheDay,
-                                  sectionKey: ref.read(Home_riverpod.notifier).getTopPicksKey(),
-                                  /*
-                                  filters: homes.isNotEmpty && homes[0]["sections"]?["filters"] is List
-                                      ? (homes[0]["sections"]["filters"] as List)
-                                      .whereType<Map<String, dynamic>>()
-                                      .toList()
-                                      : [],
-                                   */
+                            title: selectedIndex == 0
+                                ? textLanguage.w("طبق جديد لتجربته")
+                                : textLanguage.w("نكهة اليوم"),
+                            onSeeAll: () async {
+
+                              final res = await Navigator.push(
+                                context,
+                                PageRouteBuilder(
+                                  pageBuilder: (_, __, ___) => SeeAll(
+                                    title: selectedIndex == 0
+                                        ? textLanguage
+                                        .w("طبق جديد لتجربته")
+                                        : textLanguage.w("نكهة اليوم"),
+                                    section:
+                                    RestaurantSection.dishOfTheDay,
+                                    sectionKey: ref
+                                        .read(Home_riverpod.notifier)
+                                        .getCategorySlug(),
+                                  ),
+                                  transitionDuration: Duration.zero,
+                                  reverseTransitionDuration:
+                                  Duration.zero,
                                 ),
-                                transitionDuration: Duration.zero,
-                                reverseTransitionDuration: Duration.zero,
-                              ));
-                            if(res!=null){
-                              ref.read(Home_riverpod.notifier).restaurants(context);
-                            }
+                              );
+                              if (res != null) {
+                                // ✅ تغيير: restaurants -> fetchHomeData
+                                ref
+                                    .read(Home_riverpod.notifier)
+                                    .fetchHomeData(context);
+                              }
                             },
-                            sizes: sizes, theme: theme, textLanguage: textLanguage,
+                            sizes: sizes,
+                            theme: theme,
+                            textLanguage: textLanguage,
                           ),
                           SizedBox(height: sizes.GetHeight() * 2),
                           SizedBox(
                             height: sizes.GetHeight() * 38,
                             child: ListView.builder(
                               scrollDirection: Axis.horizontal,
-                              itemCount: dish.length,
+                              // ✅ تغيير: dish.length -> dishOrFlavorItems.length
+                              itemCount: dishOrFlavorItems.length,
                               itemBuilder: (context, i) {
-                                final dishs = dish[i];
-                                final String dishTitle = (dishs["title"] ?? dishs["business_name"] ?? "").toString();
-                                final String dishSubTitle = (dishs["restaurant"]?["name"] ?? dishs["branch_name"] ?? "").toString();
-                                final String dishDesc = (dishs["description"] ?? "لايوجد بينات").toString();
-                                final String dishPrice = dishs["price"]?.toString() ?? "0";
-                                final dynamic rawId = dishs["id"] ?? dishs["item"]?["id"] ?? dishs["branch_id"];
-                                final int itemId = int.tryParse(rawId?.toString() ?? "0") ?? 0;
-                              //  final bool isLiked = ref.watch(Home_riverpod.notifier).favoriteStatus[itemId] ?? false;
-                                final bool is_featured = ref.watch(Home_riverpod.notifier).favoriteStatus[itemId]
-                                    ?? (dishs["is_favorited"] as bool? ?? false);
+                                // ✅ تغيير: dish[i] -> dishOrFlavorItems[i]
+                                final dishs = dishOrFlavorItems[i];
+                                final String dishTitle =
+                                (dishs["title"] ??
+                                    dishs["business_name"] ??
+                                    "")
+                                    .toString();
+                                final String dishSubTitle =
+                                (dishs["restaurant"]?["name"] ??
+                                    dishs["branch_name"] ??
+                                    "")
+                                    .toString();
+                                final String dishDesc =
+                                (dishs["description"] ??
+                                    "لايوجد بينات")
+                                    .toString();
+                                final String dishPrice =
+                                    dishs["price"]?.toString() ?? "0";
+                                final dynamic rawId = dishs["id"] ??
+                                    dishs["item"]?["id"] ??
+                                    dishs["branch_id"];
+                                final int itemId =
+                                    int.tryParse(rawId?.toString() ??
+                                        "0") ??
+                                        0;
+                                final bool is_featured = ref
+                                    .watch(Home_riverpod
+                                    .notifier)
+                                    .favoriteStatus[itemId] ??
+                                    (dishs["is_favorited"]
+                                    as bool? ??
+                                        false);
                                 return Padding(
-                                  padding: EdgeInsets.only(right: sizes.GetWidth() * 1),
+                                  padding: EdgeInsets.only(
+                                      right: sizes.GetWidth() * 1),
                                   child: ContentCard(
                                     additionalInfo: Row(children: [
-                                      SvgPicture.asset("assets/icon/LikePrice.svg"),
-                                      SizedBox(width: sizes.GetWidth() * 1),
-                                      Text(dishPrice, style: TextStyle(color: theme.GetColor("secondaryPrimary"))),
-                                      SizedBox(width: sizes.GetWidth() * 1),
-                                      SvgPicture.asset("assets/icon/SAR.svg", color: theme.GetColor("secondaryPrimary")),
+                                      SvgPicture.asset(
+                                          "assets/icon/LikePrice.svg"),
+                                      SizedBox(
+                                          width:
+                                          sizes.GetWidth() * 1),
+                                      Text(dishPrice,
+                                          style: TextStyle(
+                                              color: theme.GetColor(
+                                                  "secondaryPrimary"))),
+                                      SizedBox(
+                                          width:
+                                          sizes.GetWidth() * 1),
+                                      SvgPicture.asset(
+                                        "assets/icon/SAR.svg",
+                                        color: theme.GetColor(
+                                            "secondaryPrimary"),
+                                      ),
                                     ]),
                                     showIcon: true,
-                                    imagePath: fixImage(dishs["image"])??"",
+                                    imagePath:
+                                    fixImage(dishs["image"]) ?? "",
                                     title: dishTitle,
                                     subTitle: dishSubTitle,
                                     description: dishDesc,
-                                    circleImagePath: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
-                                    buttonText: textLanguage.w("اطلب الآن"),
+                                    circleImagePath:
+                                    "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
+                                    buttonText:
+                                    textLanguage.w("اطلب الآن"),
                                     onButtonTap: () {
-                                      final int branchId = dishs["branch_id"] ?? 0;
-                                      Navigator.push(context, PageRouteBuilder(
-                                        pageBuilder: (_, __, ___) => RestaurantDetalis(title: dishTitle,
-                                          branchId: branchId,
-                                         ),
-                                        transitionDuration: Duration.zero,
-                                        reverseTransitionDuration: Duration.zero,
-                                      ));
+                                      final int branchId =
+                                          dishs["branch_id"] ?? 0;
+                                      Navigator.push(
+                                        context,
+                                        PageRouteBuilder(
+                                          pageBuilder: (_, __, ___) =>
+                                              RestaurantDetalis(
+                                                title: dishTitle,
+                                                branchId: branchId,
+                                              ),
+                                          transitionDuration:
+                                          Duration.zero,
+                                          reverseTransitionDuration:
+                                          Duration.zero,
+                                        ),
+                                      );
                                     },
                                     width: sizes.GetWidth() * 50,
                                     height: sizes.GetHeight() * 40,
                                     liked: is_featured,
                                     onLikeTap: () {
                                       if (itemId == 0) return;
-                                      ref.read(Home_riverpod.notifier).toggleLike(itemId, i, context, type: "dish");
+                                      ref
+                                          .read(Home_riverpod.notifier)
+                                          .toggleLike(itemId, i, context,
+                                          type: "dish");
                                     },
                                     menuItemId: dishs['id'],
                                   ),
@@ -617,12 +891,12 @@ class _HomeState extends ConsumerState<Home> {
 
   // ─── Sort Buttons لـ Closest & Cheapest ──────────────────────────────────
   Widget _buildSortButtons(Sizes sizes, Themes theme, TextLanguage textLanguage) {
-    final notifier   = ref.read(Home_riverpod.notifier);
+    final notifier = ref.read(Home_riverpod.notifier);
     final currentSort = ref.watch(Home_riverpod.notifier).closestCheapestSortBy;
     final sortOptions = [
-      {"key": "ratio",   "label": textLanguage.w("الأفضل")},
+      {"key": "ratio", "label": textLanguage.w("الأفضل")},
       {"key": "closest", "label": textLanguage.w("الأقرب")},
-      {"key": "cheapest","label": textLanguage.w("الأرخص")},
+      {"key": "cheapest", "label": textLanguage.w("الأرخص")},
     ];
     return Row(
       children: sortOptions.map((option) {
@@ -709,7 +983,7 @@ class _HomeState extends ConsumerState<Home> {
         child: SvgPicture.asset(
           asset,
           height: sizes.GetHeight() * 3,
-          color: iconColor, // 👈 لون الأيقونة
+          color: iconColor,
         ),
       ),
     );
@@ -720,8 +994,8 @@ class _HomeState extends ConsumerState<Home> {
     final sections = homes[0]["sections"];
     if (sections == null) return "";
     if (sections?["restaurants_status"]?["has_content"] ?? false) return TextLanguage().w("حالة المطاعم");
-    if (sections?["lounges_status"]?["has_content"] ?? false)     return TextLanguage().w("حالة لاونجات");
-    if (sections?["cafes_status"]?["has_content"] ?? false)       return TextLanguage().w("حالة المقاهي");
+    if (sections?["lounges_status"]?["has_content"] ?? false) return TextLanguage().w("حالة لاونجات");
+    if (sections?["cafes_status"]?["has_content"] ?? false) return TextLanguage().w("حالة المقاهي");
     if (sections?["order_to_go_status"]?["has_content"] ?? false) return TextLanguage().w("حالة الطلب الجاهز");
     return "";
   }

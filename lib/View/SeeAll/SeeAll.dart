@@ -42,7 +42,6 @@ class _SeeAllState extends ConsumerState<SeeAll> {
   @override
   void initState() {
     super.initState();
-
     _scrollController = ScrollController();
     _scrollController.addListener(_onScroll);
 
@@ -87,7 +86,6 @@ class _SeeAllState extends ConsumerState<SeeAll> {
     final sizes = Sizes(context);
     final notifier = ref.watch(SeeAll_riverpod.notifier);
     ref.watch(SeeAll_riverpod);
-
     return Scaffold(
       backgroundColor: theme.GetColor("background"),
       appBar: buildCustomAppBar(context, widget.title),
@@ -110,7 +108,9 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                       _debounce?.cancel();
                       _debounce = Timer(const Duration(milliseconds: 500), () {
                         if (!mounted) return;
-                        if (value.trim().isEmpty) {
+                        if (value
+                            .trim()
+                            .isEmpty) {
                           ref.read(SeeAll_riverpod.notifier).resetSearch();
                           ref.read(SeeAll_riverpod.notifier).fetchSection(
                             context,
@@ -182,12 +182,10 @@ class _SeeAllState extends ConsumerState<SeeAll> {
     );
   }
 
-  Widget _buildSectionContent(
-      PageNotifier notifier,
+  Widget _buildSectionContent(PageNotifier notifier,
       Sizes sizes,
       Themes theme,
-      TextLanguage textLanguage,
-      ) {
+      TextLanguage textLanguage,) {
     final currentList = notifier.getCurrentList();
     final bool isLoaderVisible = notifier.isFetchingMore;
 
@@ -221,10 +219,12 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (_) => OffersDetails(
-                              title: textLanguage.GetWord("تفاصيل العروض"),
-                              offerId: offer["id"] ?? 0,
-                            ),
+                            builder: (_) =>
+                                OffersDetails(
+                                  title: textLanguage.GetWord("تفاصيل العروض"),
+                                  // ✅ تحويل الـ ID بأمان
+                                  offerId: int.tryParse(offer["id"]?.toString() ?? "0") ?? 0,
+                                ),
                           ),
                         );
                       },
@@ -261,6 +261,8 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                 itemCount: currentList.length,
                 itemBuilder: (context, index) {
                   final item = currentList[index];
+                  // ✅ تحويل الـ ID بأمان
+                  final int itemId = int.tryParse(item["id"]?.toString() ?? "0") ?? 0;
                   return ContentCard(
                     showIcon: true,
                     imagePath: item["image"] ?? "",
@@ -295,14 +297,15 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                       ],
                     ),
                     onButtonTap: () async {
-                      final branchId = item["id"];
+                      if (itemId == 0) return;
                       await Navigator.push(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (_, __, ___) => RestaurantDetalis(
-                            title: (item["business_name"] ?? "").toString(),
-                            branchId: branchId,
-                          ),
+                          pageBuilder: (_, __, ___) =>
+                              RestaurantDetalis(
+                                title: (item["business_name"] ?? "").toString(),
+                                branchId: itemId,
+                              ),
                           transitionDuration: Duration.zero,
                           reverseTransitionDuration: Duration.zero,
                         ),
@@ -310,11 +313,12 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                     },
                     width: sizes.GetWidth() * 50,
                     height: sizes.GetHeight() * 40,
-                    liked: notifier.favoriteStatus[item['id']] ?? false,
+                    liked: notifier.favoriteStatus[itemId] ?? false,
+                    // ✅ استخدام رقم
                     onLikeTap: () {
-                      notifier.toggleFavorite(item['id'], context, "branch");
+                      notifier.toggleFavorite(itemId, context, "branch"); // ✅ استخدام رقم
                     },
-                    menuItemId: item["id"],
+                    menuItemId: itemId, // ✅ استخدام رقم
                   );
                 },
               ),
@@ -348,6 +352,8 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                 itemBuilder: (context, index) {
                   final favorite = currentList[index];
                   final item = favorite["item"] ?? {};
+                  // ✅ تحويل الـ ID بأمان
+                  final int itemId = int.tryParse(item["id"]?.toString() ?? "0") ?? 0;
                   return ContentCard(
                     showIcon: true,
                     imagePath: item["image"] ?? "",
@@ -356,14 +362,15 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                     circleImagePath: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
                     buttonText: textLanguage.GetWord("يكتشف"),
                     onButtonTap: () async {
-                      final branchId = item["id"];
+                      if (itemId == 0) return;
                       await Navigator.push(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (_, __, ___) => RestaurantDetalis(
-                            title: (item["business_name"] ?? "").toString(),
-                            branchId: branchId,
-                          ),
+                          pageBuilder: (_, __, ___) =>
+                              RestaurantDetalis(
+                                title: (item["business_name"] ?? "").toString(),
+                                branchId: itemId,
+                              ),
                           transitionDuration: Duration.zero,
                           reverseTransitionDuration: Duration.zero,
                         ),
@@ -371,9 +378,10 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                     },
                     width: sizes.GetWidth() * 50,
                     height: sizes.GetHeight() * 40,
-                    liked: notifier.favoriteStatus[item['id']] ?? false,
+                    liked: notifier.favoriteStatus[itemId] ?? false,
+                    // ✅ استخدام رقم
                     onLikeTap: () {
-                      notifier.toggleFavorite(item['id'], context, favorite["type"]);
+                      notifier.toggleFavorite(itemId, context, favorite["type"] ?? "branch"); // ✅ استخدام رقم
                     },
                     additionalInfo: Column(
                       children: [
@@ -414,7 +422,7 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                         ),
                       ],
                     ),
-                    menuItemId: item["id"],
+                    menuItemId: itemId, // ✅ استخدام رقم
                   );
                 },
               ),
@@ -448,6 +456,9 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                 itemBuilder: (context, index) {
                   final dish = currentList[index];
                   final String dishPrice = dish["price"]?.toString() ?? "0";
+                  // ✅ تحويل الـ ID بأمان
+                  final int itemId = int.tryParse(dish["id"]?.toString() ?? "0") ?? 0;
+                  final int branchId = int.tryParse(dish["branch_id"]?.toString() ?? "0") ?? 0;
                   return ContentCard(
                     showIcon: true,
                     imagePath: dish["image"] ?? "",
@@ -456,14 +467,15 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                     circleImagePath: "assets/images/2a5306d7a071efa3bdacf0083e5786fd48e2dfd9.png",
                     buttonText: textLanguage.GetWord("يكتشف"),
                     onButtonTap: () async {
-                      final branchId = dish["branch_id"];
+                      if (branchId == 0) return;
                       await Navigator.push(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (_, __, ___) => RestaurantDetalis(
-                            title: (dish["business_name"] ?? "").toString(),
-                            branchId: branchId,
-                          ),
+                          pageBuilder: (_, __, ___) =>
+                              RestaurantDetalis(
+                                title: (dish["business_name"] ?? "").toString(),
+                                branchId: branchId,
+                              ),
                           transitionDuration: Duration.zero,
                           reverseTransitionDuration: Duration.zero,
                         ),
@@ -471,7 +483,8 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                     },
                     width: sizes.GetWidth() * 50,
                     height: sizes.GetHeight() * 40,
-                    liked: notifier.favoriteStatus[dish['id']] ?? false,
+                    liked: notifier.favoriteStatus[itemId] ?? false,
+                    // ✅ استخدام رقم
                     additionalInfo: Row(children: [
                       SvgPicture.asset("assets/icon/LikePrice.svg"),
                       SizedBox(width: sizes.GetWidth() * 1),
@@ -480,9 +493,9 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                       SvgPicture.asset("assets/icon/SAR.svg", color: theme.GetColor("secondaryPrimary")),
                     ]),
                     onLikeTap: () {
-                      notifier.toggleFavorite(dish['id'], context, "menu_item");
+                      notifier.toggleFavorite(itemId, context, "menu_item"); // ✅ استخدام رقم
                     },
-                    menuItemId: dish["id"],
+                    menuItemId: itemId, // ✅ استخدام رقم
                   );
                 },
               ),
@@ -528,9 +541,10 @@ class _SeeAllState extends ConsumerState<SeeAll> {
                       Navigator.push(
                         context,
                         PageRouteBuilder(
-                          pageBuilder: (context, animation1, animation2) => Story(
-                            branchData: item,
-                          ),
+                          pageBuilder: (context, animation1, animation2) =>
+                              Story(
+                                branchData: item,
+                              ),
                           transitionDuration: Duration.zero,
                           reverseTransitionDuration: Duration.zero,
                         ),

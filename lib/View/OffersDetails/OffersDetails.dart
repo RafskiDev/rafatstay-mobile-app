@@ -60,7 +60,7 @@ class _OffersDetailsState extends ConsumerState<OffersDetails> {
     final notifier = ref.watch(OffersDetails_riverpod.notifier);
     final offerData = notifier.offerData;
     final item = notifier.items;
-
+   // print(offerData);
     // ✅ شاشة تحميل
     if (_isLoading) {
       return Scaffold(

@@ -472,7 +472,6 @@ class _RestaurantDetalisState extends ConsumerState<RestaurantDetalis> {
                           width: double.infinity,
                           height: sizes.GetHeight() * 25,
                         ),
-
                          */
                         if(branches[0]["min_order_amount"]!=null)...[
                           SizedBox(height: sizes.GetHeight() * 2),

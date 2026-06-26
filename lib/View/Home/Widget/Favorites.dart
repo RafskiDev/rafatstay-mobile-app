@@ -23,7 +23,7 @@ class Favorites extends ConsumerWidget {
     final sizes = Sizes(context);
     final textLanguage = TextLanguage();
     return Visibility(
-      visible: ref.read(Home_riverpod.notifier).favorite.isNotEmpty,
+      visible: ref.read(Home_riverpod.notifier).favoriteItems.isNotEmpty,
       child: SizedBox(
         height: sizes.GetHeight() * 33.5,
         child: ListView.builder(

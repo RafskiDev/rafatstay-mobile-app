@@ -89,7 +89,7 @@ class Toppicks extends ConsumerWidget {
                               SeeAll(
                                   title: textLanguage.GetWord(
                                       "أفضل الخيارات بالقرب منك"),
-                                section: RestaurantSection.topPicks,sectionKey:ref.read(Home_riverpod.notifier).getTopPicksKey(),
+                                section: RestaurantSection.topPicks,sectionKey:ref.read(Home_riverpod.notifier).getCategorySlug(),
                                ),
                           transitionDuration:
                           Duration.zero,
@@ -144,6 +144,7 @@ class Toppicks extends ConsumerWidget {
                           favoriteStatus[itemId] ??
                               false;
                       return ContentCard(
+                        enableNavigation:false,
                         imagePath:item["image"]??"",
                         title: item[
                         "business_name"] ??
@@ -221,6 +222,7 @@ class Toppicks extends ConsumerWidget {
                               context);
                         },
                         onButtonTap: ()async {
+
                           if (!context.mounted) return;
                           WidgetsBinding.instance.addPostFrameCallback((_) {
                             ref.read(Home_riverpod.notifier).changeCardsCarousel(0);
@@ -241,8 +243,6 @@ class Toppicks extends ConsumerWidget {
                               Duration.zero,
                             ),
                           );
-
-
                         },
                         menuItemId: itemId,
                       );

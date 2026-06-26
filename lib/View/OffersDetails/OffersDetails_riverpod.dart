@@ -19,23 +19,7 @@ class PageNotifier extends Notifier<int> {
 
   List<Map<String, dynamic>> carouselItems = [];
   List<Map<String, dynamic>> items = [];
-  var includedItems = [
-    {
-      "id": 38,
-      "title": "ستيك لحم مشوي",
-      "description": "ستيك لحم أنجوس مشوي مع صوص خاص",
-      "price": 95.00,
-      "image": "/storage/menu/grilled-steak.jpg",
-      "status": "available",
-      "calories": 720,
-      "count": 1,
-      "is_spicy": false,
-      "sold_count": 0,
-      "potsEmpty": true,
-      "section": "الأطباق الرئيسية",
-      "time": null,
-    }
-  ];
+  var includedItems = [];
 
   @override
   int build() => 0;

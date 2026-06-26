@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../Service/ApiService.dart';
 
-// ==============================
-// 1️⃣ أنواع الصفحات المتاحة
-// ==============================
 enum RestaurantSection {
   offers,
   status,
@@ -16,9 +13,6 @@ enum RestaurantSection {
   mostOrdered,
 }
 
-// ==============================
-// 2️⃣ أنواع الفلاتر المتاحة
-// ==============================
 enum RestaurantFilter {
   all,
   openBuffet,
@@ -27,9 +21,6 @@ enum RestaurantFilter {
   casualDining,
 }
 
-// ==============================
-// 3️⃣ Extension للتحويل إلى String
-// ==============================
 extension RestaurantFilterPath on RestaurantFilter {
   String get path {
     switch (this) {
@@ -69,7 +60,6 @@ class PageNotifier extends Notifier<int> {
   RestaurantSection currentSection = RestaurantSection.offers;
   RestaurantFilter currentFilter = RestaurantFilter.all;
 
-  // قوائم البيانات العادية
   List<Map<String, dynamic>> offers = [];
   List<Map<String, dynamic>> status = [];
   List<Map<String, dynamic>> favorites = [];
@@ -80,16 +70,14 @@ class PageNotifier extends Notifier<int> {
   List<Map<String, dynamic>> mostOrdered = [];
   List<Map<String, dynamic>> filtersList = [];
   int selectedFilterIndex = 0;
-  // قائمة منفصلة لنتائج البحث
-  List<Map<String, dynamic>> searchResults = [];
 
+  List<Map<String, dynamic>> searchResults = [];
   Map<int, bool> favoriteStatus = {};
 
   bool isLoading = false;
   bool isFetchingMore = false;
   bool hasMore = true;
 
-  // متغيرات للبحث
   bool isSearching = false;
   bool hasMoreSearch = true;
   int searchPage = 1;
@@ -97,34 +85,54 @@ class PageNotifier extends Notifier<int> {
   int currentPage = 1;
   static const int _perPage = 10;
 
+  // ✅ نحفظ الـ sectionKey الحالي
+  String _currentSectionKey = "";
+
   @override
   int build() => 0;
 
+  void _resetSearchSilent() {
+    isSearching = false;
+    searchResults.clear();
+    searchController.clear();
+    searchPage = 1;
+    hasMoreSearch = true;
+  }
 
-  void selectFilter(BuildContext context, int index, String sectionKey, Map<String, dynamic> selectedFilter) {
+  void selectFilter(
+      BuildContext context,
+      int index,
+      String sectionKey,
+      Map<String, dynamic> selectedFilter,
+      ) {
     selectedFilterIndex = index;
-    currentPage = 1;
-    hasMore = true;
     state++;
 
-    // نستخدم selectedFilter الممرر مباشرة بدلاً من filtersList[index]
-    String filterValue = selectedFilter["key"]?.toString() ??
-        selectedFilter["label_en"]?.toString() ??
-        "all";
-
-    filterValue = filterValue.trim().toLowerCase().replaceAll(" ", "_");
-
     if (index == 0) {
-      fetchSection(context, section: currentSection, key: sectionKey);
+      // ✅ All - يجيب الكل بـ tab=all
+      fetchSection(
+        context,
+        section: currentSection,
+        key: sectionKey,
+        filter: RestaurantFilter.all,
+      );
     } else {
+      // ✅ فلتر محدد - يروح لـ endpoint الفلترة
+      String filterValue = selectedFilter["key"]?.toString() ??
+          selectedFilter["label_en"]?.toString() ??
+          "all";
+
+      filterValue = filterValue
+          .trim()
+          .toLowerCase()
+          .replaceAll(RegExp(r'[\s\-]+'), '_');
+
       final filterEndpoint = _buildFilterEndpoint(sectionKey, filterValue);
       fetchSectionWithEndpoint(context, endpoint: filterEndpoint);
     }
   }
 
   String _buildFilterEndpoint(String sectionKey, String filterKey) {
-    // sectionKey مثلاً: "restaurants/"
-    // النتيجة: v1/guest/restaurants/filter/open_buffet
     final cleanKey = sectionKey.endsWith('/')
         ? sectionKey.substring(0, sectionKey.length - 1)
         : sectionKey;
@@ -136,20 +144,23 @@ class PageNotifier extends Notifier<int> {
         required String endpoint,
       }) async {
     if (!ref.mounted) return;
-    currentPage = 1;
-    hasMore = true;
+
     isLoading = true;
+    isSearching = false;
+    currentPage = 1;
+    hasMore = false;
+    isFetchingMore = false;
+    searchResults.clear();
     _clearSection(currentSection);
-    resetSearch();
     state++;
 
     final response = await ApiService().get(
       endpoint,
-      {"per_page": "$_perPage", "page": "$currentPage"},
+      {"per_page": "$_perPage"},
       context,
     );
-
     if (!ref.mounted) return;
+
     if (response != null && response['data'] != null) {
       final data = response['data'];
       final items = data['items'];
@@ -157,31 +168,16 @@ class PageNotifier extends Notifier<int> {
           ? List<Map<String, dynamic>>.from(items)
           : <Map<String, dynamic>>[];
 
-      if (data != null && data['pagination'] != null) {
-        final pagination = data['pagination'];
-
-        // تحويل القيم بأمان لمنع الـ String type sub-type error
-        final int lastPage = int.tryParse(pagination['last_page']?.toString() ?? '1') ?? 1;
-        final int apiCurrentPage = int.tryParse(pagination['current_page']?.toString() ?? '1') ?? 1;
-
-        hasMore = currentPage < lastPage;
-      } else {
-        hasMore = list.length >= _perPage;
-      }
-
       _appendToSection(currentSection, list, false);
-      currentPage++;
-    } else {
-      hasMore = false;
     }
 
+    hasMore = false;
     isLoading = false;
     isFetchingMore = false;
     if (!ref.mounted) return;
     state++;
   }
 
-  // ==================== دالة البحث الجديدة ====================
   Future<void> search(
       BuildContext context, {
         bool loadMore = false,
@@ -218,11 +214,6 @@ class PageNotifier extends Notifier<int> {
 
     if (response != null && response['data'] != null) {
       final data = response['data'];
-
-      // ✅ قراءة عناصر القائمة من data['menu_items']['items']
-      //  final menuItems = data['menu_items'];
-
-      // ✅ قراءة pagination من data['menu_items']['pagination']
       final branches = data['branches'];
       final items = branches != null ? branches['items'] : [];
       final list = items is List
@@ -231,7 +222,8 @@ class PageNotifier extends Notifier<int> {
 
       final pagination = branches != null ? branches['pagination'] : null;
       if (pagination != null) {
-        final int lastPage = pagination['last_page'] ?? 1;
+        final int lastPage =
+            int.tryParse(pagination['last_page']?.toString() ?? "1") ?? 1;
         hasMoreSearch = searchPage < lastPage;
       } else {
         hasMoreSearch = list.length >= _perPage;
@@ -246,21 +238,15 @@ class PageNotifier extends Notifier<int> {
       searchPage++;
     } else {
       hasMoreSearch = false;
-      if (!loadMore) {
-        searchResults.clear();
-      }
+      if (!loadMore) searchResults.clear();
     }
-    for (final item in searchResults) {
-      final id = item['id'];
-      print(id);
-    }
+
     isLoading = false;
     isFetchingMore = false;
     if (!ref.mounted) return;
     state++;
   }
 
-  // ==================== إعادة تعيين حالة البحث ====================
   void resetSearch() {
     isSearching = false;
     searchResults.clear();
@@ -273,13 +259,14 @@ class PageNotifier extends Notifier<int> {
   }
 
   void resetAll() {
-    resetSearch(); // يصفر البحث والصفحات
-    selectedFilterIndex = 0; // يصفر الفلتر المختار
+    _resetSearchSilent();
+    selectedFilterIndex = 0;
     currentFilter = RestaurantFilter.all;
+    currentPage = 1;
+    hasMore = true;
     state++;
   }
 
-  // ==================== جلب القسم العادي ====================
   Future<void> fetchSection(
       BuildContext context, {
         required RestaurantSection section,
@@ -289,21 +276,23 @@ class PageNotifier extends Notifier<int> {
       }) async {
     if (!ref.mounted) return;
 
-    if (isSearching && !loadMore) return;
-
     if (loadMore) {
       if (!hasMore || isFetchingMore) return;
       isFetchingMore = true;
     } else {
+      isSearching = false;
+      searchResults.clear();
+      searchPage = 1;
+      hasMoreSearch = true;
       currentPage = 1;
       hasMore = true;
       isLoading = true;
       _clearSection(section);
-      resetSearch();
     }
 
     currentSection = section;
     currentFilter = filter;
+    _currentSectionKey = key ?? "";
 
     if (!ref.mounted) return;
     state++;
@@ -313,31 +302,59 @@ class PageNotifier extends Notifier<int> {
     final Map<String, String> params = {
       "per_page": "$_perPage",
       "page": "$currentPage",
+     // "tab": filter.path,
     };
 
     if (section == RestaurantSection.status) {
       params["category_slug"] = (key ?? "").replaceAll("/", "");
+      params.remove("tab");
     }
 
     final response = await ApiService().get(endpoint, params, context);
 
     if (!ref.mounted) return;
+
     if (response != null && response['data'] != null) {
       final data = response['data'];
 
-      // ✅ قراءة الفلاتر من الـ API عند أول تحميل فقط
-      if (!loadMore && data['filters'] != null) {
-        filtersList = List<Map<String, dynamic>>.from(data['filters']);
+      if (data is! Map<String, dynamic>) {
+        hasMore = false;
+        isLoading = false;
+        isFetchingMore = false;
+        if (!ref.mounted) return;
+        state++;
+        return;
       }
 
-      final rawItems = section == RestaurantSection.status ? data : data['items'];
+      // ✅ قراءة الفلاتر من data['filters'] مباشرة
+      if (!loadMore && data['filters'] is List) {
+        final apiFilters = List<Map<String, dynamic>>.from(
+            (data['filters'] as List).whereType<Map>());
+
+        final hasAll = apiFilters.any(
+                (f) => (f['key'] ?? '').toString().toLowerCase() == 'all');
+
+        filtersList = hasAll
+            ? apiFilters
+            : [
+          {"key": "all", "label_en": "All", "label": "الكل"},
+          ...apiFilters,
+        ];
+      }
+
+      final rawItems =
+      section == RestaurantSection.status ? data : data['items'];
+
       final list = rawItems is List
-          ? List<Map<String, dynamic>>.from(rawItems)
+          ? List<Map<String, dynamic>>.from(rawItems.whereType<Map>())
           : <Map<String, dynamic>>[];
 
-      final pagination = section == RestaurantSection.status ? null : data['pagination'];
-      if (pagination != null) {
-        final int lastPage = pagination['last_page'] ?? 1;
+      final pagination =
+      section == RestaurantSection.status ? null : data['pagination'];
+
+      if (pagination is Map) {
+        final int lastPage =
+            int.tryParse(pagination['last_page']?.toString() ?? "1") ?? 1;
         hasMore = currentPage < lastPage;
       } else {
         hasMore = list.length >= _perPage;
@@ -374,44 +391,44 @@ class PageNotifier extends Notifier<int> {
     state++;
   }
 
-
-  // ==================== فحص حالة المفضلة ====================
-  Future<void> checkFavoriteStatus(int itemId, BuildContext context,{String type="branch"}) async {
-
+  Future<void> checkFavoriteStatus(
+      int itemId,
+      BuildContext context, {
+        String type = "branch",
+      }) async {
     final response = await ApiService().get(
       "v1/$roles/favorites/check",
       {"item_id": itemId.toString(), "type": type},
       context,
     );
 
-    if (response != null && response['success'] == true && response['data'] != null) {
+    if (response != null &&
+        response['success'] == true &&
+        response['data'] != null) {
       favoriteStatus[itemId] = response['data']['is_favorited'] == true;
       state++;
     }
-    //  print(response['data']);
   }
 
-  // ==================== تبديل حالة المفضلة ====================
-  Future<void> toggleFavorite(int itemId, BuildContext context, String type) async {
+  Future<void> toggleFavorite(
+      int itemId,
+      BuildContext context,
+      String type,
+      ) async {
     final response = await ApiService().post(
       "v1/$roles/favorites/toggle",
-      {"item_id": itemId.toString(), "type":type},
+      {"item_id": itemId.toString(), "type": type},
       context,
     );
 
     if (response != null && response['success'] == true) {
-      // عكس الحالة الحالية
       favoriteStatus[itemId] = !(favoriteStatus[itemId] ?? false);
-      state++; // لتحديث الـ UI
+      state++;
     }
   }
-  // ==================== دوال مساعدة ====================
 
-  /// إرجاع القائمة الحالية (إما البحث أو القسم الحالي)
   List<Map<String, dynamic>> getCurrentList() {
-    if (isSearching) {
-      return searchResults;
-    }
+    if (isSearching) return searchResults;
 
     switch (currentSection) {
       case RestaurantSection.offers:
@@ -433,27 +450,20 @@ class PageNotifier extends Notifier<int> {
     }
   }
 
-  /// هل هناك المزيد من البيانات للتحميل؟
   bool getCurrentHasMore() {
-    if (isSearching) {
-      return hasMoreSearch;
-    }
+    if (isSearching) return hasMoreSearch;
     return hasMore;
   }
 
-  /// تحميل المزيد حسب الحالة (بحث أو عادي)
-  Future<void> loadMoreCurrent(BuildContext context, String roles) async {
+  Future<void> loadMoreCurrent(BuildContext context, String key) async {
     if (isSearching) {
-      await search(
-        context,
-        loadMore: true,
-      );
+      await search(context, loadMore: true);
     } else {
       await fetchSection(
         context,
         section: currentSection,
         filter: currentFilter,
-        key: roles, // نفترض أن roles هو الـ key
+        key: key,
         loadMore: true,
       );
     }
@@ -561,11 +571,14 @@ class PageNotifier extends Notifier<int> {
   }
 
   String _getDishOfDaySuffix(String key) {
-    if (key.contains('lounges') || key.contains('cafes') || key.contains('order-to-go')) {
+    if (key.contains('lounges') ||
+        key.contains('cafes') ||
+        key.contains('order-to-go')) {
       return 'flavor-of-the-day';
     }
     return 'dish-of-the-day';
   }
 }
 
-final SeeAll_riverpod = NotifierProvider<PageNotifier, int>(PageNotifier.new);
+final SeeAll_riverpod =
+NotifierProvider<PageNotifier, int>(PageNotifier.new);

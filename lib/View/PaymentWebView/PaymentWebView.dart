@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:rafatstay/Utils/TextLanguage.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
+import '../../Service/ApiService.dart';
 import '../../Widget/WidgetAppBar.dart';
 
 class PaymentWebView extends StatefulWidget {
@@ -15,6 +16,7 @@ class PaymentWebView extends StatefulWidget {
 
 class _PaymentWebViewState extends State<PaymentWebView> {
   late final WebViewController controller;
+  bool _handled = false; // يمنع التكرار
 
   @override
   void initState() {
@@ -25,12 +27,15 @@ class _PaymentWebViewState extends State<PaymentWebView> {
       ..setNavigationDelegate(
         NavigationDelegate(
           onNavigationRequest: (request) {
-            // 👇 هنا تگدر تراقب الرجوع بعد الدفع
-            if (request.url.contains("payment/callback")) {
-              if (request.url.contains("success")) {
-                Navigator.pop(context, "success"); // نرسل كلمة نجاح
+            if (request.url.contains("payment/callback") && !_handled) {
+              _handled = true;
+              final uri = Uri.parse(request.url);
+              final reference = uri.queryParameters["reference"];
+
+              if (reference != null) {
+                _verifyPayment(reference);
               } else {
-                Navigator.pop(context, "failed"); // نرسل كلمة فشل
+                Navigator.pop(context, "failed");
               }
               return NavigationDecision.prevent;
             }
@@ -41,10 +46,28 @@ class _PaymentWebViewState extends State<PaymentWebView> {
       ..loadRequest(Uri.parse(widget.url));
   }
 
+  Future<void> _verifyPayment(String reference) async {
+    final response = await ApiService().post(
+      "v1/payments/verify",
+      {"tap_id": reference},
+      context,
+    );
+
+    if (!mounted) return;
+
+    final isSuccess = response?["data"]?["is_success"] == true;
+    final nextStep = response?["data"]?["next_step"];
+
+    Navigator.pop(context, {
+      "status": isSuccess ? "success" : "failed",
+      "next_step": nextStep,
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar:buildCustomAppBar(context,TextLanguage().GetWord("الدفع")),
+      appBar: buildCustomAppBar(context, TextLanguage().GetWord("الدفع")),
       body: WebViewWidget(controller: controller),
     );
   }

@@ -86,7 +86,7 @@ class Payment extends ConsumerWidget {
                         ],
                       ),
                       SizedBox(height:sizes.GetHeight()*2,),
-                      //تابي الها api منفصله
+                      // تابي يستخدم نفس /pay endpoint بس payment_method = "tabby"، النتيجة فيها installments info
                       CheckBoxBox(isSelected: 4, title:textLanguage.GetWord('قطة مخططة'), image: "assets/images/Tabby.png",),
                       SizedBox(height:sizes.GetHeight()*2,),
                    //   CheckBoxBox(isSelected: 5, title:textLanguage.GetWord('تامارا'), image: "assets/images/Tamara.png",),

@@ -184,8 +184,8 @@ class PageNotifier extends Notifier<int> {
     print("menus: $res");
     if (res?["success"] == true) {
       menu = List<Map<String, dynamic>>.from(res["data"] ?? []);
-      supportsTakeaway =
-          menu.any((section) => section["supports_takeaway"] == true);
+      supportsTakeaway =menu.any((section) => section["supports_takeaway"] == true);
+
 
       List<dynamic> allItems = [];
       tagss.clear();
@@ -236,7 +236,7 @@ class PageNotifier extends Notifier<int> {
     isSelectedMenu = -1;
     selectedMealIndex = 0;
     ref.notifyListeners();
-    menus(context, branchId, mealPeriod: "breakfast");
+    menus(context, branchId);
   }
 
   int? currentOrderId;
@@ -419,7 +419,7 @@ class PageNotifier extends Notifier<int> {
     isMenuExpanded = false;
     ref.notifyListeners();
 
-    final periodMap = {0: "breakfast", 1: "lunch", 2: "dinner"};
+    const periodMap = {0: "breakfast", 1: "lunch", 2: "dinner", 3: "custom"};
     final selectedPeriod = periodMap[index];
 
     menus(context, branchId, mealPeriod: selectedPeriod);

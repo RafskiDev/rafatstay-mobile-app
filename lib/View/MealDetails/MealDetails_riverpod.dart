@@ -25,7 +25,6 @@ class PageNotifier extends Notifier<int> {
   bool isLoadingMeal = false;
 
   Future<void> fetchMealDetails(BuildContext context, int menuItemId) async {
-    print(menuItemId);
     isLoadingMeal = true;
     state = state + 1;
     final response = await ApiService().get(

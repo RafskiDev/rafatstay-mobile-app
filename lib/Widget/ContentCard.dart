@@ -26,7 +26,7 @@ class ContentCard extends StatelessWidget {
   final Widget? additionalInfo;
   final Color?  borderColor;
   final int? menuItemId;
-
+  final bool enableNavigation;
    ContentCard({
     super.key,
     required this.liked,
@@ -43,6 +43,7 @@ class ContentCard extends StatelessWidget {
     required this.height,
     this.additionalInfo, // اختياري
     this.borderColor,
+    this.enableNavigation = true,
     required this.menuItemId,
   });
 
@@ -56,6 +57,7 @@ class ContentCard extends StatelessWidget {
     final bool isEnglish = (language != 1);
     return InkWell(
       onTap: () {
+        if (!enableNavigation) return;
         Navigator.push(
           context,
           PageRouteBuilder(
