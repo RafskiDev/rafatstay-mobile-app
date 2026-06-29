@@ -136,7 +136,8 @@ class PageNotifier extends Notifier<int> {
       {"per_page": "5"},
       context,
     );
-
+    final events = response["data"]["sections"]["events"]["items"];
+   // print(events);
     if (response == null || response['success'] != true) {
       ref.notifyListeners();
       return;

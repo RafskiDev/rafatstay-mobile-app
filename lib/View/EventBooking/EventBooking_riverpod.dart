@@ -23,7 +23,7 @@ class PageNotifier extends Notifier<int> {
   List<dynamic> menuItems = [];
   List<dynamic> tables = [];
   Map<String, dynamic> eventData = {};
-  Map<int, int> itemCounts = {}; // ← id : count
+  Map<int, int> itemCounts = {};
 
   List<String> get tabTitles =>
       menuItems.map((m) => m["name"]?.toString() ?? "").toList();
@@ -42,7 +42,7 @@ class PageNotifier extends Notifier<int> {
         "potsEmpty": true,
         "count": itemCounts[id] ?? 0,
         "price": item["price"]?.toString() ?? "0",
-        "isEvent":true
+        "isEvent": true
       };
     }).toList();
   }
@@ -116,14 +116,13 @@ class PageNotifier extends Notifier<int> {
     ref.notifyListeners();
   }
 
-  Future<void> event(BuildContext context, int branchId) async {
+  Future<void> event(BuildContext context, int eventId) async {
     ApiService api = ApiService();
     final res = await api.get(
-      "v1/$roles/events/${branchId}",
+      "v1/$roles/events/$eventId",
       {},
       context,
     );
-    //print(branchId);
     if (res?["success"] == true) {
       final data = res["data"] as Map<String, dynamic>;
       eventData = data;
@@ -139,6 +138,7 @@ class PageNotifier extends Notifier<int> {
       );
     }
   }
+
   String fixImageUrl(String? url) {
     if (url == null || url.isEmpty) return "";
     const base = "https://api.rafatstay.com/uploads/";

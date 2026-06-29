@@ -30,15 +30,18 @@ class EventBooking extends ConsumerStatefulWidget {
 class _EventBookingState extends ConsumerState<EventBooking> {
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     Future.microtask(() async {
       ref.read(EventBooking_riverpod.notifier).resetBooking();
     });
     Future.microtask(() async {
-     await ref.read(EventBooking_riverpod.notifier).event(context, widget.eventBooking["id"]);
+      await ref.read(EventBooking_riverpod.notifier).event(
+        context,
+        widget.eventBooking["id"],
+      );
     });
   }
+
   @override
   Widget build(BuildContext context) {
     ref.watch(EventBooking_riverpod);
